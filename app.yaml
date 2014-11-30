@@ -1,0 +1,30 @@
+application: s~lscds-new-site
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: false 
+
+libraries:
+- name: PIL
+  version: "latest"
+- name: MySQLdb
+  version: "latest"
+- name: ssl 
+  version: "latest"
+
+
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'lscds_site.settings'
+
+
+
+handlers:
+- url: /static
+  static_dir: STATIC_URL
+
+- url: .*
+  script: main.py
+
+
+

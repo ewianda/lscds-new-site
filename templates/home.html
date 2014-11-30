@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load static %}
+{% block main %}
+{% if backend %}
+             <form action="{% url "social:complete" backend=backend %}" method="post" role="form">{% csrf_token %}
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Email required</h4>
+              </div>
+
+              <div class="modal-body">
+                <p>An email address is required.</p>
+                <div class="form-group">
+                  <label class="control-label" for="email">Email address:</label>
+                  <input class="form-control" id="email" type="email" name="email" value="" />
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Continue</button>
+                <input type="submit" value="Submit">
+              </div>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+        <form action="" method="post">
+            {% csrf_token %}
+
+    {{form.as_p}}
+<input type="submit" value="Submit" />
+</form>
+
+{% endblock %}

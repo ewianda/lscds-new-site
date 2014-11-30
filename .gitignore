@@ -1,0 +1,9 @@
+*.pyc
+*.db
+*.txt
+static
+media
+lscd_user
+*.swp
+local_settings.py
+dev

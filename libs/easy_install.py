@@ -1,1 +1,5 @@
-/home/ewianda/Project/Django/google_app/lscds/lib/python2.7/site-packages/easy_install.py
+"""Run the EasyInstall command"""
+
+if __name__ == '__main__':
+    from setuptools.command.easy_install import main
+    main()

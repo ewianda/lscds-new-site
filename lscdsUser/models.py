@@ -12,8 +12,34 @@ from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser,PermissionsMixin
 )
+from institute.models import (University,Faculty,Department, Degree)
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.conf import settings
+
+
+UPLOAD_TO = getattr(settings, 'USERS_UPLOAD_TO', 'lscdsUsers')
+
+GENDER_CHOICES = (
+    ('Male', 'Male'),
+    ('Female', 'Female'),
+    ('Secret', 'Secret'),
+)
+
+STATUS_CHOICES = (
+    ('Full-time', 'Full-time'),
+    ('Part-time', 'Part-time'),
+    ('Other', 'Other'),
+)
+
+RELATIONSHIP_CHOICES = (
+    ('Student', 'Student'),
+    ('Executive', 'Executive'),
+    ('Guest', 'Guest'),
+)
+
+
+
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password=None):
@@ -47,7 +73,6 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
 class LscdsUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         verbose_name='email address',
@@ -56,7 +81,6 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
     )
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
-    university = models.CharField(_('University'), max_length=40)
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('staff status'), default=True,
         help_text=_('Designates whether this user should be treated as '
@@ -64,8 +88,20 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now) 
     is_admin = models.BooleanField(_('Is Admin'), default=False)
 
+    university = models.ForeignKey(University, max_length=40, null=True,)
+    faculty = models.ForeignKey(Faculty,max_length=40, null=True,)
+    department = models.ForeignKey(Department,max_length=40, null=True,)
+    degree =  models.ForeignKey(Degree,max_length=40, null=True,)
+    relationship =  models.CharField(max_length=40, choices=RELATIONSHIP_CHOICES,default='Student')
+    mailinglist =  models.BooleanField( default=True)
+    status =  models.CharField(max_length=40, choices=STATUS_CHOICES)
+    avatar =  models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
+        help_text=_('Used for illustration.'))
+    gender =  models.CharField(max_length=10, choices=GENDER_CHOICES)
+    service = models.CharField(max_length=30, blank=True)
 
-    objects = MyUserManager()
+
+    objects =MyUserManager()
 
     USERNAME_FIELD = 'email'
     #REQUIRED_FIELDS = ['date_of_birth']

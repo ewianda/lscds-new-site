@@ -1,7 +1,88 @@
 {% extends "base.html" %}
 {% load i18n %}
-
+{% load crispy_forms_tags %}
 {% block title %}Account Profile{% endblock %}
 
-{% block content %}
+{% block main %}
+<h1>Welcome {{user.get_full_name}}</h1>
+<div class='row'>
+<div class='col-md-6'>
+
+<legend>Your profile</legend>
+                {% crispy form  %}
+
+ 
+</div> <!-- End of col-6  -->
+<div class='col-md-6'>
+<div class='col-md-12'>
+<legend>Your registrations</legend>
+
+{% for event in  registered_list %}
+<ul>
+    <li>{{event.event.name}}
+           <form class="registration"  action="." method="post">
+            {% csrf_token %}
+            <input type="hidden" name="event_id" value="{{event.event.pk}}">
+            <input type="submit" value="Cancel registration" class="submit" />
+        </form>
+        </li>
+</ul> 
+
+    {% empty %}
+    No event in this category
+
+    {% endfor %}
+</div> <!-- End of col-12  -->
+<div class='col-md-12'>
+<legend>Upcoming events</legend>
+
+{% for event in  not_registered_list %}
+<ul>
+    <li>{{event.name}}</li>
+           <form class="registration"  action="." method="post">
+            {% csrf_token %}
+            <input type="hidden" name="event_id" value="{{event.pk}}">
+            <input type="submit" value="Register for this event" class="submit" />
+        </form>
+    </span>
+</ul>
+
+
+    {% empty %}
+    No event in this category
+
+    {% endfor %}
+
+</div> <!-- End of col-12  -->
+
+</div> <!-- End of col-6  -->
+
+
+
+</div> <!-- End of row-->
+
+
+
+
 {% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+jQuery(document).ready(function() {
+$('.registration').on('submit',function(e){
+e.preventDefault()
+var url = $(this).attr('action')
+$.ajax({
+type: "POST",
+url: url,
+data: $(this).serialize(), // serializes the form's elements.
+success: function(data)
+{
+//alert(data); // show response from the php script.
+
+}
+}); /// end ajax call
+}); // end form submission
+ }); // End of doccument ready
+                       </script>
+                       {% endblock %}

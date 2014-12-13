@@ -16,7 +16,7 @@ class UserCreationForm(forms.ModelForm):
     class Meta:
         model = LscdsUser
         fields = ('email', )
-
+        
     def clean_password2(self):
         # Check that the two password entries match
         password1 = self.cleaned_data.get("password1")
@@ -57,11 +57,17 @@ class LscdsUserAdmin(UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('email', 'password','university',)}),
         (_('Personal info'), {'fields': ('first_name', 'last_name')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2')}
+        ),
     )
     list_display = ('email', 'first_name', 'last_name', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')

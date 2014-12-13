@@ -3,19 +3,59 @@ from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
 from django.shortcuts import render_to_response,redirect,render
 from django.conf import settings
+from django.http import HttpResponseRedirect,HttpResponse
+import json
+from django.views.generic import CreateView,UpdateView
+from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 
 from registration import signals
 from registration.models import RegistrationProfile
 from registration.backends.default.views import RegistrationView
-from lscdsUser.forms import UserCreationForm,SocialExtraDataForm
-
+from lscdsUser.forms import UserCreationForm,SocialExtraDataForm,UserProfileForm,RegistrationFormSet
+from lscdsUser.models import LscdsUser
+from event.models import EventType,Registration,Event
 from lscds_site.decorators import render_to
 
 from social.backends.oauth import BaseOAuth1, BaseOAuth2
 from social.backends.google import GooglePlusAuth
 from social.backends.utils import load_backends
 from social.apps.django_app.utils import psa
+
+
+class UserUpdateView(UpdateView):
+    """
+    Class that only allows authentic user to update their profile
+    Composed of first_name,last_name,date_of_birth,gender,
+    """
+    model = LscdsUser
+    form_class = UserProfileForm
+    template_name = "profile.html"
+    success_url = "."
+    def get_object(self, queryset=None):
+        return self.request.user
+    def post(self, request, *args, **kwargs):
+        if self.request.is_ajax():
+             event_id= self.request.POST.get('event_id',None)
+             user = self.request.user
+             registration,create = Registration.objects.get_or_create(owner=user,event=Event(pk=event_id))
+             if create:
+                 registration.save()
+             else:
+                 registration.delete()
+             return HttpResponse(json.dumps("success"),mimetype="application/json")
+        return super(UserUpdateView, self).post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(UserUpdateView, self).get_context_data(**kwargs)
+        # Add in a QuerySet of all the events
+        context['registered_list'] = Registration.objects.filter(owner=self.request.user)
+        dd=Event.objects.filter(registrations__owner=self.request.user)
+        context['not_registered_list'] = Event.objects.exclude(id__in = [event.id for event in dd] )
+        return context
+
 
 
 
@@ -72,7 +112,6 @@ def require_email(request):
     backend = request.session['partial_pipeline']['backend']
     return context(email_required=True, backend=backend)
 
-from django.core.urlresolvers import reverse
 
 def social_extra_data(request):
     if request.method == 'POST':
@@ -86,3 +125,8 @@ def social_extra_data(request):
         form =  SocialExtraDataForm() # An unbound form
 
     return render(request,'home.html', {'form': form,})
+
+
+
+
+

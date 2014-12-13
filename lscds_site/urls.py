@@ -5,15 +5,17 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.core.exceptions import ImproperlyConfigured
-import autocomplete_light
+#import autocomplete_light
 
 
-autocomplete_light.autodiscover()
+#autocomplete_light.autodiscover()
 admin.autodiscover()
 
 
 urlpatterns = patterns('',
     url(r'', include('home.urls')),
+    url(r'^events/', include('event.urls', namespace='event')),
+    url(r'^our-sponsors/', include('sponsor.urls', namespace='sponsors')),
     url(r'', include('contact.urls')),
     url(r'', include('social.apps.django_app.urls', namespace='social')),
     url(r'', include('lscdsUser.urls')),
@@ -21,9 +23,10 @@ urlpatterns = patterns('',
     url(r'^accounts/',include('registration.backends.default.urls')),
     url(r'^weblog/', include('zinnia.urls',namespace='zinnia')),
     url(r'^comments/', include('django_comments.urls')),  
-    url(r'^events/', include('chance.urls',namespace='chance')),
-    url(r'^autocomplete/', include('autocomplete_light.urls')),
-    (r'^gallery/', include('imagestore.urls', namespace='imagestore')),
+   # url(r'^autocomplete/', include('autocomplete_light.urls')),
+    url(r'^photologue/', include('photologue.urls')),
+    (r'^ckeditor/', include('ckeditor.urls')),
+    
 
     ) 
 

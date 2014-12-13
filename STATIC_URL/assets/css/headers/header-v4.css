@@ -209,7 +209,7 @@
 }
 
 .header-v4 .navbar-default .navbar-nav > .active > a {
-	color: #72c02c;
+	color: #372BEA;
 }
 
 @media (min-width: 768px) {
@@ -386,7 +386,7 @@
 
 	.header-v4 .navbar-default .navbar-nav > li > a:hover,
 	.header-v4 .navbar-default .navbar-nav > .active > a {
-		border-top: solid 2px #72c02c;
+		border-top: solid 2px #372BEA;
 	}
 	
 	.header-v4 .navbar-default .navbar-nav > li > a,
@@ -405,8 +405,8 @@
 	}
 
 	.header-v4 .navbar-default .navbar-nav > li:hover > a {
-        color: #72c02c;
-        border-top: solid 2px #72c02c;
+        color: #372BEA;
+        border-top: solid 2px #372BEA;
     }
 
 	/*Dropdown Menu*/

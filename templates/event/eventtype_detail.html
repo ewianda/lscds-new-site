@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load static %}
+{% block main %}
+
+
+<h2> {{ object.name }}</h2>
+
+<P> {{ object.description|safe}} </P>
+<h2> Up coming events </h2>
+{% for event in object.get_events %}
+<p>{{event.name}}:{{ event.starts|date }} to {{ event.ends|date }}</br>
+<h3>Talks</h3>
+{% for talk in event.get_talks %}
+Title: {{talk.title}}</br>
+Presenter: {{talk.presenter}} {{talk.presenter.email}}</br>
+{{talk.description|safe}}</p>
+
+{% endfor %} 
+{% empty %}
+    <li>No upcoming events</li>
+{% endfor %}
+
+
+{% endblock %}

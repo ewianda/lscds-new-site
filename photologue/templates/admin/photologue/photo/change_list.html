@@ -1,0 +1,28 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list admin_static i18n %}
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/photologue/css/change_list.css" %}" />
+{% endblock %}
+
+{% block result_list %}
+{% if action_form and actions_on_top and cl.full_result_count %}{% admin_actions %}{% endif %}
+<div class="results">
+    {% for c in cl.result_list %}
+    <div class="photo module">
+        <a href="{{ c.pk }}/">
+            <img src="{{ c.get_admin_thumbnail_url }}" alt="{{ c.title }}"/>
+        </a>
+
+        <div class="photo-label">
+            <input class="action-select" name="_selected_action" type="checkbox" value="{{ c.pk }}">
+            <a href="{{ c.pk }}/">
+                {{ c.title }}
+            </a>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% if action_form and actions_on_bottom and cl.full_result_count %}{% admin_actions %}{% endif %}
+{% endblock %}

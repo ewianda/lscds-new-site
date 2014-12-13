@@ -1,12 +1,12 @@
 # Django settings for lscds_site project.
 
-import os 
+import os,sys 
 DEBUG =True
 TEMPLATE_DEBUG = DEBUG
 SETTINGS_DIR = os.path.dirname(__file__)
 PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
-
+sys.path.append(os.path.join(os.path.dirname(__file__), 'libs'))
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -15,8 +15,8 @@ ADMINS = (
 MANAGERS = ADMINS
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'db.db',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -26,8 +26,9 @@ DATABASES = {
 #print DATABASES
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ('.elvis-django-101.appspot.com','.lscds-new-site.appspot.com')
+ALLOWED_HOSTS = ['*']
+
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -105,7 +106,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.csrf',
     'zinnia.context_processors.version',
-    "imagestore.context_processors.imagestore_processor"
+    "home.context_processors.latest",
 
 )
 
@@ -119,8 +120,8 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 IMAGESTORE_UPLOAD_TO = 'imagestore'
-
-
+CKEDITOR_UPLOAD_PATH = "ckeditor/uploads/"
+CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'
 ROOT_URLCONF = 'lscds_site.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
@@ -146,46 +147,65 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     # other stuff here,
+    #'django_admin_bootstrapped',
     'django.contrib.admin',
     'django_comments',
     'tagging',
     'mptt',
-    'zinnia',
+    'zinnia','zinnia_ckeditor',
+
     'social.apps.django_app.default', 
     'lscdsUser',
     'home',
     'registration',
-    'chance',
+   # 'chance',
     'contact',
-     #'photologue',
+    'event','ckeditor',
+     'photologue', 
+     'imagekit',
      #'sortedm2m',
-    # 'south',
-    'home',
-      'imagestore',
-    'sorl.thumbnail',
+     'south',
+    'home','sponsor',
+    'institute',
+    'crispy_forms',
+    #'imagestore',
+    #'sorl.thumbnail',
     'tagging',
-    'autocomplete_light',
+    #'autocomplete_light',
     'appengine_toolkit',
 )
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+    },
+}
 APPENGINE_TOOLKIT = {
     # other settings here
  'APP_YAML': os.path.join(PROJECT_PATH, 'app.yaml'),
     'BUCKET_NAME': 'lscds-new-site.appspot.com',
 }
 
-
+IMAGEKIT_DEFAULT_FILE_STORAGE= 'appengine_toolkit.storage.GoogleCloudStorage'
 DEFAULT_FILE_STORAGE = 'appengine_toolkit.storage.GoogleCloudStorage'
 STATICFILE_STORAGE = 'appengine_toolkit.storage.GoogleCloudStorage'
+
+
 
 
 IMAGESTORE_SHOW_USER =False
 THUMBNAIL_PREFIX = 'gallery/'
 THUMBNAIL_BACKEND = 'lscds_site.storage.SEOThumbnailBackend'
-
-
+CACHES = {
+        'default': {
+            'BACKEND': 'appengine_toolkit.storage.GAEMemcachedCache',
+            'TIMEOUT': 0,
+        }
+    }
 AUTHENTICATION_BACKENDS = (
 'social.backends.facebook.FacebookOAuth2',
 'social.backends.google.GoogleOAuth2',
@@ -198,20 +218,22 @@ AUTHENTICATION_BACKENDS = (
 )
 
 AUTH_USER_MODEL = 'lscdsUser.LscdsUser'
+
+
 ACCOUNT_ACTIVATION_DAYS = 7
-REGISTRATION_EMAIL_SUBJECT_PREFIX = '[Django Registration Test App]'
+REGISTRATION_EMAIL_SUBJECT_PREFIX = 'Your Registration With LSCDS'
 SEND_ACTIVATION_EMAIL = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/profile'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
-SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/userinfo.profile'
-]
+#SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
+#    'https://www.googleapis.com/auth/drive',
+#    'https://www.googleapis.com/auth/userinfo.profile'
+#]
 # SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
 SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'example.app.mail.send_validation'
@@ -225,13 +247,14 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.social_user',
     'social.pipeline.user.get_username',
     'social.pipeline.social_auth.associate_by_email',
-    'social.pipeline.mail.mail_validation',
+   # 'social.pipeline.mail.mail_validation',
    # 'lscds_site.pipeline.require_email',
     'lscds_site.pipeline.social_extra_data',
     'social.pipeline.user.create_user',
     'social.pipeline.social_auth.associate_user',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
+    'lscds_site.pipeline.user_details_complete'
 
     #'social.pipeline.debug.debug'
 )
@@ -290,7 +313,7 @@ EMAIL_PORT          = 587
 EMAIL_HOST_USER     = ""
 EMAIL_HOST_PASSWORD = ""
 EMAIL_USE_TLS       = True # Yes for Gmail
-DEFAULT_FROM_EMAIL  = "Life Science Carrier Development Services>"
+DEFAULT_FROM_EMAIL  = "Life Science Carrier Development Services"
 SERVER_EMAIL        = DEFAULT_FROM_EMAIL
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'

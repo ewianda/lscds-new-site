@@ -1,13 +1,46 @@
-{% extends "registration/registration_base.html" %}
+{% extends "base.html" %}
 {% load i18n %}
+{% load crispy_forms_tags %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+
 {% block title %}{% trans "Register for an account" %}{% endblock %}
+{% block css %} 
+<link rel="stylesheet" href="{% static "assets/css/pages/page_log_reg_v2.css" %} ">
+
+{% endblock %}
 
 {% block main %}
-<form method="post" action="">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="{% trans 'Submit' %}" />
-</form>
+
+<div class=" container col-md-12 eg-block">
+    <div class="reg-block-header">
+        <h2>Sign Up</h2>
+        <ul class="social-icons text-center">
+            <li><a class="rounded-x social_facebook" data-original-title="Facebook" href="{% url 'social:begin' 'facebook' %}?next=/profile"></a></li>
+            <li><a class="rounded-x social_yahoo" data-original-title="Twitter" href="{% url 'social:begin' 'yahoo' %}?next=/profile"></a></li>
+            <li><a class="rounded-x social_googleplus" data-original-title="Google Plus" href="{% url 'social:begin' 'google-oauth2' %}?next=/profile"></a></li>
+            <li><a class="rounded-x social_linkedin" data-original-title="Linkedin" href="{% url 'social:begin' 'linkedin' %}?next=/profile"></a></li>
+        </ul>
+        <p>Already Signed Up? Click <a class="color-green" href="{% url 'auth_login' %}">Sign In</a> to login your account.</p>
+    </div>
+    {% if form.errors %}
+ <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {% for field in form %} 
+        {% if field.errors %}
+        <li>{{ field.label }}: {{ field.errors|striptags }}</li>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}   
+    {% crispy form  %}
+
+
+</div>
+<!--End Reg Block-->
+
 {% endblock %}
 
 

@@ -2,6 +2,7 @@
 *.db
 *.txt
 media
+*.json
 lscd_user
 *.swp
 local_settings.py

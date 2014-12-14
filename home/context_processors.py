@@ -7,6 +7,10 @@ def latest(request):
    except Event.DoesNotExist:
         event = None
    entry = Entry.published.all()[:2]
-   photos = entry = Gallery.objects.all().latest()
+   try:
+       photos = Gallery.objects.all().latest()
+   except Gallery.DoesNotExist:
+         photos = None
+
    return {'context_event':event,'context_photos':photos,'context_blog':entry}
 

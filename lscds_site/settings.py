@@ -164,7 +164,7 @@ INSTALLED_APPS = (
      'photologue', 
      'imagekit',
      #'sortedm2m',
-     'south',
+   #  'south',
     'home','sponsor',
     'institute',
     'crispy_forms',
@@ -348,6 +348,6 @@ LOGGING = {
 }
 
 try:
-    from local_settings import *
+    from local_setting import *
 except ImportError:
     pass

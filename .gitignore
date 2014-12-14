@@ -1,7 +1,6 @@
 *.pyc
 *.db
 *.txt
-static
 media
 lscd_user
 *.swp

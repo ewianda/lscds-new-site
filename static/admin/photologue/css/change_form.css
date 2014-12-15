@@ -1,0 +1,19 @@
+fieldset.thumbs div{
+    padding: 10px;
+}
+
+fieldset.thumbs div.image{
+    float: left;
+    margin-left: 8em;
+}
+
+fieldset.thumbs div.image img{
+    border: 1px solid #ccc;
+    margin: 5px;
+    padding: 5px;
+}
+
+
+fieldset.thumbs div.sizes{
+    float: left;
+}

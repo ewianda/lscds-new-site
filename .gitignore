@@ -7,3 +7,4 @@ lscd_user
 *.swp
 local_settings.py
 dev
+env

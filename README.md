@@ -36,6 +36,11 @@ Install Pillow only
 ```
 pip install Pillow 
 
+```
+Syncronize database and runserver
+=======
+
+```
 python manage.py syncdb
 
 python manage.py runserver

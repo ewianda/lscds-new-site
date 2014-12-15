@@ -19,7 +19,7 @@ setenv PYTHONPATH PYTHONPATH:/usr/local/google_appengine/:/usr/local/google_appe
 
 BASH shell
 ===============
-source env/bin/activate.csh
+source env/bin/activate
 
 Add google app engine SDK to python path
 

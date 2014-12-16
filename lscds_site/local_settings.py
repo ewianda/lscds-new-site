@@ -1,12 +1,10 @@
 import os 
 
 
-#DATABSE_STR= 'mysql://root:Saflonerose=19@localhost/lscd_portal'
-#DATABASE_STR= 'mysql://root@elvis-django-101:lscd/lscd_portal'
+DATABASE_STR= 'mysql://root@elvis-django-101:lscd/lscd_portal'
+#DATABASE_STR= 'mysql://root:love@173.194.104.145/lscd_portal'
 
-
-DATABASE_STR = 'mysql://root:Saflonerose=19@localhost/lscd_portal'
-
+#DATABASE_STR = 'mysql://root:Saflonerose19@localhost/lscd_portal'
 
 os.environ["DATABASE_URL"] = DATABASE_STR
 
@@ -14,6 +12,7 @@ import appengine_toolkit
 DATABASES = {
     'default': appengine_toolkit.config(),
 }
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY ='302804338276.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET='Y6ba3RPUqhue8xl7Ap23rG8G'
 

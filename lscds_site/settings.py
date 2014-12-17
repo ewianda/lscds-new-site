@@ -1,7 +1,7 @@
 # Django settings for lscds_site project.
 
 import os,sys 
-DEBUG =True
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 SETTINGS_DIR = os.path.dirname(__file__)
 PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)

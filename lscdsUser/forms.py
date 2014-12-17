@@ -4,6 +4,13 @@ from django.forms.models import inlineformset_factory
 from event.models import Registration
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit,Field,Div
+from form_utils.forms import BetterModelForm
+
+
+""" Better form Gives more flexibility template rendering than normal django forms"""
+
+
+
 
 class UserCreationForm(forms.ModelForm):
     """We are going to use crispy form package to make life
@@ -91,7 +98,7 @@ class SocialExtraDataForm(forms.ModelForm):
                       'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email')
 
 
-class UserProfileForm(forms.ModelForm):
+class UserProfileForm(BetterModelForm):
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance

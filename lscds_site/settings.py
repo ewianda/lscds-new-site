@@ -167,7 +167,7 @@ INSTALLED_APPS = (
    #  'south',
     'home','sponsor',
     'institute',
-    'crispy_forms',
+    'crispy_forms','form_utils',
     #'imagestore',
     #'sorl.thumbnail',
     'tagging',
@@ -348,6 +348,6 @@ LOGGING = {
 }
 
 try:
-    from local_setting import *
+    from local_settings import *
 except ImportError:
     pass

@@ -11,12 +11,14 @@
 
 
             <head>
-                {% block title %}
-                <title>
-                    LSCDS HOME
+                  <title>
 
-                </title>
-                {% endblock %}
+                {% block title %}
+                                  LSCDS HOME
+
+                                  {% endblock %}
+                 </title>
+
                 <!-- Meta -->
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,8 +41,8 @@
 
                 <!-- CSS Theme -->    
                 <link rel="stylesheet" href="{%static "assets/css/theme-colors/default.css" %}">
-   <link rel="stylesheet" href="{%static "assets/plugins/bootstrap/css/bootstrap.min.css" %}">
-
+                <link rel="stylesheet" href="{%static "assets/plugins/bootstrap/css/bootstrap.min.css" %}">
+                <link rel="stylesheet" href="{%static "editable/css/bootstrap-editable.css" %}">
                 <!-- CSS Customization -->
                 <link rel="stylesheet" href="{%static "assets/css/custom.css" %}">
                 {% block css %}   {% endblock %}
@@ -55,16 +57,47 @@
                         <div class="topbar-v1">
                             <div class="container">
                                 <div class="row">
+                                    <!-- Social Links -->
                                     <div class="col-md-6">
-                                        <ul class="list-inline top-v1-contacts">
+                                        <ul class="footer-socials list-inline">
                                             <li>
-                                            <i class="fa fa-envelope"></i> Email: <a href="mailto:info@htmlstream.com">info@htmlstream.com</a>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Facebook">
+                                                <i class="fa fa-facebook"></i>
+                                            </a>
                                             </li>
                                             <li>
-                                            <i class="fa fa-phone"></i> Hotline: (1) 396 4587 99
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Skype">
+                                                <i class="fa fa-skype"></i>
+                                            </a>
+                                            </li>
+                                            <li>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Google Plus">
+                                                <i class="fa fa-google-plus"></i>
+                                            </a>
+                                            </li>
+                                            <li>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Linkedin">
+                                                <i class="fa fa-linkedin"></i>
+                                            </a>
+                                            </li>
+                                            <li>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Pinterest">
+                                                <i class="fa fa-pinterest"></i>
+                                            </a>
+                                            </li>
+                                            <li>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Twitter">
+                                                <i class="fa fa-twitter"></i>
+                                            </a>
+                                            </li>
+                                            <li>
+                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Dribbble">
+                                                <i class="fa fa-dribbble"></i>
+                                            </a>
                                             </li>
                                         </ul>
                                     </div>
+                                    <!-- End Social Links -->
 
                                     <div class="col-md-6">
                                         <ul class="list-inline top-v1-data">
@@ -211,60 +244,7 @@
                            </div>
 
 
-                        <!-- Our Clients -->
-                        <div id="clients-flexslider" class="container flexslider home clients">
-                            <div class="headline"><h2>Our Sponsors</h2></div>    
-                            <ul class="slides">
-                                <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img4" %}" alt="Smiley face" height="150" >
-                                </a>
-                                </li>
-                                <li>
-                                <a href="#">
-                                    <img class="img-thumbnailimg-responsive" src="{%static "images/_img10" %}" alt="Smiley face"  >
-                                </a>
-                                </li>
-                                <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img6" %}" alt="Smiley face"  >
-                                </a>
-                                </li>
-                                <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img7" %}" alt="Smiley face" >
-                                </a>
-                                </li>
-
-                                <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img8" %}" alt="Smiley face">
-                                </a>
-                                </li>
-                                 <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img9" %}" alt="Smiley face">
-                                </a>
-                                </li>
-
-                                 <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img5" %}" alt="Smiley face" >
-                                </a>
-                                </li>
-                                 <li>
-                                <a href="#">
-                                    <img class="img-thumbnail img-responsive" src="{%static "images/_img11" %}" alt="Smiley face"  >
-                                </a>
-                                </li>
-
-
-
-
-                            </ul>
-                        </div><!--/flexslider-->
-                        <!-- End Our Clients -->
-
+                      
                     </div><!--/container-->     
                     <!-- End Content Part -->
 
@@ -336,47 +316,7 @@
                                         </p>
                                     </div>
 
-                                    <!-- Social Links -->
-                                    <div class="col-md-6">
-                                        <ul class="footer-socials list-inline">
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Facebook">
-                                                <i class="fa fa-facebook"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Skype">
-                                                <i class="fa fa-skype"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Google Plus">
-                                                <i class="fa fa-google-plus"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Linkedin">
-                                                <i class="fa fa-linkedin"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Pinterest">
-                                                <i class="fa fa-pinterest"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Twitter">
-                                                <i class="fa fa-twitter"></i>
-                                            </a>
-                                            </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Dribbble">
-                                                <i class="fa fa-dribbble"></i>
-                                            </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <!-- End Social Links -->
+
                                 </div>
                             </div> 
                         </div><!--/copyright-->
@@ -389,9 +329,8 @@
                 <script type="text/javascript" src="{%static "assets/plugins/jquery/jquery-migrate.min.js" %}"></script>
                 <script type="text/javascript" src="{%static "assets/plugins/bootstrap/js/bootstrap.min.js" %}"></script> 
                 <script type="text/javascript" src="{%static "assets/plugins/flexslider/jquery.flexslider-min.js" %}"></script>
-
-                <!-- JS Implementing Plugins -->           
-                <script type="text/javascript" src="{%static "assets/plugins/back-to-top.js" %}"></script>
+                <script type="text/javascript" src="{%static "editable/js/bootstrap-editable.min.js" %}"></script>
+                <!-- JS Implementing Plugins -->                           <script type="text/javascript" src="{%static "assets/plugins/back-to-top.js" %}"></script>
                 <!-- JS Customization -->
                 <script type="text/javascript" src="{%static "assets/js/custom.js" %}"></script>
                 <!-- JS Page Level -->           

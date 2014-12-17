@@ -8,7 +8,8 @@ import json
 from django.views.generic import CreateView,UpdateView
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from registration import signals
 from registration.models import RegistrationProfile
@@ -55,7 +56,9 @@ class UserUpdateView(UpdateView):
         dd=Event.objects.filter(registrations__owner=self.request.user)
         context['not_registered_list'] = Event.objects.exclude(id__in = [event.id for event in dd] )
         return context
-
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(UserUpdateView, self).dispatch(*args, **kwargs)
 
 
 

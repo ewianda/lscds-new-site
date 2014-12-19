@@ -36,7 +36,7 @@ skip_files:
 - ^(env/.*)$
 - ^(dev/.*)$
 - ^(sqlite3.db)$
-
+- ^(fixtures/.*)$
 - ^(.*/)?\.sh$
 - ^(.*/)?\.json$
 - ^(.*/)?\.db$

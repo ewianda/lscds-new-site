@@ -37,12 +37,6 @@ class UserUpdateView(UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
     def post(self, request, *args, **kwargs):
-        print self.request.POST
-
-        if self.request.is_ajax() and self.request.POST.get('pk',None):
-           print self.request.POST
-
-
         if self.request.is_ajax() and self.request.POST.get('event_id',None):
              event_id= self.request.POST.get('event_id',None)
              registration,create = Registration.objects.get_or_create(owner=self.request.user,event=Event(pk=event_id))
@@ -109,7 +103,6 @@ class LSCDSRegistrationView(RegistrationView):
         # example username and id fields. It's also possible to disable update
         # on fields defined in SOCIAL_AUTH_PROTECTED_FIELDS.
         for name, value in cleaned_data.items():
-            print value
             if not hasattr(new_user, name):
                 continue
             current_value = getattr(new_user, name, None)

@@ -57,8 +57,10 @@ class LscdsUserAdmin(UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     fieldsets = (
-        (None, {'fields': ('email', 'password','university',)}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name')}),
+        (None, {'fields': ('email', 'password',)}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name','gender',)}),
+        (_('Academic info'), {'fields': ('university', 'faculty', 'department','degree','status',)}),
+
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),

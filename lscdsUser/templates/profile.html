@@ -15,7 +15,7 @@
 <div class='row'>
 <div class='col-md-6'>
 <legend>Your profile</legend>
-            
+                <div id="msg" class="alert hide"></div>
 
 <table id="user" class="table table-bordered table-striped">
     <tbody> 
@@ -30,13 +30,16 @@
 {% if field|is_select %}
     <td style="width: 100px">     {{ field.errors }}
         {{ field.label_tag }}</td>
-    <td> <a href="#" class="myeditable" data-type="select" data-name="{{field.name}}" data-source ='{{field|select_options}}'>{{ field|value_text}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
-{% elif field|is_checkbox %}
-  <td style="width: 100px">     {{ field.errors }}
-        {{ field.label_tag }}</td>
+    <td> <a href="#" class="myeditable" data-pk={{user.pk}} data-value={{field.value}}  data-type="select" data-name="{{field.name}}" data-source ='{{field|select_options}}'>{{ field|value_text}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
 
-<td class="myeditable" > {{field}}</td>
+{% elif field|is_checkbox %}
+ <td style="width: 100px">     {{ field.errors }}
+        {{ field.label_tag }}</td>
+    <td> <a href="#" class="myeditable" data-pk={{user.pk}}  data-type="select" data-value={{field.value}}  data-name="{{field.name}}" data-source ='[{value:"True","text":"Yes"},{value:"False","text":"No"}]'>{{ field}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
+
+
 {% else %}
+
 {% endif %}
 
  </tr> 
@@ -45,10 +48,6 @@
 
 </tbody>
 </table>
-<div>
-    <button id="save-btn" class="btn btn-primary">Update Profile</button>
- </div>
-
 
 
 </div> <!-- End of col-6  -->
@@ -127,10 +126,22 @@ success: function(data)
 $.fn.editable.defaults.mode = 'inline';
 $('.myeditable').editable({
 placement: 'right',
+url:'/profile/', 
 validate: function(v) {
    if(!v) return 'Required field!';
-   }
-   });
+   },
+params: function(params) {
+//originally params contain pk, name and value
+newParams = {}
+$('a.myeditable').each(function(){
+  newParams[$(this).attr('data-name')]=$(this).attr('data-value')                     
+  })
+newParams[params.name]=params.value
+newParams.pk = params.pk;
+    return newParams;
+}   
+   
+});// End editable
 
 $('.icon-pencil').click(function(e){    
        e.stopPropagation();
@@ -145,21 +156,31 @@ $('.icon-pencil').click(function(e){
         $('.icon-pencil').show();
         }) 
 
-
-//create new user
-$('#save-btn').click(function() {
-                     var data=[]
-var array = {}
-
-                     $('a.myeditable').each(function(){
-
-                                            array[$(this).attr('data-name')]=$(this).text()
-                                            data.push(array)      
-                                                                                   })  
-     console.log(JSON.stringify(array))
-
-
-}); 
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (settings.type == 'POST' || settings.type == 'PUT' || settings.type == 'DELETE') {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    }
+});
 
  }); // End of doccument ready
                        </script>

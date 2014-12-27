@@ -8,3 +8,4 @@ lscd_user
 local_settings.py
 dev
 env
+*.sh

@@ -1,8 +1,11 @@
 # Django settings for lscds_site project.
 
 import os,sys 
+<<<<<<< HEAD
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+=======
+>>>>>>> e52b3bf76a7e1668ec1d7c47cc26da9b90940e0c
 SETTINGS_DIR = os.path.dirname(__file__)
 PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
@@ -107,6 +110,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'zinnia.context_processors.version',
     "home.context_processors.latest",
+    'django.core.context_processors.debug',
 
 )
 

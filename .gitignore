@@ -9,4 +9,7 @@ lscd_user
 dev
 env
 *.sh
+<<<<<<< HEAD
 
+=======
+>>>>>>> e52b3bf76a7e1668ec1d7c47cc26da9b90940e0c

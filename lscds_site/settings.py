@@ -1,8 +1,6 @@
 # Django settings for lscds_site project.
 
 import os,sys 
-DEBUG =True
-TEMPLATE_DEBUG = DEBUG
 SETTINGS_DIR = os.path.dirname(__file__)
 PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
@@ -107,6 +105,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'zinnia.context_processors.version',
     "home.context_processors.latest",
+    'django.core.context_processors.debug',
 
 )
 
@@ -348,6 +347,6 @@ LOGGING = {
 }
 
 try:
-    from local_setting import *
+    from local_settings import *
 except ImportError:
     pass

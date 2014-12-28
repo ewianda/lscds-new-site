@@ -36,4 +36,23 @@
     {% endif %}
 </div>
 
+{% regroup object_list by date_added|date:"Y" as points_by_year %}
+<div class="entry-content">
+    {% for year_points in points_by_year %}
+    <table>
+        <caption>
+            <a href="{% url 'pl-gallery-archive-year' year_points.grouper   %}">{{year_points.grouper}} </a>
+        </caption>
+        {% regroup year_points.list by date_added|date:"M" as points_by_month %}
+        {% for month_points in points_by_month %}
+        <tr>
+            <td>
+                <p> <a href="{% url 'pl-gallery-archive-month' year_points.grouper month_points.grouper  %}">{{month_points.grouper}} </a></p>
+               </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+</div>
+
 {% endblock %}

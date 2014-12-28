@@ -1,27 +1,66 @@
 {% extends "photologue/root.html" %}
 {% load url from future %}
+ {% load future %}
+            {% load staticfiles %}
+            {% load static %}
+            {% load i18n %}
 
 {% block title %}Latest Photo Galleries{% endblock %}
+{% block css %}
+
+<link rel="stylesheet" href="{% static "css/jquery.fancybox.css " %}">
+<style>.hidden {
+    display: none;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 
-<h1>Latest Photo Galleries</h1>
-<div class='row'>
-{% if latest %}
-    {% for gallery in latest %}
-    <div class="container photo-gallery">
-        <h2><a href="{{ gallery.get_absolute_url }}">{{ gallery.title }}</a></h2>
-        {% for photo in gallery.sample %}
-        <div class="col-xs-2 gallery-photo">
-            <a href="{{ photo.get_absolute_url }}"><img src="{{ photo.get_thumbnail_url }}" class="{% block gallery-photo-class %}{% endblock %}" alt="{{ photo.title }}"/></a>
-        </div>
+<h2><a href="{% url 'pl-gallery-list' 1 %}" class="btn btn-primary">View all galleries.</a></h2>
+  <!--=== Content Part ===-->
+<div class="container content">				
+<div class="gallery-page">
+    {% if latest %}
+ <div class="row margin-bottom-20">
+    
+{% for gallery in latest %}
+<div class="col-md-3 col-sm-6">
+
+{% with gallery.public|first as image %}
+
+<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 1" href="{{image.get_display_url }}">
+        <img src="{{image.get_thumbnail_url }}" alt=""/>
+    </a>
+{% endwith %}
+
+     <div class="hidden">
+   {% for photo in gallery.public %}
+   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 2" href="{{ photo.get_display_url }}">
+          <img src="{{ photo.get_thumbnail_url }}" alt=""/></a>
         {% endfor %}
     </div>
-    {% endfor %}
-{% else %}
+     </div>
+
+ {% endfor %}
+ {% else %}
+
+
     <p>No galleries were found.</p>
-{% endif %}
-</div>
-<h2><a href="{% url 'pl-gallery-list' 1 %}" class="btn btn-primary">View all galleries.</a></h2>
+    {% endif %}
+       </div>
+
+  </div>
+  </div>
+
+
+
+  {% endblock %}
+
+
+  {% block javascript %}
+<script>
+</script>
 
 {% endblock %}
+

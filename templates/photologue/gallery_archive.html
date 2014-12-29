@@ -1,6 +1,6 @@
 {% extends "photologue/root.html" %}
 {% load url from future %}
- {% load future %}
+{% load future %}
             {% load staticfiles %}
             {% load static %}
             {% load i18n %}
@@ -17,9 +17,9 @@
 
 {% block content %}
 
-<h2><a href="{% url 'pl-gallery-list' 1 %}" class="btn btn-primary">View all galleries.</a></h2>
+
   <!--=== Content Part ===-->
-<div class="container content">				
+		
 <div class="gallery-page">
     {% if latest %}
  <div class="row margin-bottom-20">
@@ -50,10 +50,37 @@
     {% endif %}
        </div>
 
-  </div>
-  </div>
+   </div>
 
+     <!--=== Content Part ===-->
 
+  {% endblock %}
+
+{% block side_bar %} 
+
+Gallery Archieve
+  {% if latest %}
+
+{% regroup latest by date_added|date:"Y" as points_by_year %}
+<div class="entry-content">
+    {% for year_points in points_by_year %}
+    <table class='table'>
+        <caption>
+            {{year_points.grouper}}
+        </caption>
+        {% regroup year_points.list by date_added|date:"M" as points_by_month %}
+        {% for month_points in points_by_month %}
+        <tr>
+            <td>
+                <p> <a href="{% url 'pl-gallery-archive-month' year_points.grouper month_points.grouper  %}">{{month_points.grouper}} </a></p>
+               </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+</div>
+
+{% endif %}
 
   {% endblock %}
 

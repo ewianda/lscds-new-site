@@ -1,27 +1,59 @@
 {% extends "photologue/root.html" %}
 {% load url from future %}
+            {% load staticfiles %}
+            {% load static %}
+            {% load i18n %}
 
 {% block title %}Galleries for {{ month|date:"F Y" }}{% endblock %}
 
 {% block content %}
 
-<h1>Galleries for {{ month|date:"F Y" }}</h1>
+<link rel="stylesheet" href="{% static "css/jquery.fancybox.css " %}">
+  <!--=== Content Part ===-->
 
-{% if object_list %}
-    {% for gallery in object_list %}
-    <div class="photo-gallery">
-        <h2>{{ gallery.title }}</h2>
-        {% for photo in gallery.sample %}
-        <div class="gallery-photo">
-            <a href="{{ photo.get_absolute_url }}"><img src="{{ photo.get_thumbnail_url }}" alt="{{ photo.title }}"/></a>
-        </div>
+<h1>Galleries for {{ month|date:"F Y" }}</h1>
+		
+<div class="gallery-page">
+    {% if object_list %}
+ <div class="row margin-bottom-20">
+    
+{% for gallery in object_list %}
+<div class="col-md-3 col-sm-6">
+
+{% with gallery.public|first as image %}
+
+<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 1" href="{{image.get_display_url }}">
+        <img src="{{image.get_thumbnail_url }}" alt=""/>
+    </a>
+{% endwith %}
+
+     <div class="hidden">
+   {% for photo in gallery.public %}
+   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 2" href="{{ photo.get_display_url }}">
+          <img src="{{ photo.get_thumbnail_url }}" alt=""/></a>
         {% endfor %}
     </div>
-    {% endfor %}
-{% else %}
-    <p>No galleries were found.</p>
-{% endif %}
+     </div>
 
-<p><a href="{% url 'pl-gallery-list' 1 %}">View all galleries.</a></p>
+ {% endfor %}
+ {% else %}
+
+
+    <p>No galleries were found.</p>
+    {% endif %}
+       </div>
+
+   </div>
+
+     <!--=== Content Part ===-->
+
 
 {% endblock %}
+
+
+{% block side_bar %} 
+
+
+<h2><a href="{% url 'pl-photologue-root' %}" class="btn btn-primary">View all galleries.</a></h2>
+{% endblock %}
+

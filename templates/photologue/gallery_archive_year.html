@@ -1,6 +1,7 @@
 {% extends "photologue/root.html" %}
 {% load url from future %}
 
+
 {% block title %}Galleries for {{ year }}{% endblock %}
 
 {% block content %}
@@ -12,6 +13,63 @@
 {% endfor %}
 </ul>
 
+<h1>All Articles for {{ year|date:"Y" }}</h1>
+    {% for obj in object_list %}
+        <p>
+            {{ obj.title }} - {{ obj.date_added|date:"F j, Y" }}
+        </p>
+    {% endfor %}
+
+
+<h1>Galleries for {{ year|date:"F Y" }}</h1>
+
+{% if object_list %}
+    {% for gallery in object_list %}
+    <div class="photo-gallery">
+        <h2>{{ gallery.title }}</h2>
+        {% for photo in gallery.sample %}
+        <div class="gallery-photo">
+            <a href="{{ photo.get_absolute_url }}"><img src="{{ photo.get_thumbnail_url }}" alt="{{ photo.title }}"/></a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No galleries were found.</p>
+{% endif %}
+
 <p><a href="{% url 'pl-gallery-list' 1 %}">View all galleries.</a></p>
 
+
+
+<p><a href="{% url 'pl-gallery-list' 1 %}">View all galleries.</a></p> 
 {% endblock %}
+
+
+{% block side_bar %} 
+
+  {% if object_list %}
+{% regroup object_list by date_added|date:"Y" as points_by_year %}
+<div class="entry-content">
+    {% for year_points in points_by_year %}
+    <table>
+        <caption>
+            <a href="{% url 'pl-gallery-archive-year' year_points.grouper   %}">{{year_points.grouper}} </a>
+        </caption>
+        {% regroup year_points.list by date_added|date:"M" as points_by_month %}
+        {% for month_points in points_by_month %}
+        <tr>
+            <td>
+                <p> <a href="{% url 'pl-gallery-archive-month' year_points.grouper month_points.grouper  %}">{{month_points.grouper}} </a></p>
+               </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+

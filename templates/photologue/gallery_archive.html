@@ -9,8 +9,13 @@
 {% block css %}
 
 <link rel="stylesheet" href="{% static "css/jquery.fancybox.css " %}">
-<style>.hidden {
+<style>
+    .hidden {
     display: none;
+}
+.fancybox-title {
+    padding: 0 0 10px 0;
+    font-weight:bold;
 }
 </style>
 {% endblock %}
@@ -26,17 +31,18 @@
     
 {% for gallery in latest %}
 <div class="col-md-3 col-sm-6">
+<p> {{gallery}} </p>
 
 {% with gallery.public|first as image %}
 
-<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 1" href="{{image.get_display_url }}">
+<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="{{gallery}}" href="{{image.get_display_url }}">
         <img src="{{image.get_thumbnail_url }}" alt=""/>
     </a>
 {% endwith %}
 
      <div class="hidden">
    {% for photo in gallery.public %}
-   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 2" href="{{ photo.get_display_url }}">
+   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="{{gallery}}-{{photo}}" href="{{ photo.get_display_url }}">
           <img src="{{ photo.get_thumbnail_url }}" alt=""/></a>
         {% endfor %}
     </div>
@@ -58,36 +64,45 @@
 
 {% block side_bar %} 
 
-Gallery Archieve
+<p> <font  "size=2"> Gallery Archieve </font> </p>
+
+
+
   {% if latest %}
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 
 {% regroup latest by date_added|date:"Y" as points_by_year %}
-<div class="entry-content">
     {% for year_points in points_by_year %}
-    <table class='table'>
-        <caption>
-            {{year_points.grouper}}
-        </caption>
-        {% regroup year_points.list by date_added|date:"M" as points_by_month %}
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingOne">
+      <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{year_points.grouper}}" aria-expanded="true" aria-controls="collapseOne">
+              {{year_points.grouper}}-Galleries
+          </a>
+      </h4>
+    </div>
+    <div id="collapse{{year_points.grouper}}" class="panel-collapse collapse {% if forloop.first %} in {% endif %}" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+             {% regroup year_points.list by date_added|date:"M" as points_by_month %}
         {% for month_points in points_by_month %}
-        <tr>
-            <td>
-                <p> <a href="{% url 'pl-gallery-archive-month' year_points.grouper month_points.grouper  %}">{{month_points.grouper}} </a></p>
-               </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endfor %}
+          <p> <a href="{% url 'pl-gallery-archive-month' year_points.grouper month_points.grouper  %}">{{month_points.grouper}} Galleries</a></p>
+
+ {% endfor %}
+
+
 </div>
+    </div>
+  </div>
+ {% endfor %}
+  </div>
 
 {% endif %}
+
+
+
 
   {% endblock %}
 
 
-  {% block javascript %}
-<script>
-</script>
-
-{% endblock %}
-
+ 

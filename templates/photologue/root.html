@@ -18,4 +18,26 @@
 
     </div>
 
- {% endblock %}
+
+    {% endblock %}
+
+     {% block javascript %}
+  <script>
+       $(".fancybox").fancybox({
+                type: "image",
+                padding : 0,
+                helpers : {
+                             title: {
+                             type: 'inside',
+                             position: 'top'
+                                    }
+                          },  
+                nextEffect: 'fade',
+                prevEffect: 'fade'
+    }); 
+
+
+</script>
+
+{% endblock %}
+

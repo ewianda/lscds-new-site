@@ -7,6 +7,14 @@
 {% block title %}Galleries for {{ month|date:"F Y" }}{% endblock %}
 
 {% block content %}
+<style>
+    .hidden {
+    display: none;
+}
+.fancybox-title {
+    padding: 0 0 10px 0;
+}
+</style>
 
 <link rel="stylesheet" href="{% static "css/jquery.fancybox.css " %}">
   <!--=== Content Part ===-->
@@ -21,15 +29,15 @@
 <div class="col-md-3 col-sm-6">
 
 {% with gallery.public|first as image %}
-
-<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 1" href="{{image.get_display_url }}">
+<p> {{gallery}} </p>
+<a class="fancybox thumbnail" rel="gallery{{gallery}}" title="{{gallery}}" href="{{image.get_display_url }}">
         <img src="{{image.get_thumbnail_url }}" alt=""/>
     </a>
 {% endwith %}
 
      <div class="hidden">
    {% for photo in gallery.public %}
-   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="Gallery 1 - 2" href="{{ photo.get_display_url }}">
+   <a class="fancybox thumbnail" rel="gallery{{gallery}}" title="{{gallery}}-{{photo}}" href="{{ photo.get_display_url }}">
           <img src="{{ photo.get_thumbnail_url }}" alt=""/></a>
         {% endfor %}
     </div>

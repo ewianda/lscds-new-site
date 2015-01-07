@@ -13,8 +13,10 @@ from ckeditor.fields import RichTextField
 User=UserModel()
 UPLOAD_TO = getattr(settings, 'PRESENTERS_UPLOAD_TO', 'presenters')
 class EventType(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255,unique=True)
+    location = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
+    slug = models.SlugField(max_length=40)
     def get_events(self):
         return self.event_type.select_related()
     

@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from event.views import EventMonthArchiveView,EventArchiveIndexView,EventTypeListView,EventTypeDetailView
 
 urlpatterns = patterns('',
-    url(r'^(?P<pk>\d+)/$', EventTypeDetailView.as_view(), name='event-detail'),
+    url(r'^(?P<slug>[\w-]+)/$', EventTypeDetailView.as_view(), name='event-detail'),
     url(r'^$', EventTypeListView.as_view(), name='event-list'),
     url(r'^archive/$',
        EventArchiveIndexView.as_view(),

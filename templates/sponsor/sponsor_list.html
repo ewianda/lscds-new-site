@@ -1,16 +1,32 @@
 {% extends 'base_sidebar.html' %}
 {% load staticfiles %}
 {% load static %}
-{% block main_sidebar %}
-{% for sponsor in object_list %}
-<h3><a href = "{{ sponsor.url }}">  <strong> {{ sponsor.name }}</strong>  </a></h3>
+{% block title %} LSCDS | Sponsors {% endblock %}
 
-{{ sponsor.description |safe }}
-{% if sponsor.image %}
-<img src="{{sponsor.image.url}}" class="img-responsive" alt="{{sponsor.name}}">
-{% endif %}
+{% block main_sidebar %}
+ <link rel="stylesheet" href="{%static "assets/css/pages/page_clients.css" %}">
+
+{% for sponsor in object_list %}
+ <!-- Clients Block-->
+                <div class="row clients-page">
+                    <div class="col-md-2">
+                        {% if sponsor.image %}
+                          <img src="{{sponsor.image.url}}" class="img-responsive" alt="{{sponsor.name}}">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-10">
+                        <h3>{{sponsor.name}}</h3>
+                        <ul class="list-inline">
+                            <li><i class="fa fa-map-marker color-green"></i> Europe</li>
+                            <li><i class="fa fa-globe color-green"></i> <a class="linked" href="{{ sponsor.url }}">{{ sponsor.url }}</a></li>
+                            <li><i class="fa fa-briefcase color-green"></i> Web Design &amp; HTML/CSS</li>
+                        </ul>
+                        <p>{{ sponsor.description |safe }}
+                   </div>
+                </div>
+                <!-- End Clients Block-->
 {% empty %}
-    <li>No articles yet.</li>
+    <li>No sponsors</li>
 {% endfor %}
 
 

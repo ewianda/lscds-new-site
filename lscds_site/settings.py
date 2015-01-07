@@ -188,7 +188,7 @@ CKEDITOR_CONFIGS = {
 APPENGINE_TOOLKIT = {
     # other settings here
  'APP_YAML': os.path.join(PROJECT_PATH, 'app.yaml'),
-    'BUCKET_NAME': 'lscds-new-site.appspot.com',
+    'BUCKET_NAME': 'lscds-new-site-v2.appspot.com',
 }
 
 IMAGEKIT_DEFAULT_FILE_STORAGE= 'appengine_toolkit.storage.GoogleCloudStorage'

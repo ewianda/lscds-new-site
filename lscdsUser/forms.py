@@ -1,7 +1,7 @@
 from lscdsUser.models import LscdsUser
 from django import forms
 from django.forms.models import inlineformset_factory
-from event.models import Registration
+from event.models import Registration,RoundTable
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit,Field,Div
 from form_utils.forms import BetterModelForm
@@ -120,4 +120,30 @@ class UserProfileForm(BetterModelForm):
 
 
 RegistrationFormSet = inlineformset_factory(LscdsUser, Registration)
+from django.forms import ModelChoiceField
+
+
+class MyModelChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%s, ( %s spots left)" % (obj.guest, obj.get_spots)
+
+
+class NetWorkForm(forms.Form):
+     round_table_1 = MyModelChoiceField(RoundTable.objects.all())
+     round_table_2 = MyModelChoiceField(RoundTable.objects.all())
+     event = forms.CharField(widget=forms.HiddenInput())
+     event_id = forms.CharField(widget=forms.HiddenInput())
+
+     def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('round_table_registration', 'Register'))
+        super(NetWorkForm, self).__init__(*args, **kwargs)
+     def clean_round_table_2(self):
+        # Check that the two password entries match
+        round_table_1 = self.cleaned_data.get("round_table_1")
+        round_table_2 = self.cleaned_data.get("round_table_2")
+        if round_table_1 and  round_table_2  and round_table_1 == round_table_2:
+            raise forms.ValidationError("You must select different guest speakers")
+        return round_table_2
 

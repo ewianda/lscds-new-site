@@ -1,8 +1,6 @@
 # Django settings for lscds_site project.
 
 import os,sys 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 SETTINGS_DIR = os.path.dirname(__file__)
 PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
@@ -188,7 +186,7 @@ CKEDITOR_CONFIGS = {
 APPENGINE_TOOLKIT = {
     # other settings here
  'APP_YAML': os.path.join(PROJECT_PATH, 'app.yaml'),
-    'BUCKET_NAME': 'lscds-new-site-v2.appspot.com',
+    'BUCKET_NAME': 'lscds-new-site-v2',
 }
 
 IMAGEKIT_DEFAULT_FILE_STORAGE= 'appengine_toolkit.storage.GoogleCloudStorage'
@@ -227,7 +225,7 @@ SEND_ACTIVATION_EMAIL = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/profile'
+LOGIN_REDIRECT_URL = '/profile-event'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'

@@ -1,0 +1,13 @@
+{% extends "profile.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% load form_utils %}
+{% load lscds_tags %}
+{% block profile_block %}
+  <legend> Round table registration for {{form.event.value}}</legend>
+<div class='col-md-6 col-md-offset-2'>
+{% crispy form %}
+</div>
+{% endblock %}
+

@@ -108,7 +108,7 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         # The user is identified by their email address
-        return self.email
+        return u'%s %s ' % (self.first_name,self.last_name)
 
     def get_short_name(self):
         # The user is identified by their email address

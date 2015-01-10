@@ -106,7 +106,7 @@
                                             <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
                                               {% if user.is_authenticated %}
                                             <li> <a href="{% url 'auth_logout' %}?next=/">{% trans "Log Out" %}</a></li>
-                                            <li><a href="{% url 'profile' %}">My Account</a></li>
+                                            <li><a href="{% url 'profile-event' %}">My Account</a></li>
                                                {% else %}
                                             <li><a href="{% url 'auth_login' %}">{% trans "Log In" %}</a></li>
                                         {% endif %}
@@ -334,16 +334,8 @@
                 <script type="text/javascript" src="{%static "assets/plugins/bootstrap/js/bootstrap.min.js" %}"></script> 
                 <script type="text/javascript" src="{%static "assets/plugins/flexslider/jquery.flexslider-min.js" %}"></script>
                 <script type="text/javascript" src="{%static "editable/js/bootstrap-editable.min.js" %}"></script>
-                <!-- JS Implementing Plugins -->                           <script type="text/javascript" src="{%static "assets/plugins/back-to-top.js" %}"></script>
-
-
-                <script type="text/javascript" src="{% static "assets/plugins/jquery/jquery.min.js" %}"></script>
-                <script type="text/javascript" src="{% static "assets/plugins/jquery/jquery-migrate.min.js" %}"></script>
-                <script type="text/javascript" src="{% static "assets/plugins/bootstrap/js/bootstrap.min.js" %}"></script> 
-                <script type="text/javascript" src="{% static "assets/plugins/flexslider/jquery.flexslider-min.js" %}"></script>
-                     <script type="text/javascript" src="{% static "js/jquery.fancybox.js" %}"></script>
-
-                <!-- JS Implementing Plugins -->           
+                <!-- JS Implementing Plugins -->       
+               <script type="text/javascript" src="{% static "js/jquery.fancybox.js" %}"></script>
                 <script type="text/javascript" src="{%static "assets/plugins/back-to-top.js" %}"></script>
                 <!-- JS Customization -->
                 <script type="text/javascript" src="{%static "assets/js/custom.js" %}"></script>

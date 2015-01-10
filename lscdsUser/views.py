@@ -3,9 +3,9 @@ from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
 from django.shortcuts import render_to_response,redirect,render
 from django.conf import settings
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse,HttpResponsePermanentRedirect
 import json
-from django.views.generic import CreateView,UpdateView
+from django.views.generic import CreateView,UpdateView,DeleteView
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
@@ -13,8 +13,8 @@ from django.utils.decorators import method_decorator
 
 from registration import signals
 from registration.models import RegistrationProfile
-from registration.backends.default.views import RegistrationView
-from lscdsUser.forms import UserCreationForm,SocialExtraDataForm,UserProfileForm,RegistrationFormSet
+from registration.backends.default.views import RegistrationView,ActivationView
+from lscdsUser.forms import UserCreationForm,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,NetWorkForm
 from lscdsUser.models import LscdsUser
 from event.models import EventType,Registration,Event
 from lscds_site.decorators import render_to
@@ -25,6 +25,53 @@ from social.backends.utils import load_backends
 from social.apps.django_app.utils import psa
 
 
+
+
+@login_required
+def event_view(request):
+    registered_list = Registration.objects.filter(owner=request.user)
+    dd=Event.objects.filter(registrations__owner=request.user)
+    not_registered_list = Event.objects.exclude(id__in = [event.id for event in dd] )
+    context = {'registered_list':registered_list,'not_registered_list':not_registered_list }
+    return render(request, 'profile-event.html', context) 
+
+
+@login_required
+def registration_view(request):
+    if 'round_table_registration' in request.POST:
+          form=NetWorkForm(request.POST)
+          if form.is_valid():
+               return HttpResponsePermanentRedirect(reverse('profile-event'))
+          else:
+              return render(request, 'profile-event-registration.html', {'form':form}) 
+
+
+    if request.POST and request.POST.get('event_id',None): 
+       event_id= request.POST.get('event_id')
+       event=Event.objects.get(pk=event_id)
+       round_table = event.get_round_table()
+       if event.get_round_table:
+           form=NetWorkForm(initial={'event':event,'event_id':event.id})
+           # Add round table choices for this particular event
+           form.fields['round_table_1'].queryset = round_table
+           form.fields['round_table_2'].queryset = round_table
+           
+           return render(request, 'profile-event-registration.html', {'form':form,'event':event}) 
+       else:    
+           registration,create = Registration.objects.get_or_create(owner=request.user,event=Event(pk=event_id))
+           if create:
+               registration.save()
+           else:
+               registration.delete()
+       return HttpResponsePermanentRedirect(reverse('profile-event'))
+    else:
+       return HttpResponsePermanentRedirect(reverse('profile-event'))
+
+
+
+
+
+
 class UserUpdateView(UpdateView):
     """
     Class that only allows authentic user to update their profile
@@ -32,21 +79,11 @@ class UserUpdateView(UpdateView):
     """
     model = LscdsUser
     form_class = UserProfileForm
-    template_name = "profile.html"
+    template_name = "profile-settings.html"
     success_url = "."
     def get_object(self, queryset=None):
         return self.request.user
-    def post(self, request, *args, **kwargs):
-        if self.request.is_ajax() and self.request.POST.get('event_id',None):
-             event_id= self.request.POST.get('event_id',None)
-             registration,create = Registration.objects.get_or_create(owner=self.request.user,event=Event(pk=event_id))
-             if create:
-                 registration.save()
-             else:
-                 registration.delete()
-             return HttpResponse(json.dumps("success"),mimetype="application/json")
-        return super(UserUpdateView, self).post(request, *args, **kwargs)
-
+   
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(UserUpdateView, self).get_context_data(**kwargs)
@@ -59,6 +96,10 @@ class UserUpdateView(UpdateView):
     def dispatch(self, *args, **kwargs):
         return super(UserUpdateView, self).dispatch(*args, **kwargs)
 
+
+class LSCDSActivationView(ActivationView):
+    def get_success_url(self, request, user):
+        return ('profile', (), {})
 
 
 class LSCDSRegistrationView(RegistrationView):

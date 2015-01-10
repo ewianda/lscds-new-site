@@ -8,7 +8,6 @@ from django.core.urlresolvers import reverse
 
 from registration.users import UserModel, UserModelString
 from ckeditor.fields import RichTextField
-from address.models import AddressField
 
 User=UserModel()
 UPLOAD_TO = getattr(settings, 'PRESENTERS_UPLOAD_TO', 'presenters')

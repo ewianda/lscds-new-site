@@ -125,7 +125,7 @@ from django.forms import ModelChoiceField
 
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        return "%s, ( %s spots left)" % (obj.guest, obj.get_spots)
+        return " Guest (%s) , ( %s spots left)" % (obj.guest, obj.get_spots)
 
 
 class NetWorkForm(forms.Form):

@@ -6,54 +6,110 @@
 {% load lscds_tags %}
 {% block profile_block %}
 
-<div class='col-md-8'>
-<div class='col-md-6'>
+<div class='col-md-10'>
+    <div class = 'row'>
+<legend>Network Reception</legend>
 
-    <legend>Your event registrations</legend>
+        <div class='col-md-6'>
 
- <form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
-     <table  class='table table-bordered table-striped'>
-         <tbody> 
-{% for event in  registered_list %}
+            <legend>Your event registrations</legend>
 
-             <tr>  <td>  <strong>{{event.event.name}} </strong> {% csrf_token %}
-                   <input type="hidden" name="event_id" value="{{event.event.pk}}"> </td> 
-                   <td> <button type="submit" class="btn btn-default">Register</button></td>
-              </tr> 
-              {% empty %}
+            <form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
+                <table  class='table table-bordered table-striped'>
+                    <tbody> 
+                        {% for event in  nr_list %}
 
-    No event in this category
+                        <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+                                <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
+                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                        </tr> 
+                        {% empty %}
 
-    {% endfor %}
-  </tbody>
-  </table> 
-        </form>
+                        No event in this category
+
+                        {% endfor %}
+                    </tbody>
+                </table> 
+            </form>
 
 
-</div> <!-- End of col-6  -->
-<div class='col-md-6'>
-<legend>Upcoming events</legend>
-<form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
-     <table class='table table-bordered table-striped'>
-    <tbody> <tr>  
-{% for event in  not_registered_list %}
-  
-     <td>  <strong>{{event.name}} </strong> {% csrf_token %}
-      <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-     <td> <button type="submit" class="btn btn-default">Register</button></td>
-</tr> 
-    
+        </div> <!-- End of col-6  -->
+        <div class='col-md-6'>
+            <legend>Upcoming events</legend>
+            <form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
+                <table class='table table-bordered table-striped'>
+                    <tbody> <tr>  
+                            {% for event in  not_nr_list %}
 
-    {% empty %}
-    No event in this category
+                            <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+                                <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
+                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                        </tr> 
 
-    {% endfor %}
-  </tbody>
-  </table> 
-        </form>
 
-</div> <!-- End of col-6  -->
+                        {% empty %}
+                        No event in this category
 
-</div> <!-- End of col-6  -->
+                        {% endfor %}
+                    </tbody>
+                </table> 
+            </form>
+
+        </div> <!-- End of col-6  -->
+    </div> <!-- End of row  -->
+
+
+    <div class = 'row'>
+ <legend>Other Events</legend>
+
+        <div class='col-md-6'>
+
+            <legend>Your event registrations</legend>
+
+            <form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
+                <table  class='table table-bordered table-striped'>
+                    <tbody> 
+                        {% for event in  registered_list %}
+
+                        <tr>  <td>  <strong>{{event.event.name}} </strong> {% csrf_token %}
+                                <input type="hidden" name="event_id" value="{{event.event.pk}}"> </td> 
+                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                        </tr> 
+                        {% empty %}
+
+                        No event in this category
+
+                        {% endfor %}
+                    </tbody>
+                </table> 
+            </form>
+
+
+        </div> <!-- End of col-6  -->
+        <div class='col-md-6'>
+            <legend>Upcoming events</legend>
+            <form class="registration"  action="{% url 'profile-event-registration' %}" method="post">
+                <table class='table table-bordered table-striped'>
+                    <tbody> <tr>  
+                            {% for event in  not_registered_list %}
+
+                            <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+                                <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
+                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                        </tr> 
+
+
+                        {% empty %}
+                        No event in this category
+
+                        {% endfor %}
+                    </tbody>
+                </table> 
+            </form>
+
+        </div> <!-- End of col-6  -->
+
+    </div> <!-- End of row  -->
+</div> <!-- End of col-10  -->
 {% endblock %}
 

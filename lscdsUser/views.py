@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect,HttpResponse,HttpResponsePermanentR
 import json
 from django.views.generic import CreateView,UpdateView,DeleteView
 from django.core.urlresolvers import reverse
-from django.db.models import Q
+from django.db.models import Q,Count
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -16,7 +16,7 @@ from registration.models import RegistrationProfile
 from registration.backends.default.views import RegistrationView,ActivationView
 from lscdsUser.forms import UserCreationForm,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,NetWorkForm
 from lscdsUser.models import LscdsUser
-from event.models import EventType,Registration,Event
+from event.models import EventType,Registration,Event,RoundTable,RoundTableRegistration
 from lscds_site.decorators import render_to
 
 from social.backends.oauth import BaseOAuth1, BaseOAuth2
@@ -30,9 +30,12 @@ from social.apps.django_app.utils import psa
 @login_required
 def event_view(request):
     registered_list = Registration.objects.filter(owner=request.user)
+    nr_list=Event.objects.filter(event_round_table__round_table_registrations__student=request.user)
+    nr_list = nr_list.annotate(dcount=Count('event_type'))
     dd=Event.objects.filter(registrations__owner=request.user)
-    not_registered_list = Event.objects.exclude(id__in = [event.id for event in dd] )
-    context = {'registered_list':registered_list,'not_registered_list':not_registered_list }
+    not_registered_list = Event.objects.exclude(id__in = [event.id for event in dd]).exclude(event_type_id=1)
+    not_nr_list=Event.objects.filter(event_type_id=1).exclude(event_round_table__round_table_registrations__student=request.user)
+    context = {'registered_list':registered_list,'not_registered_list':not_registered_list,'nr_list':nr_list,'not_nr_list':not_nr_list}
     return render(request, 'profile-event.html', context) 
 
 
@@ -51,7 +54,13 @@ def registration_view(request):
        event=Event.objects.get(pk=event_id)
        round_table = event.get_round_table()
        if event.get_round_table:
-           form=NetWorkForm(initial={'event':event,'event_id':event.id})
+           nr_list=RoundTable.objects.filter(round_table_registrations__student=request.user,event_id=event_id)
+           print nr_list.values()
+           if nr_list:
+               initial={'event':event,'event_id':event.id ,'round_table_1':nr_list[0],'round_table_2':nr_list[1]}
+           else:
+               initial={'event':event,'event_id':event.id}
+           form=NetWorkForm(initial=initial)
            # Add round table choices for this particular event
            form.fields['round_table_1'].queryset = round_table
            form.fields['round_table_2'].queryset = round_table

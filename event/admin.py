@@ -54,5 +54,6 @@ admin.site.register(EventType, EventTypeAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(Presenter, PresenterAdmin)
 admin.site.register(RoundTable,RoundTableAdmin)
+admin.site.register(RoundTableRegistration)
 admin.site.register(Registration,RegistrationAdmin)
 

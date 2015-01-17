@@ -1,0 +1,29 @@
+{% extends 'base_sidebar.html' %}
+
+{% load staticfiles %}
+{% load static %}
+{% block main_sidebar %}
+
+
+<h2 style='margin-top:0px'> {{ object.name }}</h2>
+<div class = 'row' >
+<div class = 'col-md-6'>
+<P>Location: {{object.location}} </P>
+<P>Time: {{object.starts|date:'G:00'}} to {{object.starts|date:'G:00'}} </P>
+</div>
+<div class = 'col-md-6' >
+<a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+</div>
+
+</div>
+
+
+{% if object.event_type.name == "Network Reception" %}
+
+{% include "event/include/include_network_reception.html" %}
+
+{% endif %}
+<a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+{% endblock %}
+
+

@@ -1,0 +1,22 @@
+
+{% extends 'base_sidebar.html' %}
+
+{% load staticfiles %}
+{% load static %}
+{% block main_sidebar %}
+<div class='row'>
+<legend> Your Payment detals</legend>
+<table class="table table-bordered">
+<tbody>
+<tr>
+<td>Payment for</td><td>{{event.name}}</td>
+</tr>
+<tr><td>Amount</td><td>{{amount}}</td></tr>
+</tbody>
+</table>
+{{ form.render }}
+</div>
+
+
+{% endblock %}
+

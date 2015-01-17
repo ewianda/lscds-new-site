@@ -5,7 +5,7 @@
 
 
 <!-- Begin Content -->
-                        <div class="col-md-9">
+                        <div class="col-md-8">
 
                             {% block main_sidebar %} 
 
@@ -16,20 +16,19 @@
                         <!-- End Content -->
 
                         <!-- Begin Sidebar -->
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <!-- Magazine Posts -->
                             <div class="row margin-bottom-40">
                                 <div class="magazine-posts col-md-12 col-sm-6 margin-bottom-30">
-                                    {% if context_photos %}
-                                    <h3> Photos are here</h3>
-                                    {% else %}
-                                    <h3><a href="#">Up coming events</a></h3>
-                                    {% endif %}
-                                    <span><i class="color-blue">By htmlstream</i> / March 19, 2014</span>
-                                    <div class="magazine-posts-img">
-                                        <a href="#"><img class="img-responsive" src="{% static  "assets/img/main/10.jpg"  %}" alt=""></a>
-                                        <span class="magazine-badge magazine-badge-red">Unify</span>                                    
-                                    </div>
+                                    <h3> Our upcoming events</h3>
+                                    {% if context_event %}
+                                      {% for event in context_event%}
+                                       <span><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue"> {{event.name}}</a> / on {{event.starts|date:'M-d-o'}} @ {{event.starts|date:'P'}}</span>
+                                      {% empty %}
+                                    <font>No event at this time</font>
+                                    {% endfor %}
+                                    {% endif %}                           
+                                    
                                 </div>
                             </div>
                             <!-- End Magazine Posts -->
@@ -39,16 +38,14 @@
                                 <div class="headline headline-md"><h2>Quick Links</h2></div>
                                 <div class="row">
                                     <ul class="list-unstyled col-xs-6">
-                                        <li><a href="#">Revolution Slider</a></li>
-                                        <li><a href="#">Parralax Page</a></li>
-                                        <li><a href="#">Backgrounds</a></li>
-                                        <li><a href="#">Parralax Slider</a></li>
+                                        <li><a href="{% url 'sponsors:sponsor-list' %}">Sponsor</a> </li>
+                                        <li><a href="#">Resources</a> </li>
+                                        
                                     </ul>                        
                                     <ul class="list-unstyled col-xs-6">
-                                        <li><a href="#">50+ Valid Pages</a></li>
-                                        <li><a href="#">Layer Slider</a></li>
-                                        <li><a href="#">Bootstrap 2x</a></li>
-                                        <li><a href="#">Fixed Header</a></li>
+                                        <li> <a href="{% url 'event:event-list' %}">Our Events</a> </li>
+                                        <li><a href="{% url 'zinnia:entry_archive_index' %}">Our Blog</a></li>
+                                        
                                     </ul>                        
                                 </div>
                             </div>
@@ -67,7 +64,7 @@
                                 <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/7.jpg"  %}"></a></li>
                             </ul>
                             <!-- End Photo Stream -->
-
+                           <div class="headline"><h2>Latest blog</h2></div>   
                             <!-- Latest News -->
                             <div class="margin-bottom-40">
                                 <div class="magazine-mini-news">

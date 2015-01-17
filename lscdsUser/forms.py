@@ -135,10 +135,21 @@ class NetWorkForm(forms.Form):
      event_id = forms.CharField(widget=forms.HiddenInput())
 
      def __init__(self, *args, **kwargs):
+        event = kwargs.pop('event', None) 
+        super(NetWorkForm, self).__init__(*args, **kwargs)
+         # Bootstrap stuff for crispy forms
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('round_table_registration', 'Register'))
-        super(NetWorkForm, self).__init__(*args, **kwargs)
+        # Filter events for a given user
+        
+        if event:            
+           round_table = event.get_round_table()
+         # Add round table choices for this particular event
+           self.fields['round_table_1'].queryset = round_table
+           self.fields['round_table_2'].queryset = round_table
+        
+        
      def clean_round_table_2(self):
         # Check that the two password entries match
         round_table_1 = self.cleaned_data.get("round_table_1")

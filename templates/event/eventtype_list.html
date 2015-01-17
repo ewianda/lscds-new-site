@@ -8,7 +8,7 @@
 
 {% for event in object_list %}
 <h2><strong> {{ event.name }}</strong></h2>
-{{ event.description|truncatewords:30 |safe }} <a href="{% url 'event:event-detail' slug=event.slug %}"> More </a>
+{{ event.description|truncatewords:30 |safe }} <a href="{% url 'event:event-type-detail' slug=event.slug %}"> More </a>
 {% empty %}
     <li>No articles yet.</li>
 {% endfor %}

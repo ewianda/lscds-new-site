@@ -37,8 +37,7 @@ RELATIONSHIP_CHOICES = (
     ('Executive', 'Executive'),
     ('Guest', 'Guest'),
 )
-
-
+UHN_EMAILS = ['mail.utoronto.ca','sickkids.ca']
 
 
 class MyUserManager(BaseUserManager):
@@ -97,7 +96,7 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
     status =  models.CharField(max_length=40, choices=STATUS_CHOICES)
     avatar =  models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
         help_text=_('Used for illustration.'))
-    gender =  models.CharField(max_length=10, choices=GENDER_CHOICES)
+    gender =  models.CharField(max_length=10, choices=GENDER_CHOICES,default='Secret')
     service = models.CharField(max_length=30, blank=True)
 
 
@@ -126,5 +125,8 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+    def is_not_uhn_email(self):
+        return  self.email.split('@')[1] not in UHN_EMAILS
+
 
 

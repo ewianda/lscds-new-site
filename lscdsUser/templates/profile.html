@@ -10,7 +10,20 @@
 
 {% block main %}
 
+
 <h3>Hi {{user.get_full_name}}</h3>
+{% if user.is_not_uhn_email %}
+<div class='row margin-bottom-30  '>
+<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+Your record shows that you are not a student of the University of Toronto. 
+There is an event registration fee for none University of Toronto students
+Please verify your University of Toronto student status by
+verifying your UofT email</div>
+</div>
+{% endif%}
+
+
 
  <ul class="nav nav-justified nav-tabs">
      <li><a href="{% url 'profile-event' %}">Event Registration</a></li>

@@ -10,12 +10,14 @@ from registration.users import UserModel, UserModelString
 from ckeditor.fields import RichTextField
 
 User=UserModel()
+
+
 UPLOAD_TO = getattr(settings, 'PRESENTERS_UPLOAD_TO', 'presenters')
 class EventType(models.Model):
     name = models.CharField(max_length=255,unique=True)
     location = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
-    slug = models.SlugField(max_length=40)
+    slug = models.SlugField(max_length=100)
     def get_events(self):
         return self.event_type.select_related()
     
@@ -27,15 +29,17 @@ class Event(models.Model):
     event_type = models.ForeignKey(EventType, related_name='event_type')
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255, null=True, blank=True)
+    registration_start = models.DateTimeField()
+    registration_end = models.DateTimeField()
     starts = models.DateTimeField()
-    ends = models.DateTimeField()
+    ends = models.TimeField()
     registration_limit = models.PositiveSmallIntegerField(null=True,
             blank=True, default=0)
-    slug = models.SlugField(max_length=16, null=True, blank=True)
+    slug = models.SlugField(max_length=100)
     def get_talks(self):
         return self.event.select_related('presenter')
     def get_round_table(self):
-        return self.event_round_table
+        return self.event_round_table.all()
     def get_round_table_registration(self):
         return self.event.select_related('round_table_registrations') 
 
@@ -43,12 +47,14 @@ class Event(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('event:event-list',kwargs={'pk': self.pk})
+        return reverse('event:event-detail',kwargs={'pk': self.pk})
 
     @property
     def registration_open(self):
         return self.registration_limit == 0 or \
-            self.registrations.count() < self.registration_limit
+            self.registrations.count() < self.registration_limit and \
+            self.registration_start > timezone.now()
+
 
 
 class Presenter(models.Model):
@@ -60,6 +66,7 @@ class Presenter(models.Model):
         max_length=255)
     image = models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
         help_text=_('Used for illustration.'))
+    biography = RichTextField(blank=True, null=True)
     def __unicode__(self):
         return self.name
 
@@ -105,7 +112,6 @@ class RoundTable(models.Model):
     description = RichTextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True)
-    location = models.CharField(max_length=255)
     table_limit = models.PositiveSmallIntegerField()
     slug = models.SlugField(max_length=16, null=True, blank=True)
     @property
@@ -123,7 +129,13 @@ class RoundTableRegistration(models.Model):
           error_messages={'unique': u'You have already registered for this event'}  )
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True)
-    student =  models.ForeignKey(User, related_name='students')
+    student =  models.ForeignKey(User, related_name='my_round_table')
+    fee_option = models.ForeignKey(EventFee, related_name='+', null=True,
+            blank=True)
+    paid = models.BooleanField(default=False)
+    @property
+    def event(self):
+        return self.round_table.event
     class Meta:
         ordering = ('created',)
 

@@ -29,10 +29,6 @@ class EventArchiveIndexView(ArchiveIndexView):
 
 
 
-class EventMonthArchiveView(MonthArchiveView):
-    queryset = Event.objects.all()
-    date_field = "starts"
-    make_object_list = True
-    allow_future = True
-    paginate_by=3
-    template_name='event/event_archive.html', 
+class EventDetailView(DetailView):
+      model = Event
+

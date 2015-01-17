@@ -172,6 +172,7 @@ INSTALLED_APPS = (
     'tagging',
     #'autocomplete_light',
     'appengine_toolkit',
+ 'paypal.standard.ipn', 
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'

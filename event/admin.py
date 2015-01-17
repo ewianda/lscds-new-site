@@ -1,5 +1,5 @@
 from django.contrib import admin
-from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration)
+from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration,EventFee)
 
 
 
@@ -25,7 +25,11 @@ class RegistrationlineAdmin(admin.TabularInline):
 class RoundTablelineAdmin(admin.TabularInline):
     model = RoundTable
     extra = 0
-
+class EventFeelineAdmin(admin.TabularInline):
+    model =EventFee
+    extra = 1
+    
+    
 class EventTypeAdmin(admin.ModelAdmin):
     inlines = [
        EventlineAdmin
@@ -33,20 +37,26 @@ class EventTypeAdmin(admin.ModelAdmin):
 
 class EventAdmin(admin.ModelAdmin):
     inlines = [
-       RegistrationlineAdmin,TalklineAdmin,RoundTablelineAdmin
+     EventFeelineAdmin, RoundTablelineAdmin,RegistrationlineAdmin,TalklineAdmin
     ]
+    
 class PresenterAdmin(admin.ModelAdmin):
    pass
 
 class RegistrationAdmin(admin.ModelAdmin):
-   pass
+    list_display = ('owner','event', 'created')
+    list_filter = ['event']
+    search_fields = ['owner']
 
 
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
 
-
+class RoundTableRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('student','round_table', 'created','event')
+    list_filter = ['round_table','round_table__event']
+    search_fields = ['student']
 
 
 
@@ -54,6 +64,6 @@ admin.site.register(EventType, EventTypeAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(Presenter, PresenterAdmin)
 admin.site.register(RoundTable,RoundTableAdmin)
-admin.site.register(RoundTableRegistration)
+admin.site.register(RoundTableRegistration,RoundTableRegistrationAdmin)
 admin.site.register(Registration,RegistrationAdmin)
 

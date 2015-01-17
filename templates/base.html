@@ -125,7 +125,7 @@
                                     <div class="row">
 
                                         <div class="col-md-12">
-                                            <a href="% url 'home' %}"><img class="header-banner img-responsive" src="{%static "images/lscds-logo.jpg"%}" alt="Smiley face" height="200" ></a>
+                                            <a href="{% url 'home' %}"><img class="header-banner img-responsive" src="{%static "images/lscds-logo.jpg"%}" alt="Smiley face" height="200" ></a>
                                         </div>
                                     </div>    
                                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
@@ -183,7 +183,7 @@
                                         <ul class="dropdown-menu">
                                             {% if context_eventtype %}
                                             {% for ent in context_eventtype %}
-                                            <li><a href="{% url 'event:event-detail' slug=ent.slug %}">{{ent.name}}</a></li>
+                                            <li><a href="{% url 'event:event-type-detail' slug=ent.slug %}">{{ent.name}}</a></li>
                                            {% empty %}
                                                  <li><a href="#">Seminar series</a></li>
                                            {% endfor %}

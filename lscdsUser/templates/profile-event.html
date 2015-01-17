@@ -21,7 +21,7 @@
 
                         <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                            <td> <button type="submit" class="btn btn-default">Modify</button></td>
                         </tr> 
                         {% empty %}
 
@@ -73,7 +73,7 @@
 
                         <tr>  <td>  <strong>{{event.event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                            <td> <button type="submit" class="btn btn-default">Modify</button></td>
                         </tr> 
                         {% empty %}
 

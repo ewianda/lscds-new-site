@@ -1,9 +1,11 @@
 from event.models import Event,EventType
 from zinnia.models.entry import Entry
 from photologue.models import Gallery
+from django.utils import timezone
+
 def latest(request):
    try:
-         event= Event.objects.latest('starts')
+         event= Event.objects.filter(starts__gte = timezone.now())
    except Event.DoesNotExist:
         event = None
    try:

@@ -10,6 +10,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q,Count
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
 
 from registration import signals
 from registration.models import RegistrationProfile
@@ -26,9 +28,10 @@ from social.apps.django_app.utils import psa
 
 
 
-
+@csrf_exempt
 @login_required
 def event_view(request):
+    
     registered_list = Registration.objects.filter(owner=request.user)
     nr_list=Event.objects.filter(event_round_table__round_table_registrations__student=request.user)
     nr_list = nr_list.annotate(dcount=Count('event_type'))
@@ -41,30 +44,42 @@ def event_view(request):
 
 @login_required
 def registration_view(request):
+    # Round table registration for Network receptions only
     if 'round_table_registration' in request.POST:
-          form=NetWorkForm(request.POST)
-          if form.is_valid():
-               return HttpResponsePermanentRedirect(reverse('profile-event'))
-          else:
-              return render(request, 'profile-event-registration.html', {'form':form}) 
-
-
-    if request.POST and request.POST.get('event_id',None): 
        event_id= request.POST.get('event_id')
-       event=Event.objects.get(pk=event_id)
-       round_table = event.get_round_table()
+       event=Event.objects.get(pk=event_id) 
+       form=NetWorkForm(request.POST,event=event)
+       # check if user has paid for event
+       paid = request.user.my_round_table.all()
+       if paid:
+           paid=paid.filter(round_table__event_id=event_id)[0].paid 
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          round_table_1 = form.cleaned_data['round_table_1']
+          round_table_2 = form.cleaned_data['round_table_2']             
+          if request.user.is_not_uhn_email and not paid:   
+               request.session['event_id'] = event_id
+               request.session['round_table_1'] = round_table_1.pk        
+               request.session['round_table_2'] = round_table_2.pk  
+               return HttpResponsePermanentRedirect(reverse('paypal:payment'))             
+          rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_1)
+          rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
+          rt_1.save()
+          rt_2.save()
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form}) 
+
+    if request.POST and request.POST.get('event_id',None):      
+       event_id= request.POST.get('event_id')
+       event=Event.objects.get(pk=event_id)       
        if event.get_round_table:
            nr_list=RoundTable.objects.filter(round_table_registrations__student=request.user,event_id=event_id)
-           print nr_list.values()
            if nr_list:
                initial={'event':event,'event_id':event.id ,'round_table_1':nr_list[0],'round_table_2':nr_list[1]}
            else:
                initial={'event':event,'event_id':event.id}
-           form=NetWorkForm(initial=initial)
-           # Add round table choices for this particular event
-           form.fields['round_table_1'].queryset = round_table
-           form.fields['round_table_2'].queryset = round_table
-           
+           form=NetWorkForm(event=event,initial=initial)
            return render(request, 'profile-event-registration.html', {'form':form,'event':event}) 
        else:    
            registration,create = Registration.objects.get_or_create(owner=request.user,event=Event(pk=event_id))
@@ -75,11 +90,6 @@ def registration_view(request):
        return HttpResponsePermanentRedirect(reverse('profile-event'))
     else:
        return HttpResponsePermanentRedirect(reverse('profile-event'))
-
-
-
-
-
 
 class UserUpdateView(UpdateView):
     """
@@ -108,7 +118,7 @@ class UserUpdateView(UpdateView):
 
 class LSCDSActivationView(ActivationView):
     def get_success_url(self, request, user):
-        return ('profile', (), {})
+        return ('profile-event', (), {})
 
 
 class LSCDSRegistrationView(RegistrationView):

@@ -3,20 +3,15 @@ from collections import namedtuple
 from ..exceptions import LocationParseError
 
 
-url_attrs = ['scheme', 'auth', 'host', 'port', 'path', 'query', 'fragment']
-
-
-class Url(namedtuple('Url', url_attrs)):
+class Url(namedtuple('Url', ['scheme', 'auth', 'host', 'port', 'path', 'query', 'fragment'])):
     """
     Datastructure for representing an HTTP URL. Used as a return value for
     :func:`parse_url`.
     """
     slots = ()
 
-    def __new__(cls, scheme=None, auth=None, host=None, port=None, path=None,
-                query=None, fragment=None):
-        return super(Url, cls).__new__(cls, scheme, auth, host, port, path,
-                                       query, fragment)
+    def __new__(cls, scheme=None, auth=None, host=None, port=None, path=None, query=None, fragment=None):
+        return super(Url, cls).__new__(cls, scheme, auth, host, port, path, query, fragment)
 
     @property
     def hostname(self):
@@ -48,7 +43,7 @@ def split_first(s, delims):
 
     If not found, then the first part is the full input string.
 
-    Example::
+    Example: ::
 
         >>> split_first('foo/bar?baz', '?/=')
         ('foo', 'bar?baz', '/')
@@ -81,7 +76,7 @@ def parse_url(url):
 
     Partly backwards-compatible with :mod:`urlparse`.
 
-    Example::
+    Example: ::
 
         >>> parse_url('http://google.com/mail/')
         Url(scheme='http', host='google.com', port=None, path='/', ...)
@@ -95,10 +90,6 @@ def parse_url(url):
     # simplified for our needs and less annoying.
     # Additionally, this implementations does silly things to be optimal
     # on CPython.
-
-    if not url:
-        # Empty
-        return Url()
 
     scheme = None
     auth = None

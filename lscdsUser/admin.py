@@ -6,6 +6,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext, ugettext_lazy as _
 from lscdsUser.models import LscdsUser
 
+import adminactions.actions as actions
 
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
@@ -77,7 +78,10 @@ class LscdsUserAdmin(UserAdmin):
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
 
-   
+admin.site.add_action(actions.export_as_csv)  
+admin.site.add_action(actions.export_as_xls)
+admin.site.add_action(actions.graph_queryset)
+
 # Now register the new UserAdmin...
 admin.site.register(LscdsUser, LscdsUserAdmin)
 # ... and, since we're not using Django's built-in permissions,

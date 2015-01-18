@@ -30,8 +30,7 @@ from social.apps.django_app.utils import psa
 
 @csrf_exempt
 @login_required
-def event_view(request):
-    
+def event_view(request):    
     registered_list = Registration.objects.filter(owner=request.user)
     nr_list=Event.objects.filter(event_round_table__round_table_registrations__student=request.user)
     nr_list = nr_list.annotate(dcount=Count('event_type'))
@@ -69,6 +68,22 @@ def registration_view(request):
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
             return render(request, 'profile-event-registration.html', {'form':form}) 
+    if 'round_table_delete' in request.POST:
+       event_id= request.POST.get('event_id')
+       event=Event.objects.get(pk=event_id) 
+       form=NetWorkForm(request.POST,event=event)
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          round_table_1 = form.cleaned_data['round_table_1']
+          round_table_2 = form.cleaned_data['round_table_2']                    
+          rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_1)
+          rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
+          if not (cr1 and cr2) and (rt_1 and rt_2):
+                rt_1.delete()
+                rt_2.delete()
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form})  
 
     if request.POST and request.POST.get('event_id',None):      
        event_id= request.POST.get('event_id')

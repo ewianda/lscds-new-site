@@ -5,7 +5,7 @@ from event.models import Registration,RoundTable
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit,Field,Div
 from form_utils.forms import BetterModelForm
-
+from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 """ Better form Gives more flexibility template rendering than normal django forms"""
 
@@ -138,9 +138,14 @@ class NetWorkForm(forms.Form):
         event = kwargs.pop('event', None) 
         super(NetWorkForm, self).__init__(*args, **kwargs)
          # Bootstrap stuff for crispy forms
-        self.helper = FormHelper()
+        self.helper = FormHelper(self)
         self.helper.form_method = 'post'
-        self.helper.add_input(Submit('round_table_registration', 'Register'))
+        self.helper.layout.append(FormActions(
+            Div(Submit('round_table_registration', 'Register' ,css_class='pull-right'),css_class='row margin-bottom-30'),
+            Div(Submit('round_table_delete', 'Delete Registration',css_class=' btn-danger pull-left'),
+                                    css_class='row margin-bottom-30 ')
+                               ))
+       
         # Filter events for a given user
         
         if event:            

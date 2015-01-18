@@ -11,3 +11,14 @@
 </div>
 {% endblock %}
 
+{% block javascript %}
+<script type="text/javascript">
+
+$(document).ready(function() {
+if ($(".select").val()==""){
+$("#submit-id-round_table_delete").hide()
+}// end if
+}) // end document ready
+  </script>
+{% endblock %}
+

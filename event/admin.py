@@ -1,5 +1,17 @@
 from django.contrib import admin
 from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration,EventFee)
+from django.contrib.admin import helpers
+from django.template.response import TemplateResponse
+from django.utils.translation import ugettext_lazy as _
+from django import forms
+from ckeditor.widgets import CKEditorWidget
+from django.core.mail import send_mass_mail
+
+class EmailAdminForm(forms.Form):
+    subject = forms.CharField()
+    message = forms.CharField(widget=CKEditorWidget())
+    
+
 
 
 
@@ -52,12 +64,55 @@ class RegistrationAdmin(admin.ModelAdmin):
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
+from smtplib import SMTPException
+from lscds_site.utils import send_mass_html_mail
 
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 class RoundTableRegistrationAdmin(admin.ModelAdmin):
     list_display = ('student','round_table', 'created','event')
     list_filter = ['round_table','round_table__event']
     search_fields = ['student']
+    actions = ['send_EMAIL']
+    def send_EMAIL(self, request, queryset):
+        cont_html = "email/email.html"
+        cont_txt = "email/email.txt"
 
+        context = {
+                'title': _("Send Email"),
+                'queryset': queryset,
+                'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+                
+            }
+        
+        if request.POST.get('post'):
+            form = EmailAdminForm(request.POST)          
+            if form.is_valid(): 
+                messages = ()                 
+                subject = form.cleaned_data['subject']
+                message = form.cleaned_data['message']
+                for q in queryset:
+                    content = {"user":q.student.get_full_name(),"message":message}
+                    txt=render_to_string(cont_txt,content)
+                    html=render_to_string(cont_html,content)
+                    compose=(subject,txt,html,"no-reply@lscds.org",[q.student.email])
+                    messages =messages + (compose,)                                
+            # process the queryset here
+                
+                try:
+                    send_mass_html_mail(messages ,fail_silently=False)                
+                    self.message_user(request, "Mail sent successfully ")  
+                except SMTPException:                  
+                    self.message_user(request, "Mail was no sent please contact admin for assistance")                
+            else:
+                context.update({"form":form})
+                return TemplateResponse(request, 'admin/send_email.html',
+                context, current_app=self.admin_site.name)
+        else:
+            form = EmailAdminForm()
+            context.update({"form":form})
+            return TemplateResponse(request, 'admin/send_email.html',
+                context, current_app=self.admin_site.name)
 
 
 admin.site.register(EventType, EventTypeAdmin)

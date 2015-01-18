@@ -1,0 +1,32 @@
+{% load i18n %}
+{% load url from future %}
+<!doctype html>
+<html lang="en">
+
+<head>
+
+</head>
+<body>
+<p>
+    {% blocktrans %}
+Hi {{ user }} 
+    {% endblocktrans %}
+</p>
+<p>
+    {% blocktrans %}
+    {{ message|safe }} 
+    {% endblocktrans %}
+</p>
+
+
+
+<p>
+    {% blocktrans %}
+    Sincerely
+
+    {% endblocktrans %}
+</p>
+</body>
+
+</html>
+

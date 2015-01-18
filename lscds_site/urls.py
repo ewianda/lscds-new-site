@@ -27,7 +27,8 @@ urlpatterns = patterns('',
    # url(r'^autocomplete/', include('autocomplete_light.urls')),
     url(r'^photologue/', include('photologue.urls')),
     (r'^ckeditor/', include('ckeditor.urls')),
-    
+       (r'^adminactions/', include('adminactions.urls')),
+
 
     ) 
 

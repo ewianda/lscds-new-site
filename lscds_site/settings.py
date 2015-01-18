@@ -134,7 +134,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 TEMPLATE_PATH,
 )
-INSTALLED_APPS = (
+INSTALLED_APPS = ('adminactions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -227,6 +227,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile-event'
+SOCIAL_AUTH_LOGIN_URL = '/profile-event'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
@@ -247,7 +248,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.social_user',
     'social.pipeline.user.get_username',
     'social.pipeline.social_auth.associate_by_email',
-   # 'social.pipeline.mail.mail_validation',
+    #'social.pipeline.mail.mail_validation',
    # 'lscds_site.pipeline.require_email',
     'lscds_site.pipeline.social_extra_data',
     'social.pipeline.user.create_user',
@@ -285,12 +286,18 @@ SOCIAL_AUTH_LINKEDIN_SECRET=''
 
 
 SOCIAL_AUTH_LINKEDIN_SCOPE = ['r_basicprofile', 'r_emailaddress',]
-SOCIAL_AUTH_LINKEDIN_EXTRA_DATA = [('id', 'id'),
-                                   ('firstName', 'first_name'),
-                                   ('lastName', 'last_name'),
-                                   ('emailAddress', 'email_address'),
-                                   ('headline', 'headline'),
-                                   ('industry', 'industry')]
+
+SOCIAL_AUTH_LINKEDIN_FIELD_SELECTORS = ['email-address', 'picture-url',
+                                        'public-profile-url']
+
+SOCIAL_AUTH_LINKEDIN_EXTRA_DATA = [
+    ('id', 'id'),
+    ('firstName', 'first_name'),
+    ('lastName', 'last_name'),
+    ('emailAddress', 'email_address'),
+    ('pictureUrl', 'picture_url'),
+    ('publicProfileUrl', 'profile_url'),
+]
 
 SOCIAL_AUTH_TWITTER_KEY=''
 SOCIAL_AUTH_TWITTER_SECRET=''

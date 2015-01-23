@@ -2,7 +2,7 @@
 {% block main %}
 
 {% load i18n staticfiles %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
        {% block title %}Weblog - {% block title-page %}{% endblock title-page %}{% endblock title %}
       {% block meta %}
 
@@ -11,11 +11,11 @@
         
     
     {% endblock meta %}
+    
     <link rel="pingback" href="/xmlrpc/" />
     <link rel="shortcut icon" href="{% static "zinnia/img/favicon.ico" %}" />
     <link rel="home" href="{% url 'zinnia:entry_archive_index' %}" />
-    <link rel="stylesheet" type="text/css" media="screen, projection" href="{% static "zinnia/css/screen.css" %}" />
-    <link rel="stylesheet" type="text/css" media="print" href="{% static "zinnia/css/print.css" %}" />
+
     <!--[if lt IE 8]>
         <link rel="stylesheet" type="text/css" media="screen, projection" href="{% static "zinnia/css/ie.css" %}" />
     <![endif]-->

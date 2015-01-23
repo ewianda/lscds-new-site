@@ -1,10 +1,14 @@
 from django.conf.urls import patterns, include, url
-from lscdsUser.views import LSCDSRegistrationView,require_email,social_extra_data,UserUpdateView,LSCDSActivationView,event_view, registration_view
+from lscdsUser.views import UHMVerificationView,UHMVerifyView, LSCDSRegistrationView,require_email,social_extra_data,UserUpdateView,LSCDSActivationView,event_view, registration_view
 from django.views.generic import TemplateView 
 from django.contrib import admin
 admin.autodiscover()
 urlpatterns = patterns('',
     # Overide the Registration URL in registration.backends.default
+     url(r'^profile-uoft-email-verification/$',UHMVerificationView.as_view(), name='uoft-email-verification'),
+     url(r'^unh-email/verify/(?P<verify_key>\w+)/$',
+                           UHMVerifyView.as_view(),
+                           name='uhn_verify'),
      url(r'^profile-event/$',event_view, name='profile-event'),
      url(r'^profile-event-registration/$',registration_view, name='profile-event-registration'),
      url(r'^profile-notification/$',TemplateView.as_view(template_name="profile-notification.html"), name='profile-notification'),

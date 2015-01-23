@@ -1,0 +1,136 @@
+{% extends "profile.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+
+{% load form_utils %}
+{% load lscds_tags %}
+{% block profile_block %}
+
+
+<div class='row'>
+{% if form.errors %}
+    <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {% for field in form %} 
+        {% if field.errors %}
+        <li>{{ field.label }}: {{ field.errors|striptags }}</li>
+        {% endif %}        
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+        {% endfor %}
+        </div>
+    {% endif %}  
+<div class='col-md-offset-2 col-s-6'>
+
+<form class="form-inline" method="post" action="">
+ {% csrf_token %}
+  <div class="form-group">
+    <label class="sr-only" for="exampleInputAmount">Amount (in dollars)</label>
+    <div class="input-group margin-bottom-30 ">
+      <div class="input-group-addo control-group {%if form.email.errors %}has-error{%endif%}">{{form.email}}</div>
+      <div class="input-group-addon">@</div>
+      <div class="input-group-addo {%if form.choice.errors %}has-error{%endif%} ">{{form.choice}}</div>
+    
+    </div>
+  </div>
+  <div class='row'>
+  <button type="submit" class="btn btn-primary">Verify email</button>
+  </div> <!-- End of row-->
+</form>
+
+</div> <!-- End of col-6  -->
+
+
+
+</div> <!-- End of row-->
+
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript">
+$(document).ready(function() {
+$('.registr').on('submit',function(e){
+e.preventDefault()
+var url = $(this).attr('action')
+$.ajax({
+type: "POST",
+url: url,
+data: $(this).serialize(), // serializes the form's elements.
+success: function(data)
+{
+//alert(data); // show response from the php script.
+
+}
+}); /// end ajax call
+}); // end form submission
+
+// In line editting
+$.fn.editable.defaults.mode = 'inline';
+$('.myeditable').editable({
+placement: 'right',
+url:'/profile/', 
+validate: function(v) {
+   if(!v) return 'Required field!';
+   },
+params: function(params) {
+//originally params contain pk, name and value
+newParams = {}
+$('a.myeditable').each(function(){
+  newParams[$(this).attr('data-name')]=$(this).attr('data-value')                     
+  })
+newParams[params.name]=params.value
+newParams.pk = params.pk;
+    return newParams;
+}   
+   
+});// End editable
+
+$('.icon-pencil').click(function(e){    
+       e.stopPropagation();
+      //$(this).closest($('.myeditable').editable('toggle'));
+    $var = $(this).closest('td').find('.editable')
+    $var.editable('toggle')
+    console.log($var)
+    $('.icon-pencil').hide();
+});
+// Show the pencil on click
+  $(document).on('click', '.editable-cancel, .editable-submit', 'body', function(){
+        $('.icon-pencil').show();
+        }) 
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (settings.type == 'POST' || settings.type == 'PUT' || settings.type == 'DELETE') {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    }
+});
+
+ }); // End of doccument ready
+                       </script>
+{% endblock %}
+

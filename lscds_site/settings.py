@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['*']
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'America/Toronto'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -48,8 +48,8 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = False
 
+USE_TZ = False 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
 MEDIA_ROOT = os.path.join(PROJECT_PATH,'media')
@@ -105,6 +105,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'zinnia.context_processors.version',
     "home.context_processors.latest",
+    "home.context_processors.latest_tweets",
     'django.core.context_processors.debug',
 
 )
@@ -157,13 +158,14 @@ INSTALLED_APPS = ('adminactions',
     'lscdsUser',
     'home',
     'registration',
-   # 'chance',
+    'resource',
     'contact',
     'event','ckeditor',
      'photologue', 
      'imagekit',
      #'sortedm2m',
    #  'south',
+    'captcha',
     'home','sponsor',
     'institute',
     'crispy_forms','form_utils',
@@ -223,7 +225,7 @@ AUTH_USER_MODEL = 'lscdsUser.LscdsUser'
 ACCOUNT_ACTIVATION_DAYS = 7
 REGISTRATION_EMAIL_SUBJECT_PREFIX = 'Your Registration With LSCDS'
 SEND_ACTIVATION_EMAIL = True
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile-event'
@@ -357,4 +359,7 @@ LOGGING = {
 try:
     from local_settings import *
 except ImportError:
-    pass
+     pass
+
+
+

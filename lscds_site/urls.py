@@ -15,6 +15,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'', include('home.urls')),
     url(r'^events/', include('event.urls', namespace='event')),
+    url(r'^resources/', include('resource.urls', namespace='resource')),
     url(r'', include('payment.urls', namespace='paypal')),
     url(r'^our-sponsors/', include('sponsor.urls', namespace='sponsors')),
     url(r'', include('contact.urls')),

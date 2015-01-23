@@ -12,18 +12,38 @@
 
 
 <h3>Hi {{user.get_full_name}}</h3>
-{% if user.is_not_uhn_email %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">  <!-- singular -->
+                <a class="close" data-dismiss="alert">×</a>
+                {{ message|safe }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+{% if user.is_verified %}
+<div class='row margin-bottom-30  '>
+<div class="alert alert-info alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+Your record shows that you are currently a University of Toronto student or at one of the University Health
+Network hospitals. You are requested to verify your status each academic year starting September. Note that
+event registration is free for  University of Toronto students or workers at the University Health
+Network hospitals </div>
+</div>
+
+{% else %}
 <div class='row margin-bottom-30  '>
 <div class="alert alert-warning alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 Your record shows that you are not a student of the University of Toronto. 
 There is an event registration fee for none University of Toronto students
-Please verify your University of Toronto student status by
+ <a  href="{% url 'uoft-email-verification' %}">Please verify your University of Toronto student status by</a>
 verifying your UofT email</div>
 </div>
-{% endif%}
+{% endif %}
 
-
+<div class="tab-v1">
 
  <ul class="nav nav-justified nav-tabs">
      <li><a href="{% url 'profile-event' %}">Event Registration</a></li>
@@ -37,6 +57,8 @@ verifying your UofT email</div>
 
 
 {% endblock %}
+</div>
+
 </div>
 
 {% endblock %}

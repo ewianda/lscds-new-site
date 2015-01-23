@@ -138,7 +138,7 @@ table {
   clear: both; }
 @media (min-width: 1024px) {
   .zinnia .container {
-    max-width: 85em; }
+    max-width: 100%; }
   .zinnia #content, .zinnia.right-sidebar #content {
     width: 65.89147%;
     float: left;

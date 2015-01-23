@@ -21,7 +21,7 @@
 
                         <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Modify/Unregister</button></td>
+                            <td> <button type="submit" class="btn btn-primary">Modify/Unregister</button></td>
                         </tr> 
                         {% empty %}
 
@@ -43,7 +43,7 @@
 
                             <td>  <strong>{{event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                            <td> <button type="submit" class="btn btn-primary">Register</button></td>
                         </tr> 
 
 
@@ -73,7 +73,7 @@
 
                         <tr>  <td>  <strong>{{event.event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Modify</button></td>
+                            <td> <button type="submit" class="btn btn-danger">Delete</button></td>
                         </tr> 
                         {% empty %}
 
@@ -92,10 +92,14 @@
                 <table class='table table-bordered table-striped'>
                     <tbody> <tr>  
                             {% for event in  not_registered_list %}
-
+                           
                             <td>  <strong>{{event.name}} </strong> {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-default">Register</button></td>
+                             {% if event.registration_open %}                                
+                            <td> <button type="submit" class="btn btn-primary">Register</button></td>
+                            {% else %}
+                           <td> <div class="alert alert-info " role="alert">Registration opens in {{event.registration_start|timeuntil}}</div></td>
+                            {% endif %}
                         </tr> 
 
 
@@ -110,6 +114,18 @@
         </div> <!-- End of col-6  -->
 
     </div> <!-- End of row  -->
+ <legend>Your event history</legend>   
+   <div class='row'> <!-- End of row  -->
+  <ul class="fa-ul">
+  {% for event in  event_history %}
+  <li><i class="fa-li fa fa-check-square"></i><strong><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue">{{event.name}}</a> </strong></li>
+   {% empty %}
+  <li><i class="fa-li fa fa-check-square"></i>No events at this time</li>  
+     {% endfor %}
+</ul> 
+   
+   </div> <!-- End of row  -->    
+    
 </div> <!-- End of col-10  -->
 {% endblock %}
 

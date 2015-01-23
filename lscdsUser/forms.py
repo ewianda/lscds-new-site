@@ -1,4 +1,8 @@
-from lscdsUser.models import LscdsUser
+import datetime
+
+
+
+from lscdsUser.models import LscdsUser,UHNEmail
 from django import forms
 from django.forms.models import inlineformset_factory
 from event.models import Registration,RoundTable
@@ -59,7 +63,7 @@ class UserCreationForm(forms.ModelForm):
     class Meta:
         model = LscdsUser
         exclude =  ('is_staff','service','relationship', 'date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions')
+                      'password','last_login','groups','is_superuser','user_permissions','verify_key','expiry_date','is_u_of_t')
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -95,7 +99,7 @@ class SocialExtraDataForm(forms.ModelForm):
     class Meta:
                model = LscdsUser
                exclude = ('is_staff', 'service','date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email')
+                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email','verify_key','expiry_date','is_u_of_t')
 
 
 class UserProfileForm(BetterModelForm):
@@ -116,7 +120,7 @@ class UserProfileForm(BetterModelForm):
         model = LscdsUser
         #fields = ('first_name', 'last_name', 'university')
         exclude = ('is_staff','service','relationship', 'date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email')
+                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email','verify_key','expiry_date','is_u_of_t')
 
 
 RegistrationFormSet = inlineformset_factory(LscdsUser, Registration)
@@ -163,3 +167,41 @@ class NetWorkForm(forms.Form):
             raise forms.ValidationError("You must select different guest speakers")
         return round_table_2
 
+
+
+
+
+    
+class UHNVerificationForm(forms.Form):     
+     choice = ModelChoiceField(UHNEmail.objects.all(),empty_label="Select email",
+                                 widget=forms.Select(attrs={'class': 'form-control'}),label='Select email')
+     email = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control',"placeholder":"enter ID",'autocomplete':'off' }),label='enter ID')   
+
+     def __init__(self, *args, **kwargs):       
+        super(UHNVerificationForm, self).__init__(*args, **kwargs)
+         # Bootstrap stuff for crispy forms
+        self.helper = FormHelper(self)
+        self.helper.form_method = 'post'
+        self.helper.layout.append(FormActions(
+         Submit('round_table_delete', 'Send verification email'))
+                               ) 
+     def clean_email(self):
+         email = self.cleaned_data['email']
+         if "@" in email:
+            raise forms.ValidationError("ID should not contain '@'")
+         return email
+     
+     
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
+
+
+from django.views.generic.base import RedirectView
+from django.contrib.sites.models import get_current_site
 from django.shortcuts import render_to_response,redirect,render
 from django.conf import settings
 from django.http import HttpResponseRedirect,HttpResponse,HttpResponsePermanentRedirect
@@ -11,12 +15,12 @@ from django.db.models import Q,Count
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib import messages
 
 from registration import signals
 from registration.models import RegistrationProfile
 from registration.backends.default.views import RegistrationView,ActivationView
-from lscdsUser.forms import UserCreationForm,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,NetWorkForm
+from lscdsUser.forms import UserCreationForm,UHNVerificationForm ,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,NetWorkForm
 from lscdsUser.models import LscdsUser
 from event.models import EventType,Registration,Event,RoundTable,RoundTableRegistration
 from lscds_site.decorators import render_to
@@ -26,18 +30,70 @@ from social.backends.google import GooglePlusAuth
 from social.backends.utils import load_backends
 from social.apps.django_app.utils import psa
 
+from django.shortcuts import render
+from django.core.urlresolvers import reverse
+# Create your views here.
 
+from django.views.generic.edit import FormView
+from django.contrib.messages.views import SuccessMessageMixin
+
+class UHMVerifyView(RedirectView):
+    http_method_names = ['get']
+    pattern_name = 'profile-event'
+    def get_success_url(self):
+        return reverse('profile-event')   
+    def get_redirect_url(self, *args, **kwargs):
+        verify_key = kwargs.get('verify_key',None)
+        
+        if verify_key:
+           activated_user = LscdsUser.objects.verify_user(verify_key=verify_key)
+        else:
+           activated_user =None        
+        if activated_user:
+           messages.add_message(self.request, messages.SUCCESS, 'Your UHN or UTOR email  was successfully verified.',)
+        else:
+           messages.add_message(self.request, messages.ERROR, 'An error occured in the verification process. Please try again or contact web team for further assistant',extra_tags='danger') 
+            
+        return reverse(self.pattern_name)
+    
+    
+    
+class UHMVerificationView(FormView):
+    template_name="uhn-email-verification.html"
+    form_class = UHNVerificationForm  
+    success_message = "An email was sent to %s. Login into your account and click on the link to verify your email"   
+    def get_success_url(self):
+        return reverse('profile-event')
+    
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        #form.send_email()
+        uhn_email = str(form.cleaned_data['email']) + '@' + str(form.cleaned_data['choice'])
+        site = get_current_site(self.request)
+        user = self.request.user
+        user = LscdsUser.objects.create_verify_key(user)
+        site.new = site.domain
+        user.send_verify_mail(site,uhn_email,request=self.request) 
+        messages.success(self.request, self.success_message % uhn_email)      
+        return super(UHMVerificationView, self).form_valid(form)
+    
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(UHMVerificationView, self).dispatch(*args, **kwargs)
 
 @csrf_exempt
 @login_required
-def event_view(request):    
-    registered_list = Registration.objects.filter(owner=request.user)
-    nr_list=Event.objects.filter(event_round_table__round_table_registrations__student=request.user)
-    nr_list = nr_list.annotate(dcount=Count('event_type'))
-    dd=Event.objects.filter(registrations__owner=request.user)
-    not_registered_list = Event.objects.exclude(id__in = [event.id for event in dd]).exclude(event_type_id=1)
-    not_nr_list=Event.objects.filter(event_type_id=1).exclude(event_round_table__round_table_registrations__student=request.user)
-    context = {'registered_list':registered_list,'not_registered_list':not_registered_list,'nr_list':nr_list,'not_nr_list':not_nr_list}
+def event_view(request):  
+    user = request.user
+    nr_list =Event.objects.user_nr(user)
+    not_nr_list =Event.objects.user_open_nr(user)
+    registered_list =Event.objects.user_events(user)
+    event_history =Event.objects.user_event_history(user)
+    not_registered_list =Event.objects.user_open_events(user)   
+    context = {'registered_list':registered_list,'not_registered_list':not_registered_list,\
+               'nr_list':nr_list,'not_nr_list':not_nr_list,\
+               'event_history':event_history }
     return render(request, 'profile-event.html', context) 
 
 
@@ -56,7 +112,7 @@ def registration_view(request):
           event_id = form.cleaned_data['event_id']
           round_table_1 = form.cleaned_data['round_table_1']
           round_table_2 = form.cleaned_data['round_table_2']             
-          if request.user.is_not_uhn_email and not paid:   
+          if not request.user.is_u_of_t and not paid:   
                request.session['event_id'] = event_id
                request.session['round_table_1'] = round_table_1.pk        
                request.session['round_table_2'] = round_table_2.pk  
@@ -68,6 +124,9 @@ def registration_view(request):
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
             return render(request, 'profile-event-registration.html', {'form':form}) 
+    """
+    Delete a Network Reception registration completely
+    """
     if 'round_table_delete' in request.POST:
        event_id= request.POST.get('event_id')
        event=Event.objects.get(pk=event_id) 
@@ -88,7 +147,7 @@ def registration_view(request):
     if request.POST and request.POST.get('event_id',None):      
        event_id= request.POST.get('event_id')
        event=Event.objects.get(pk=event_id)       
-       if event.get_round_table:
+       if event.get_round_table():
            nr_list=RoundTable.objects.filter(round_table_registrations__student=request.user,event_id=event_id)
            if nr_list:
                initial={'event':event,'event_id':event.id ,'round_table_1':nr_list[0],'round_table_2':nr_list[1]}
@@ -117,15 +176,6 @@ class UserUpdateView(UpdateView):
     success_url = "."
     def get_object(self, queryset=None):
         return self.request.user
-   
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super(UserUpdateView, self).get_context_data(**kwargs)
-        # Add in a QuerySet of all the events
-        context['registered_list'] = Registration.objects.filter(owner=self.request.user)
-        dd=Event.objects.filter(registrations__owner=self.request.user)
-        context['not_registered_list'] = Event.objects.exclude(id__in = [event.id for event in dd] )
-        return context
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super(UserUpdateView, self).dispatch(*args, **kwargs)

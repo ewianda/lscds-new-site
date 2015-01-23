@@ -637,7 +637,7 @@ h3.title-v3-xs {
 .tab-v1 .nav-tabs { 
   border: none;
   background: none;
-  border-bottom: solid 2px #72c02c;   
+  border-bottom: solid 2px #3071a9;   
 }
 
 .tab-v1 .nav-tabs a { 
@@ -650,7 +650,7 @@ h3.title-v3-xs {
 .tab-v1 .nav-tabs > .active > a:focus { 
   color: #fff;
   border: none; 
-  background: #72c02c; 
+  background: #3071a9; 
 }
 
 .tab-v1 .nav-tabs > li > a { 
@@ -658,7 +658,7 @@ h3.title-v3-xs {
 }
 .tab-v1 .nav-tabs > li > a:hover { 
   color: #fff; 
-  background: #72c02c; 
+  background: #3071a9; 
 }
 
 .tab-v1 .tab-content { 

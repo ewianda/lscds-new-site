@@ -1,0 +1,43 @@
+{% extends 'base_sidebar.html' %}
+{% load staticfiles %}
+{% load static %}
+ {% load url from future %}
+   {% load i18n %
+ {% load future %}
+
+{% block main_sidebar %}
+
+<h1>Jobs</h1>
+
+{% for job in object_list %}
+<P><a href="{% url 'resource:job' slug=job.slug %}"> <strong> {{ job.title }}</strong> </a></P>
+
+<div class = 'container col-md-12' >
+<div class = 'row' >
+{{ job.description|truncatewords:50 |safe }} 
+<p> {{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a></p>
+</div >
+</div >
+{% empty %}
+    <li>No articles yet.</li>
+{% endfor %}
+
+
+    {% if is_paginated %}
+        <ul class="pagination pagination-centered">
+            {% if page_obj.has_previous %}
+                <li><a href="?page=1"></a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}"></a></li>
+            {% endif %}
+
+            {% for i in paginator.page_range %}
+                <li {% if page_obj.number == i %} class="active" {% endif %}><a href="?page={{i}}">{{i}}</a></li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}">></a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">>></a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+{% endblock %}

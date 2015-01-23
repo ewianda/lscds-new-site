@@ -15,8 +15,15 @@ from django.contrib.auth.models import (
 from institute.models import (University,Faculty,Department, Degree)
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.utils import six
 from django.conf import settings
-
+import datetime
+from django.core.mail import EmailMultiAlternatives
+from django.template import RequestContext, TemplateDoesNotExist
+import hashlib
+import random
+import re
+from django.template.loader import render_to_string
 
 UPLOAD_TO = getattr(settings, 'USERS_UPLOAD_TO', 'lscdsUsers')
 
@@ -37,25 +44,84 @@ RELATIONSHIP_CHOICES = (
     ('Executive', 'Executive'),
     ('Guest', 'Guest'),
 )
-UHN_EMAILS = ['mail.utoronto.ca','sickkids.ca']
+UHN_EMAILS = ['mail.utoronto.ca','sickkids.ca','toronto.ca']
 
+SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 class MyUserManager(BaseUserManager):
+    def create_verify_key(self,user):
+        """     
+        The verify key for the user will be a
+        SHA1 hash, generated from a combination of the ``User``'s
+        email and a random salt.
+        """
+        salt = hashlib.sha1(six.text_type(random.random()).encode('ascii')).hexdigest()[:5]
+        salt = salt.encode('ascii')
+        email = user.email
+        if isinstance(email, six.text_type):
+            email = email.encode('utf-8')
+        verify_key = hashlib.sha1(salt+email).hexdigest()
+        user.verify_key=verify_key
+        user.save()
+        return user
+        
+        
+        
+    def verify_user(self, verify_key):
+        """
+        Validate an verify key and activate the corresponding
+        ``User`` if valid.
+        If the key is valid and has not expired, return the ``User``
+        after activating.
+        If the key is not valid or has expired, return ``False``.
+        If the key is valid but the ``User`` is already active,
+        return ``False``.
+        To prevent reactivation of an account which has been
+        deactivated by site administrators, the activation key is
+        reset to the string constant ``RegistrationProfile.ACTIVATED``
+        after successful activation.
+        """
+        # Make sure the key we're trying conforms to the pattern of a
+        # SHA1 hash; if it doesn't, no point trying to look it up in
+        # the database.
+        now = timezone.now()
+        if now.day > 9: # then we are in the same year as start of academic year
+             year = now.year 
+        else:
+             year = now.year +1 # set expiration for next year
+        expiry_date = datetime.datetime(year,9,30)
+        if SHA1_RE.search(verify_key):
+            try:
+                user = self.get(verify_key=verify_key)
+            except self.model.DoesNotExist:
+                return False
+            user.is_u_of_t = True
+            user.expiry_date = expiry_date
+            user.save()            
+            return user
+        return False
+    
     def create_user(self, email, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
         """
         now = timezone.now()
+        if now.day > 9: # then we are in the same year as start of academic year
+             year = now.year 
+        else:
+             year = now.year +1 # set expiration for next year
         if not email:
             raise ValueError('Users must have an email address')
-
+        
         user = self.model(
             email=self.normalize_email(email),date_joined=now,
-        
+            expiry_date = datetime.datetime(year,9,30)
         )
 
         user.set_password(password)
+        if email.split('@')[1] in str(UHNEmail.objects.all()):
+           user.is_u_of_t = True
         user.save(using=self._db)
         return user
 
@@ -78,15 +144,16 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         max_length=255,
         unique=True,
     )
-    first_name = models.CharField(_('first name'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=30, blank=True)
+    expiry_date = models.DateField(_('Expiry date'),default=timezone.now)
+    first_name = models.CharField(_('first name'), max_length=30)
+    last_name = models.CharField(_('last name'), max_length=30 )
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('Active'), default=True,
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now) 
-    is_admin = models.BooleanField(_('Is Admin'), default=False)
-
+    is_admin = models.BooleanField(_('Is Admin'), default=False) 
+    is_u_of_t = models.BooleanField(_('Active U of T student'), default=False)
     university = models.ForeignKey(University, max_length=40, null=True,)
     faculty = models.ForeignKey(Faculty,max_length=40, null=True,)
     department = models.ForeignKey(Department,max_length=40, null=True,)
@@ -98,7 +165,7 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         help_text=_('Used for illustration.'))
     gender =  models.CharField(max_length=10, choices=GENDER_CHOICES,default='Secret')
     service = models.CharField(max_length=30, blank=True)
-
+    verify_key = models.CharField(max_length=40)
 
     objects =MyUserManager()
 
@@ -113,8 +180,8 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         # The user is identified by their email address
         return self.email
 
-    def __str__(self):              # __unicode__ on Python 2
-        return self.email
+    def __unicode__(self):              # __unicode__ on Python 2
+        return u'%s %s ' % (self.first_name,self.last_name)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -125,8 +192,31 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
-    def is_not_uhn_email(self):
-        return  self.email.split('@')[1] not in UHN_EMAILS
-
-
-
+    def is_verified(self):
+        return self.is_u_of_t and self.expiry_date > timezone.now().date()
+    
+    
+    def send_verify_mail(self, site,uhn_email,request=None):
+        
+        email_dict={}         
+        if request is not None:
+            email_dict = RequestContext(request, email_dict)
+        subject="Verify your UTOR or UHN email"
+        email_dict = {
+            "user": self,
+            "verify_key": self.verify_key,           
+            "site": site,
+        }
+        message_txt = render_to_string('email/verify_email.txt', email_dict)
+        email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [uhn_email])
+        message_html = render_to_string('email/verify_email.html', email_dict)
+        email_message.attach_alternative(message_html, 'text/html')
+        email_message.send()
+        
+        
+class UHNEmail(models.Model):
+    name = models.CharField(max_length=100)
+    class Meta:
+        verbose_name = _("UHN Email")
+    def __unicode__(self):
+        return self.name

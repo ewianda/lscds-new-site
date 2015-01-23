@@ -4,17 +4,23 @@
         {% for rt in object.get_round_table %}
         
         <tr>
-          <td class="col-md-4"><img src="http://placehold.it/200x100&text=Image"/>  </td>
+         {% if rt.guest.image %}
+         <td class="col-md-4 img-responsive" > <img class="img-thumbnail" src="{{rt.guest.image.url}}"/></td>
+         
+          {% else %}
+          <td class="col-md-4"><img class="img-thumbnail" src="http://placehold.it/200x100&text=Image"/>  </td>
+          {% endif %}
+          
           <td class="col-md-8">
             <table class='table'>
-              <tr><td>{{rt.guest.name}}</td></tr>
-              <tr><td>{{rt.guest.qualification}}</td></tr>
-              <tr><td>{{rt.guest.company}}</td></tr>
-              <tr><td>Spots left {{rt.get_spots}}</td></tr>
+              <tr><td><strong>{{rt.guest.name}}</strong></td></tr>
+              <tr><td>{{rt.guest.qualification}}</td></tr>  
+                 <tr><td>{{rt.guest.company}}</td></tr>         
+              <tr><td>Spots remaining: {{rt.get_spots}}</td></tr>
                </td>
             </table>          
         </tr>
-        <tr><td>Biography:</td><td colspan= '2'>{{rt.guest.biography | safe}} </td></tr>
+        <tr><td colspan= '2'>{{rt.guest.biography | safe}} </td></tr>
 {% endfor %}
     </tbody>
 </table>

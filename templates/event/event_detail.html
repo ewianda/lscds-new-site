@@ -8,22 +8,40 @@
 <h2 style='margin-top:0px'> {{ object.name }}</h2>
 <div class = 'row' >
 <div class = 'col-md-6'>
+<P>Event date: {{object.starts|date:'M-d-o'}} @ {{object.starts|date:'P'}}  </P>
 <P>Location: {{object.location}} </P>
-<P>Time: {{object.starts|date:'G:00'}} to {{object.starts|date:'G:00'}} </P>
+<P>Time: {{object.starts|date:'P'}} to {{object.starts|date:'P'}} </P>
+
 </div>
+{% if object.registration_open %}
+
 <div class = 'col-md-6' >
 <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
-</div>
 
 </div>
+{% elif object.registration_start > now %}
+<div class="alert alert-info col-md-6" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
+
+{% else %}
+<div class="alert alert-danger col-md-6" role="alert"> Registration closed</div>
+{% endif %}
+</div>
 
 
-{% if object.event_type.name == "Network Reception" %}
+
+{% if object.event_type.pk == 1 %}
 
 {% include "event/include/include_network_reception.html" %}
-
+{% else %}
+{% include "event/include/include_other_events.html" %}
 {% endif %}
+
+
+
+
+{% if object.registration_open %}
 <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+{% endif %}
 {% endblock %}
 
 

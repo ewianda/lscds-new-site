@@ -1,5 +1,5 @@
 from django.contrib import admin
-from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration,EventFee)
+from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration,EventFee,EventBanner)
 from django.contrib.admin import helpers
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
@@ -12,8 +12,21 @@ class EmailAdminForm(forms.Form):
     message = forms.CharField(widget=CKEditorWidget())
     
 
-
-
+class EventCreationForm(forms.ModelForm):
+    model = Event
+    def clean(self):
+        cleaned_data = super(EventCreationForm, self).clean()
+        registration_start = cleaned_data.get("registration_start")
+        registration_end = cleaned_data.get("registration_end")
+        starts = cleaned_data.get("starts")
+       
+        if registration_start > registration_end:
+             raise forms.ValidationError("Registration must start before it ends. Please check the registration dates")   
+              
+        elif registration_start > starts:
+             raise forms.ValidationError("Registration cannot start after event date. Please check the Event dates")
+        else:
+             return self.cleaned_data
 
 class EventlineAdmin(admin.StackedInline):
     model = Event
@@ -48,6 +61,7 @@ class EventTypeAdmin(admin.ModelAdmin):
     ]
 
 class EventAdmin(admin.ModelAdmin):
+    form = EventCreationForm
     inlines = [
      EventFeelineAdmin, RoundTablelineAdmin,RegistrationlineAdmin,TalklineAdmin
     ]
@@ -60,7 +74,12 @@ class RegistrationAdmin(admin.ModelAdmin):
     list_filter = ['event']
     search_fields = ['owner']
 
-
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('eventtype','position', 'admin_image')
+   
+    
+    
+    
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
@@ -121,4 +140,4 @@ admin.site.register(Presenter, PresenterAdmin)
 admin.site.register(RoundTable,RoundTableAdmin)
 admin.site.register(RoundTableRegistration,RoundTableRegistrationAdmin)
 admin.site.register(Registration,RegistrationAdmin)
-
+admin.site.register(EventBanner,BannerAdmin)

@@ -1,0 +1,20 @@
+{% extends 'base_sidebar.html' %}
+
+{% load staticfiles %}
+{% load static %}
+{% block main_sidebar %}
+
+
+<h2 style='margin-top:0px'> {{ object.title }}</h2>
+<p>{{object.company}}</a></p>
+<p><a href = "{{ object.link }}" > {{object.link}} </a></p>
+<p>{{object.location}}</p>
+
+<legend>Job description</legend>
+<div class = 'row' >
+{{ object.description|safe}}
+</div>
+
+{% endblock %}
+
+

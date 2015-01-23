@@ -2,7 +2,33 @@
 {% load staticfiles %}
 {% load static %}
 {% block main %}
+{% load i18n %}
 
+<style>
+blockquote.twitter-tweet {
+  display: inline-block;
+  padding: 16px;
+  margin: 10px 0;
+  max-width: 468px;
+  border: #ddd 1px solid;
+  border-top-color: #eee;
+  border-bottom-color: #bbb;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  font: bold 14px/18px Helvetica, Arial, sans-serif;
+  color: #000;
+}
+ 
+blockquote.twitter-tweet p {
+  font: normal 12px/18px Georgia, "Times New Roman", Palatino, serif;
+  margin: 0 5px 10px 0;
+}
+ 
+blockquote.twitter-tweet a[href^="https://twitter.com"] {
+  font-weight: normal;
+  color: #666;
+  font-size: 1px;
+}</style>
 
 <!-- Begin Content -->
                         <div class="col-md-8">
@@ -27,6 +53,8 @@
                                       {% empty %}
                                     <font>No event at this time</font>
                                     {% endfor %}
+                                    {% else %}
+                                    <font color="blue">No event at this time</font>
                                     {% endif %}                           
                                     
                                 </div>
@@ -52,28 +80,38 @@
                             <!-- End Quick Links -->
 
                             <!-- Photo Stream -->
-                            <div class="headline"><h2>Photo Stream</h2></div>            
-                            <ul class="list-unstyled blog-photos margin-bottom-35">
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/5.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/6.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/8.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/10.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/11.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/1.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/2.jpg"  %}"></a></li>
-                                <li><a href="#"><img class="hover-effect" alt="" src="{%static  "assets/img/sliders/elastislide/7.jpg"  %}"></a></li>
-                            </ul>
+                            <div class="headline"><h2>Latest Tweets</h2></div> 
+                           {% for tweet in tweets %} 
+                           <blockquote class="twitter-tweet">
+                             <a href="https://twitter.com/{{tweet.user}}/status/{{tweet.id}}" </a>
+                             </blockquote>   
+                             {% endfor %}             
+                          
                             <!-- End Photo Stream -->
                            <div class="headline"><h2>Latest blog</h2></div>   
                             <!-- Latest News -->
                             <div class="margin-bottom-40">
-                                <div class="magazine-mini-news">
-                                    <h3><a href="#">Blanditiis Praesentium Volupeto</a></h3>
+                                <div class="magazine-mini-news">   
+                                {% for object in  context_blog %}                             
+                                    <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
+                                    <h3><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
                                     <div class="post-author">
-                                        <strong>By Adam Bvio</strong> 
-                                        <span>/ September 19, 2013</span>
+                                        {% with authors=object.authors.all %}
+                                           {% if authors|length %}
+                                          {% trans "Written by" %}
+                                                {% for author in authors %}
+                                                 <span class="vcard author">
+                                           <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
+                                          title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}">{{ author }}</a></span>{% if not forloop.last %}, {% endif %}
+                                                            {% endfor %}                         
+                                      
+                                                 {% endif %}
+                                                     {% endwith %}                                      
                                     </div>
-                                    <p>At vero eos et accusamus et iusto odiodig nissimos ducimus usce condimentum eleifend enim a feugiat.</p>
+                                    <p> {{ object.content|truncatewords:10|safe }}</p>
+                                    {% empty %}
+                                    
+                                    {% endfor %}
                                 </div>
                                 <hr class="hr-md">
                             </div>

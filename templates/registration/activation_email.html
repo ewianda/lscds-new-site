@@ -4,22 +4,21 @@
 <html lang="en">
 
 <head>
-    <title>{{ site.name }} {% trans "registration" %}</title>
+    <title>{{ site.name }} </title>
 </head>
 
 <body>
 <p>
-    {% blocktrans %}
+ Hi {{user}}
     You (or someone pretending to be you) have asked to register an account at
     {{ site.name }}.  If this wasn't you, please ignore this email
     and your address will be removed from our records.
-    {% endblocktrans %}
 </p>
 <p>
-    {% blocktrans %}
+
     To activate this account, please click the following link within the next
     {{ expiration_days }} days:
-    {% endblocktrans %}
+
 </p>
 
 <p>
@@ -28,10 +27,10 @@
     </a>
 </p>
 <p>
-    {% blocktrans %}
+
     Sincerely,
-    {{ site.name }} Management
-    {% endblocktrans %}
+    {{ site.name }} Team
+ 
 </p>
 </body>
 

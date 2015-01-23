@@ -4,8 +4,20 @@
 {% block main_sidebar %}
  <div class="row magazine-page">
                        <!-- Magazine Slider -->
-                <div class="carousel slide carousel-v1 margin-bottom-40" id="myCarousel-1">
+                       
+                
+                <div class="carousel slide carousel-v1 margin-bottom-40" id="myCarousel-1">            
+                
                     <div class="carousel-inner">
+                    {% for banner in banners %}
+                       <div class="item {% if forloop.first %} active {% endif %}">
+                            <img alt="" src="{{ banner.banner.url }}">
+                            <div class="carousel-caption">
+                                <p>{{banner.eventtype}}</p>
+                            </div>
+                        </div>
+                      {% empty %}
+              
                         <div class="item active">
                             <img alt="" src="{%static "images/_img"%}">
                             <div class="carousel-caption">
@@ -30,9 +42,9 @@
                                 <p>Justo cras odio apibus ac afilisis lingestas de.</p>
                             </div>
                         </div>
-
+                        {% endfor %}
                     </div>
-
+                    
                     
                     <div class="carousel-arrow">
                         <a data-slide="prev" href="#myCarousel-1" class="left carousel-control">
@@ -50,7 +62,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="magazine-new-img">
-                                <span class="magazine-badge label-red">Our Mission</span>                                    
+                                <legend class="magazine-badge label-red">Our Mission</legend>                                    
                             </div>
                             <h3>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
 their career knowledge</h3>                            
@@ -66,7 +78,7 @@ their career knowledge</h3>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="magazine-new-img">
-                                <span class="magazine-badge label-yellow">News</span>                                    
+                                <legend class="magazine-badge label-yellow">News</legend>                                    
                             </div>
                             <h3><a href="#">Simelque Untine Culpaqui Officia Deserunt Blanditiis Praesentium</a></h3>
                             <div class="by-author">
@@ -77,7 +89,7 @@ their career knowledge</h3>
                         </div>
                         <div class="col-md-6">
                             <div class="magazine-new-img">
-                                <span class="magazine-badge label-green">Subscription</span>
+                                <legend class="magazine-badge label-green">Subscription</legend>
                             </div>
                             <h3><a href="#">Simelque Untine Culpaqui Officia Deserunt Blanditiis Praesentium</a></h3>
                             <div class="by-author">
@@ -97,7 +109,7 @@ their career knowledge</h3>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="magazine-new-img">
-                                <span class="magazine-badge label-purple">Testimonia</span>                                    
+                                <legend class="magazine-badge label-purple">Testimonia</legend>                                    
                             </div>
                             <h3><a href="#">Simelque Untine Culpaqui Officia Deserunt Blanditiis Praesentium</a></h3>
                             <div class="by-author">

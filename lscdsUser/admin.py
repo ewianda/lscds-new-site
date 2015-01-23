@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext, ugettext_lazy as _
-from lscdsUser.models import LscdsUser
+from lscdsUser.models import LscdsUser, UHNEmail
 
 import adminactions.actions as actions
 
@@ -44,7 +44,7 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = LscdsUser
-        fields = ('email', 'password', 'is_active', 'is_admin','is_staff')
+        fields = ('email', 'password', 'is_active', 'is_admin','is_staff','is_u_of_t')
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
@@ -62,7 +62,7 @@ class LscdsUserAdmin(UserAdmin):
         (_('Personal info'), {'fields': ('first_name', 'last_name','gender',)}),
         (_('Academic info'), {'fields': ('university', 'faculty', 'department','degree','status',)}),
 
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
+        (_('Permissions'), {'fields': ('verify_key','expiry_date','is_u_of_t','is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
@@ -72,7 +72,7 @@ class LscdsUserAdmin(UserAdmin):
             'fields': ('email', 'password1', 'password2')}
         ),
     )
-    list_display = ('email', 'first_name', 'last_name', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'is_verified','is_u_of_t')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
@@ -81,7 +81,7 @@ class LscdsUserAdmin(UserAdmin):
 admin.site.add_action(actions.export_as_csv)  
 admin.site.add_action(actions.export_as_xls)
 admin.site.add_action(actions.graph_queryset)
-
+admin.site.register(UHNEmail)
 # Now register the new UserAdmin...
 admin.site.register(LscdsUser, LscdsUserAdmin)
 # ... and, since we're not using Django's built-in permissions,

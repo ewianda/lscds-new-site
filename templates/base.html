@@ -27,7 +27,11 @@
 
                 <!-- Favicon -->
                 <link rel="shortcut icon" href="favicon.ico">
-
+                <link rel="stylesheet" type="text/css" media="screen, projection" href="{% static "zinnia/css/screen.css" %}" />
+            <link rel="stylesheet" type="text/css" media="print" href="{% static "zinnia/css/print.css" %}" />
+            
+            
+          {% block css_zinnia %}   {% endblock %}
                 <!-- CSS Global Compulsory -->
                 <link rel="stylesheet" href="{%static "assets/plugins/bootstrap/css/bootstrap.min.css" %}">
                 <link rel="stylesheet" href="{%static "assets/css/style.css"%}">
@@ -41,11 +45,14 @@
 
                 <!-- CSS Theme -->    
                 <link rel="stylesheet" href="{%static "assets/css/theme-colors/default.css" %}">
-                <link rel="stylesheet" href="{%static "assets/plugins/bootstrap/css/bootstrap.min.css" %}">
+               
                 <link rel="stylesheet" href="{%static "editable/css/bootstrap-editable.css" %}">
                 <!-- CSS Customization -->
                 <link rel="stylesheet" href="{%static "assets/css/custom.css" %}">
+                
                 {% block css %}   {% endblock %}
+
+
 
             </head> 
 
@@ -61,22 +68,18 @@
                                     <div class="col-md-6">
                                         <ul class="footer-socials list-inline">
                                             <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Facebook">
+                                            <a href="https://www.facebook.com/groups/5847151923/" target="_blank" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Facebook">
                                                 <i class="fa fa-facebook"></i>
                                             </a>
                                             </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Skype">
-                                                <i class="fa fa-skype"></i>
-                                            </a>
-                                            </li>
+                                           
                                             <li>
                                             <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Google Plus">
                                                 <i class="fa fa-google-plus"></i>
                                             </a>
                                             </li>
                                             <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Linkedin">
+                                            <a href="https://www.linkedin.com/groups?gid=89011" target="_blank" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Linkedin">
                                                 <i class="fa fa-linkedin"></i>
                                             </a>
                                             </li>
@@ -86,24 +89,20 @@
                                             </a>
                                             </li>
                                             <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Twitter">
+                                            <a href="https://twitter.com/lscdsuoft" target="_blank" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Twitter">
                                                 <i class="fa fa-twitter"></i>
                                             </a>
                                             </li>
-                                            <li>
-                                            <a href="#" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Dribbble">
-                                                <i class="fa fa-dribbble"></i>
-                                            </a>
-                                            </li>
+                                            
                                         </ul>
                                     </div>
                                     <!-- End Social Links -->
 
                                     <div class="col-md-6">
                                         <ul class="list-inline top-v1-data">
-                                            <li><a href="#"><i class="fa fa-home"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-globe"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                            <li><a href="{% url 'home' %}" ><i class="fa fa-home"></i></a></li>
+                                            <li><a href="https://www.google.ca/" target="_blank" ><i class="fa fa-globe"></i></a></li>
+                                          
                                               {% if user.is_authenticated %}
                                             <li> <a href="{% url 'auth_logout' %}?next=/">{% trans "Log Out" %}</a></li>
                                             <li><a href="{% url 'profile-event' %}">My Account</a></li>
@@ -200,8 +199,12 @@
                                         <!-- End Blog -->
 
                                         <!-- Resources -->
-                                        <li>
+                                        <li class="dropdown">
                                         <a href="#">Resources</a>  
+                                        <ul class='dropdown-menu'>
+                                        
+                                       <li> <a href="{% url 'resource:job-list' %}">Jobs</a> </li> 
+                                          </ul>
                                         </li>                    
                                         <!-- End Resources -->
 
@@ -262,20 +265,19 @@
                                     <!-- Latest -->
                                     <div class="col-md-4 md-margin-bottom-40">
                                         <div class="posts">
-                                            <div class="headline"><h2>Latest Posts</h2></div>
+                                            <div class="headline"><h2>Latest Events</h2></div>
                                             <ul class="list-unstyled latest-list">
-                                                <li>
-                                                <a href="#">Incredible content</a>
-                                                <small>May 8, 2014</small>
-                                                </li>
-                                                <li>
-                                                <a href="#">Best shoots</a>
-                                                <small>June 23, 2014</small>
-                                                </li>
-                                                <li>
-                                                <a href="#">New Terms and Conditions</a>
-                                                <small>September 15, 2014</small>
-                                                </li>
+                                            {% if context_event %}
+                                      {% for event in context_event%}
+                                       <li>
+                                      <a href={% url 'event:event-detail' slug=event.slug %} class="color-blue"> {{event.name}}</a> 
+                                     <small> on {{event.starts|date:'M-d-o'}} @ {{event.starts|date:'P'}}</small>
+                                      {% empty %}
+                                    <font>No event at this time</font>
+                                    {% endfor %}
+                                    {% else %}
+                                   <li> <font color="blue">No event at this time</font></li>
+                                    {% endif %}                                               
                                             </ul>
                                         </div>
                                     </div><!--/col-md-3-->  
@@ -285,11 +287,11 @@
                                     <div class="col-md-4 md-margin-bottom-40">
                                         <div class="headline"><h2>Useful Links</h2></div>
                                         <ul class="list-unstyled link-list">
-                                            <li><a href="#">About us</a><i class="fa fa-angle-right"></i></li>
+                                            <li><a href="{% url 'about' %}">About us</a><i class="fa fa-angle-right"></i></li>
                                             <li><a href="#">Portfolio</a><i class="fa fa-angle-right"></i></li>
-                                            <li><a href="#">Latest jobs</a><i class="fa fa-angle-right"></i></li>
+                                            <li><a href="{% url 'resource:job-list' %}">Latest jobs</a><i class="fa fa-angle-right"></i></li>
                                             <li><a href="#">Community</a><i class="fa fa-angle-right"></i></li>
-                                            <li><a href="#">Contact us</a><i class="fa fa-angle-right"></i></li>
+                                            <li><a href="{% url 'contact' %}">Contact us</a><i class="fa fa-angle-right"></i></li>
                                         </ul>
                                     </div><!--/col-md-3-->
                                     <!-- End Link List -->                    
@@ -298,11 +300,9 @@
                                     <div class="col-md-4 map-img md-margin-bottom-40">
                                         <div class="headline"><h2>Contact Us</h2></div>                         
                                         <address class="md-margin-bottom-40">
-                                            25, Lorem Lis Street, Orange <br />
-                                            California, US <br />
-                                            Phone: 800 123 3456 <br />
-                                            Fax: 800 123 3456 <br />
-                                            Email: <a href="mailto:info@anybiz.com" class="">info@anybiz.com</a>
+                                           21 Sussex Ave. <br />
+                                           Sussex Clubhouse, Room 535,<br />
+                                           Toronto, ON, M5S 1J6 <br />
                                         </address>
                                     </div><!--/col-md-3-->
                                     <!-- End Address -->
@@ -341,18 +341,37 @@
                 <script type="text/javascript" src="{%static "assets/js/custom.js" %}"></script>
                 <!-- JS Page Level -->           
                 <script type="text/javascript" src="{%static "assets/js/app.js" %}"></script>
-
+          
+                <script src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                
                 {% block javascript %}{% endblock %}
 
 
-<script type="text/javascript">
- jQuery(document).ready(function() {
- App.init();      
- App.initSliders();   
+<script>
 
-                                           });
+
+ $(document).ready(function() {
+ window.setTimeout(function(){
+    $(".twitter-tweet").contents().find(".e-entry-title").css("font-size","12");
+    $(".twitter-tweet").contents().find(".tweet").css("font-family","sans-serif");
+    $(document).on("click",'.nav  a', function(){
+
+   $(".nav").find(".active").removeClass("active");
+   $(this).parent().addClass("active");
+
+   
+});
+    
+  }, 1000);
+
+ App.init();      
+ App.initSliders();  
+
+
+  
+});
                                        </script>
-                                       <!--[if lt IE 9]>
+                                          <!--[if lt IE 9]>
                                        <script src="assets/plugins/respond.js"></script>
                                        <script src="assets/plugins/html5shiv.js"></script>
                                        <script src="assets/js/plugins/placeholder-IE-fixes.js"></script>

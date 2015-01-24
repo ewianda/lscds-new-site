@@ -35,6 +35,7 @@ Install Pillow only
 ===================
 ```
 pip install Pillow 
+pip intall mysql-python
 
 ```
 Syncronize database and runserver

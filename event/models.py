@@ -23,13 +23,13 @@ class EventType(models.Model):
     slug = models.SlugField(max_length=100)
     def get_events(self):
         return self.event_type.select_related()
-    
+
 
     def __unicode__(self):
         return self.name
-   
-    
-    
+
+
+
 # First, define the Manager subclass.
 
 class EventQuerySet(QuerySet):
@@ -41,7 +41,7 @@ class EventQuerySet(QuerySet):
     def user_open_nr(self,user):
         return self.filter(event_type_id=1,starts__gte = timezone.now(),status="publish"). \
                          exclude(event_round_table__round_table_registrations__student=user)
-    
+
     def user_events(self,user):
         return self.filter(starts__gte = timezone.now(),status="publish",registrations__owner=user).\
                            exclude(event_type_id=1)
@@ -53,10 +53,10 @@ class EventQuerySet(QuerySet):
     def user_event_history(self,user):
         return self.filter(Q(registrations__owner=user)|Q(event_round_table__round_table_registrations__student=user)).\
                           filter(starts__lte = timezone.now(),status="publish").\
-                                annotate(dcount=Count('event_type'))              
-                                  
-    
-    
+                                annotate(dcount=Count('event_type'))
+
+
+
 class EventManager(models.Manager):
        def get_query_set(self):
            return EventQuerySet(self.model, using=self._db)
@@ -64,13 +64,13 @@ class EventManager(models.Manager):
            return self.get_query_set().user_nr(user)
        def user_open_nr(self,user):
            return self.get_query_set().user_open_nr(user)
-    
+
        def user_events(self,user):
            return self.get_query_set().user_events(user)
 
        def user_open_events(self,user):
             return self.get_query_set().user_open_events(user)
-       
+
        def user_event_history(self,user):
            return self.get_query_set().user_event_history(user)
 
@@ -97,15 +97,19 @@ class Event(models.Model):
     def get_round_table(self):
         return self.event_round_table.all()
     def get_round_table_registration(self):
-        return self.event.select_related('round_table_registrations') 
+        return self.event.select_related('round_table_registrations')
+
+    @property
+    def has_fee(self):
+         return self.fee_options.all()[0].amount !=0
 
     def __unicode__(self):
         return self.name
-    
+
     @models.permalink
     def get_absolute_url(self):
         return 'event:event-detail', (), {'slug': self.slug}
-       
+
 
     @property
     def registration_open(self):
@@ -115,9 +119,9 @@ class Event(models.Model):
             else:
                 return False
         else:
-          return False 
-        
-        
+          return False
+
+
 
 
 
@@ -141,7 +145,7 @@ class Talk(models.Model):
     title = models.CharField(max_length=255, db_index=True)
     presenter = models.ForeignKey(Presenter)
     description = RichTextField(blank=True, null=True)
-  
+
 class EventFee(models.Model):
     event = models.ForeignKey(Event, related_name='fee_options')
     available = models.BooleanField(default=True)
@@ -149,7 +153,7 @@ class EventFee(models.Model):
     amount = models.DecimalField(max_digits=65,decimal_places=2)
 
     def __unicode__(self):
-        return u'%s at %s' % (self.name, self.event.name,)
+        return u'Fees for %s (amount=0 for free event)' % (self.event.name,)
 
 
 
@@ -183,13 +187,13 @@ class RoundTable(models.Model):
         return self.round_table_registrations.count() < self.table_limit
     @property
     def get_spots(self):
-        return self.table_limit -  self.round_table_registrations.count() 
+        return self.table_limit -  self.round_table_registrations.count()
 
     def __unicode__(self):
         return u'Round Table for  %s ' % (self.guest,)
 
 class RoundTableRegistration(models.Model):
-    round_table = models.ForeignKey(RoundTable, related_name='round_table_registrations', 
+    round_table = models.ForeignKey(RoundTable, related_name='round_table_registrations',
           error_messages={'unique': u'You have already registered for this event'}  )
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True)
@@ -205,8 +209,8 @@ class RoundTableRegistration(models.Model):
 
     def __unicode__(self):
         return u'Registration for %s ' % (self.student,)
-    
-    
+
+
 class EventBanner(models.Model):
     eventtype = models.ForeignKey(EventType, related_name='event_type_banner')
     banner = models.ImageField(_('image'), upload_to=UPLOAD_BANNER_TO,
@@ -216,8 +220,8 @@ class EventBanner(models.Model):
     def admin_image(self):
         return '<img width = "200" src="%s"/>' % self.banner.url
     admin_image.allow_tags = True
-    
-    
+
+
     def __unicode__(self):
         return self.eventtype.name
     class Meta:

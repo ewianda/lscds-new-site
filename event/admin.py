@@ -7,10 +7,29 @@ from django import forms
 from ckeditor.widgets import CKEditorWidget
 from django.core.mail import send_mass_mail
 
+from django.forms.models import BaseInlineFormSet
+
+
+class RequiredInlineFormSet(BaseInlineFormSet):
+    """
+    Generates an inline formset that is required
+    """
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Override the method to change the form attribute empty_permitted
+        """
+        form = super(RequiredInlineFormSet, self)._construct_form(i, **kwargs)
+        form.empty_permitted = False
+        return form
+
+
+
+
 class EmailAdminForm(forms.Form):
     subject = forms.CharField()
     message = forms.CharField(widget=CKEditorWidget())
-    
+
 
 class EventCreationForm(forms.ModelForm):
     model = Event
@@ -19,10 +38,10 @@ class EventCreationForm(forms.ModelForm):
         registration_start = cleaned_data.get("registration_start")
         registration_end = cleaned_data.get("registration_end")
         starts = cleaned_data.get("starts")
-       
+
         if registration_start > registration_end:
-             raise forms.ValidationError("Registration must start before it ends. Please check the registration dates")   
-              
+             raise forms.ValidationError("Registration must start before it ends. Please check the registration dates")
+
         elif registration_start > starts:
              raise forms.ValidationError("Registration cannot start after event date. Please check the Event dates")
         else:
@@ -53,8 +72,9 @@ class RoundTablelineAdmin(admin.TabularInline):
 class EventFeelineAdmin(admin.TabularInline):
     model =EventFee
     extra = 1
-    
-    
+    max_num = 1
+    formset = RequiredInlineFormSet
+
 class EventTypeAdmin(admin.ModelAdmin):
     inlines = [
        EventlineAdmin
@@ -65,7 +85,7 @@ class EventAdmin(admin.ModelAdmin):
     inlines = [
      EventFeelineAdmin, RoundTablelineAdmin,RegistrationlineAdmin,TalklineAdmin
     ]
-    
+
 class PresenterAdmin(admin.ModelAdmin):
    pass
 
@@ -76,10 +96,10 @@ class RegistrationAdmin(admin.ModelAdmin):
 
 class BannerAdmin(admin.ModelAdmin):
     list_display = ('eventtype','position', 'admin_image')
-   
-    
-    
-    
+
+
+
+
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
@@ -101,13 +121,13 @@ class RoundTableRegistrationAdmin(admin.ModelAdmin):
                 'title': _("Send Email"),
                 'queryset': queryset,
                 'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
-                
+
             }
-        
+
         if request.POST.get('post'):
-            form = EmailAdminForm(request.POST)          
-            if form.is_valid(): 
-                messages = ()                 
+            form = EmailAdminForm(request.POST)
+            if form.is_valid():
+                messages = ()
                 subject = form.cleaned_data['subject']
                 message = form.cleaned_data['message']
                 for q in queryset:
@@ -115,14 +135,14 @@ class RoundTableRegistrationAdmin(admin.ModelAdmin):
                     txt=render_to_string(cont_txt,content)
                     html=render_to_string(cont_html,content)
                     compose=(subject,txt,html,"no-reply@lscds.org",[q.student.email])
-                    messages =messages + (compose,)                                
+                    messages =messages + (compose,)
             # process the queryset here
-                
+
                 try:
-                    send_mass_html_mail(messages ,fail_silently=False)                
-                    self.message_user(request, "Mail sent successfully ")  
-                except SMTPException:                  
-                    self.message_user(request, "Mail was no sent please contact admin for assistance")                
+                    send_mass_html_mail(messages ,fail_silently=False)
+                    self.message_user(request, "Mail sent successfully ")
+                except SMTPException:
+                    self.message_user(request, "Mail was no sent please contact admin for assistance")
             else:
                 context.update({"form":form})
                 return TemplateResponse(request, 'admin/send_email.html',

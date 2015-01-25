@@ -44,7 +44,7 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                         <!-- Begin Sidebar -->
                         <div class="col-md-4">
                             <!-- Magazine Posts -->
-                            <div class="row margin-bottom-40">
+                            <div class="row margin-bottom-0">
                                 <div class="magazine-posts col-md-12 col-sm-6 margin-bottom-30">
                                     <h3> Our upcoming events</h3>
                                     {% if context_event %}
@@ -60,6 +60,7 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                                 </div>
                             </div>
                             <!-- End Magazine Posts -->
+                            {% comment %}
 
                             <!-- Quick Links -->
                             <div class="magazine-sb-categories margin-bottom-20">
@@ -78,9 +79,9 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                                 </div>
                             </div>
                             <!-- End Quick Links -->
-
+                            {% endcomment %}
                             <!-- Photo Stream -->
-                            <div class="headline"><h2>Latest Tweets</h2></div> 
+                            <div class="headlie"><h2>Latest Tweets</h2></div> 
                            {% for tweet in tweets %} 
                            <blockquote class="twitter-tweet">
                              <a href="https://twitter.com/{{tweet.user}}/status/{{tweet.id}}" </a>

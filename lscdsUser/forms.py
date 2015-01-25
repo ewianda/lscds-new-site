@@ -43,8 +43,8 @@ class UserCreationForm(forms.ModelForm):
         self.helper.layout.append(
         Fieldset('University Affiliation', # Legend
                      Div( 'university','faculty', css_class="col-md-6 col-md-offset-",placeholder='Gender'),
-                      Div('department', 'degree', css_class="col-md-6 col-md-offset-",placeholder='Gender'), 
-                       Div('status', 'mailinglist', css_class="col-md-6 col-md-offset-",placeholder='Gender'), 
+                      Div('department', 'degree', css_class="col-md-6 col-md-offset-",placeholder='Gender'),
+                       Div('status', 'mailinglist', css_class="col-md-6 col-md-offset-",placeholder='Gender'),
 
                       ),
         )
@@ -139,7 +139,7 @@ class NetWorkForm(forms.Form):
      event_id = forms.CharField(widget=forms.HiddenInput())
 
      def __init__(self, *args, **kwargs):
-        event = kwargs.pop('event', None) 
+        event = kwargs.pop('event', None)
         super(NetWorkForm, self).__init__(*args, **kwargs)
          # Bootstrap stuff for crispy forms
         self.helper = FormHelper(self)
@@ -149,16 +149,16 @@ class NetWorkForm(forms.Form):
             Div(Submit('round_table_delete', 'Delete Registration',css_class=' btn-danger pull-left'),
                                     css_class='row margin-bottom-30 ')
                                ))
-       
+
         # Filter events for a given user
-        
-        if event:            
+
+        if event:
            round_table = event.get_round_table()
          # Add round table choices for this particular event
            self.fields['round_table_1'].queryset = round_table
            self.fields['round_table_2'].queryset = round_table
-        
-        
+
+
      def clean_round_table_2(self):
         # Check that the two password entries match
         round_table_1 = self.cleaned_data.get("round_table_1")
@@ -171,37 +171,37 @@ class NetWorkForm(forms.Form):
 
 
 
-    
-class UHNVerificationForm(forms.Form):     
+
+class UHNVerificationForm(forms.Form):
      choice = ModelChoiceField(UHNEmail.objects.all(),empty_label="Select email",
                                  widget=forms.Select(attrs={'class': 'form-control'}),label='Select email')
-     email = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control',"placeholder":"enter ID",'autocomplete':'off' }),label='enter ID')   
+     email = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control',"placeholder":"enter ID",'autocomplete':'off' }),label='enter ID')
 
-     def __init__(self, *args, **kwargs):       
+     def __init__(self, *args, **kwargs):
         super(UHNVerificationForm, self).__init__(*args, **kwargs)
          # Bootstrap stuff for crispy forms
         self.helper = FormHelper(self)
         self.helper.form_method = 'post'
         self.helper.layout.append(FormActions(
          Submit('round_table_delete', 'Send verification email'))
-                               ) 
+                               )
      def clean_email(self):
          email = self.cleaned_data['email']
          if "@" in email:
             raise forms.ValidationError("ID should not contain '@'")
          return email
-     
-     
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

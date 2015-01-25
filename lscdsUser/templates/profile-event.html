@@ -71,8 +71,8 @@
                     <tbody> 
                         {% for event in  registered_list %}
 
-                        <tr>  <td>  <strong>{{event.event.name}} </strong> {% csrf_token %}
-                                <input type="hidden" name="event_id" value="{{event.event.pk}}"> </td> 
+                        <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+                                <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
                             <td> <button type="submit" class="btn btn-danger">Delete</button></td>
                         </tr> 
                         {% empty %}

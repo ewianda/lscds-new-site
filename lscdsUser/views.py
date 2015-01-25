@@ -41,30 +41,30 @@ class UHMVerifyView(RedirectView):
     http_method_names = ['get']
     pattern_name = 'profile-event'
     def get_success_url(self):
-        return reverse('profile-event')   
+        return reverse('profile-event')
     def get_redirect_url(self, *args, **kwargs):
         verify_key = kwargs.get('verify_key',None)
-        
+
         if verify_key:
            activated_user = LscdsUser.objects.verify_user(verify_key=verify_key)
         else:
-           activated_user =None        
+           activated_user =None
         if activated_user:
            messages.add_message(self.request, messages.SUCCESS, 'Your UHN or UTOR email  was successfully verified.',)
         else:
-           messages.add_message(self.request, messages.ERROR, 'An error occured in the verification process. Please try again or contact web team for further assistant',extra_tags='danger') 
-            
+           messages.add_message(self.request, messages.ERROR, 'An error occured in the verification process. Please try again or contact web team for further assistant',extra_tags='danger')
+
         return reverse(self.pattern_name)
-    
-    
-    
+
+
+
 class UHMVerificationView(FormView):
     template_name="uhn-email-verification.html"
-    form_class = UHNVerificationForm  
-    success_message = "An email was sent to %s. Login into your account and click on the link to verify your email"   
+    form_class = UHNVerificationForm
+    success_message = "An email was sent to %s. Login into your account and click on the link to verify your email"
     def get_success_url(self):
         return reverse('profile-event')
-    
+
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
@@ -74,79 +74,80 @@ class UHMVerificationView(FormView):
         user = self.request.user
         user = LscdsUser.objects.create_verify_key(user)
         site.new = site.domain
-        user.send_verify_mail(site,uhn_email,request=self.request) 
-        messages.success(self.request, self.success_message % uhn_email)      
+        user.send_verify_mail(site,uhn_email,request=self.request)
+        messages.success(self.request, self.success_message % uhn_email)
         return super(UHMVerificationView, self).form_valid(form)
-    
+
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super(UHMVerificationView, self).dispatch(*args, **kwargs)
 
 @csrf_exempt
 @login_required
-def event_view(request):  
+def event_view(request):
     user = request.user
     nr_list =Event.objects.user_nr(user)
     not_nr_list =Event.objects.user_open_nr(user)
     registered_list =Event.objects.user_events(user)
     event_history =Event.objects.user_event_history(user)
-    not_registered_list =Event.objects.user_open_events(user)   
+    not_registered_list =Event.objects.user_open_events(user)
     context = {'registered_list':registered_list,'not_registered_list':not_registered_list,\
                'nr_list':nr_list,'not_nr_list':not_nr_list,\
                'event_history':event_history }
-    return render(request, 'profile-event.html', context) 
+    return render(request, 'profile-event.html', context)
 
+
+from django.shortcuts import get_object_or_404
 
 @login_required
 def registration_view(request):
     # Round table registration for Network receptions only
     if 'round_table_registration' in request.POST:
        event_id= request.POST.get('event_id')
-       event=Event.objects.get(pk=event_id) 
+       event=get_object_or_404(Event , pk=event_id)
        form=NetWorkForm(request.POST,event=event)
        # check if user has paid for event
        paid = request.user.my_round_table.all()
        if paid:
-           paid=paid.filter(round_table__event_id=event_id)[0].paid 
+           paid=paid.filter(round_table__event_id=event_id)[0].paid
        if form.is_valid():
           event_id = form.cleaned_data['event_id']
           round_table_1 = form.cleaned_data['round_table_1']
-          round_table_2 = form.cleaned_data['round_table_2']             
-          if not request.user.is_u_of_t and not paid:   
+          round_table_2 = form.cleaned_data['round_table_2']
+          if not request.user.is_u_of_t and not paid and event.has_fee:
                request.session['event_id'] = event_id
-               request.session['round_table_1'] = round_table_1.pk        
-               request.session['round_table_2'] = round_table_2.pk  
-               return HttpResponsePermanentRedirect(reverse('paypal:payment'))             
+               request.session['round_table_1'] = round_table_1.pk
+               request.session['round_table_2'] = round_table_2.pk
+               return HttpResponsePermanentRedirect(reverse('paypal:payment'))
           rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_1)
           rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
           rt_1.save()
           rt_2.save()
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
-            return render(request, 'profile-event-registration.html', {'form':form}) 
+            return render(request, 'profile-event-registration.html', {'form':form})
     """
     Delete a Network Reception registration completely
     """
     if 'round_table_delete' in request.POST:
        event_id= request.POST.get('event_id')
-       event=Event.objects.get(pk=event_id) 
+       event=get_object_or_404(Event , pk=event_id)
        form=NetWorkForm(request.POST,event=event)
        if form.is_valid():
           event_id = form.cleaned_data['event_id']
           round_table_1 = form.cleaned_data['round_table_1']
-          round_table_2 = form.cleaned_data['round_table_2']                    
-          rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_1)
-          rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
-          if not (cr1 and cr2) and (rt_1 and rt_2):
-                rt_1.delete()
-                rt_2.delete()
+          round_table_2 = form.cleaned_data['round_table_2']
+          rt_1 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_1)
+          rt_2 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_2)
+          rt_1.delete()
+          rt_2.delete()
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
-            return render(request, 'profile-event-registration.html', {'form':form})  
+            return render(request, 'profile-event-registration.html', {'form':form})
 
-    if request.POST and request.POST.get('event_id',None):      
+    if request.POST and request.POST.get('event_id',None):
        event_id= request.POST.get('event_id')
-       event=Event.objects.get(pk=event_id)       
+       event=Event.objects.get(pk=event_id)
        if event.get_round_table():
            nr_list=RoundTable.objects.filter(round_table_registrations__student=request.user,event_id=event_id)
            if nr_list:
@@ -154,8 +155,8 @@ def registration_view(request):
            else:
                initial={'event':event,'event_id':event.id}
            form=NetWorkForm(event=event,initial=initial)
-           return render(request, 'profile-event-registration.html', {'form':form,'event':event}) 
-       else:    
+           return render(request, 'profile-event-registration.html', {'form':form,'event':event})
+       else:
            registration,create = Registration.objects.get_or_create(owner=request.user,event=Event(pk=event_id))
            if create:
                registration.save()

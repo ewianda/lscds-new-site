@@ -28,8 +28,7 @@
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 Your record shows that you are currently a University of Toronto student or at one of the University Health
 Network hospitals. You are requested to verify your status each academic year starting September. Note that
-event registration is free for  University of Toronto students or workers at the University Health
-Network hospitals </div>
+event registration is free for  University of Toronto students and  affiliated institutions.</div>
 </div>
 
 {% else %}
@@ -38,8 +37,8 @@ Network hospitals </div>
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 Your record shows that you are not a student of the University of Toronto. 
 There is an event registration fee for none University of Toronto students
- <a  href="{% url 'uoft-email-verification' %}">Please verify your University of Toronto student status by</a>
-verifying your UofT email</div>
+ <a  href="{% url 'uoft-email-verification' %}">Please verify your University of Toronto or affiliated institutions status</a>
+</div>
 </div>
 {% endif %}
 

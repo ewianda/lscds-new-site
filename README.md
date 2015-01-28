@@ -47,4 +47,7 @@ python manage.py syncdb
 python manage.py runserver
 
 ```
+Backing files
+================
+./manage.py dumpdata -e contenttypes -e auth.Permission --indent=4 -e sessions -e admin -n > fixture_20152801.json
 

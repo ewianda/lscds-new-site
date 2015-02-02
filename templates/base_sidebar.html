@@ -46,7 +46,7 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                             <!-- Magazine Posts -->
                             <div class="row margin-bottom-0">
                                 <div class="magazine-posts col-md-12 col-sm-6 margin-bottom-30">
-                                    <h3> Our upcoming events</h3>
+                                  <div class="headline"><h2>Upcoming events</h2></div>
                                     {% if context_event %}
                                       {% for event in context_event%}
                                        <span><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue"> {{event.name}}</a> / on {{event.starts|date:'M-d-o'}} @ {{event.starts|date:'P'}}</span>
@@ -81,13 +81,13 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                             <!-- End Quick Links -->
                             {% endcomment %}
                             <!-- Photo Stream -->
-                            <div class="headlie"><h2>Latest Tweets</h2></div> 
+                            <div class="headline"><h2>Latest Tweets</h2></div> 
                            {% for tweet in tweets %} 
                            <blockquote class="twitter-tweet">
                              <a href="https://twitter.com/{{tweet.user}}/status/{{tweet.id}}" </a>
                              </blockquote>   
                              {% endfor %}             
-                          
+                           {% comment %}
                             <!-- End Photo Stream -->
                            <div class="headline"><h2>Latest blog</h2></div>   
                             <!-- Latest News -->
@@ -117,6 +117,7 @@ blockquote.twitter-tweet a[href^="https://twitter.com"] {
                                 <hr class="hr-md">
                             </div>
                             <!-- End Latest News -->
+                               {% endcomment %}
                         </div>
                         <!-- End Sidebar -->
 

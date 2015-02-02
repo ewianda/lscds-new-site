@@ -7,7 +7,7 @@ PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 sys.path.append(os.path.join(os.path.dirname(__file__), 'libs'))
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+     ('Elvis Wianda', 'wiandaelvis@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -24,7 +24,7 @@ DATABASES = {
 #print DATABASES
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.lscds-new-site-v3.appspot.com','.localhost:8080']
 
 
 # Local time zone for this installation. Choices can be found here:
@@ -153,7 +153,8 @@ INSTALLED_APPS = ('adminactions',
     'tagging',
     'mptt',
     'zinnia','zinnia_ckeditor',
-
+    'simple_faq',
+     'live_support',
     'social.apps.django_app.default', 
     'lscdsUser',
     'home',
@@ -174,7 +175,9 @@ INSTALLED_APPS = ('adminactions',
     'tagging',
     #'autocomplete_light',
     'appengine_toolkit',
- 'paypal.standard.ipn', 
+ 'paypal.standard.ipn',
+  'paypal.standard',
+    'paypal.pro',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -184,6 +187,8 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
+        'height': 180,
+    'width': 735,
     },
 }
 APPENGINE_TOOLKIT = {
@@ -217,6 +222,7 @@ AUTHENTICATION_BACKENDS = (
  'social.backends.yahoo.YahooOpenId',
 'social.backends.twitter.TwitterOAuth',
  'django.contrib.auth.backends.ModelBackend',
+ 'lscds_site.backend.OldUserAuthenticationBackend',
 )
 
 AUTH_USER_MODEL = 'lscdsUser.LscdsUser'
@@ -228,7 +234,7 @@ SEND_ACTIVATION_EMAIL = True
 
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/profile-event'
+LOGIN_REDIRECT_URL = '/first-login'
 SOCIAL_AUTH_LOGIN_URL = '/profile-event'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'

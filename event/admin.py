@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django import forms
 from ckeditor.widgets import CKEditorWidget
 from django.core.mail import send_mass_mail
-
+from sponsor.models import EventSponsor
 from django.forms.models import BaseInlineFormSet
 
 
@@ -50,6 +50,10 @@ class EventCreationForm(forms.ModelForm):
 class EventlineAdmin(admin.StackedInline):
     model = Event
     extra = 0
+class EventSponsorlineAdmin(admin.StackedInline):
+    model = EventSponsor
+    extra = 0
+
 
 
 class TalklineAdmin(admin.TabularInline):
@@ -83,8 +87,9 @@ class EventTypeAdmin(admin.ModelAdmin):
 class EventAdmin(admin.ModelAdmin):
     form = EventCreationForm
     inlines = [
-     EventFeelineAdmin, RoundTablelineAdmin,RegistrationlineAdmin,TalklineAdmin
+     RoundTablelineAdmin,TalklineAdmin,EventSponsorlineAdmin,EventFeelineAdmin
     ]
+    prepopulated_fields = {"slug": ("name","location")}
 
 class PresenterAdmin(admin.ModelAdmin):
    pass

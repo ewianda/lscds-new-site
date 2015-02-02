@@ -1,7 +1,10 @@
 {% extends 'base_sidebar.html' %}
 {% load staticfiles %}
 {% load static %}
+{% load url from future %}
+{% load i18n %}
 {% block main_sidebar %}
+
  <div class="row magazine-page">
                        <!-- Magazine Slider -->
                        
@@ -64,8 +67,8 @@
                             <div class="magazine-new-img">
                                 <legend class="magazine-badge label-red">Our Mission</legend>                                    
                             </div>
-                            <h3>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
-their career knowledge</h3>                            
+                            <p>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
+their career knowledge</p>                            
                         </div>
                     </div>
                 </div>
@@ -78,26 +81,44 @@ their career knowledge</h3>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="magazine-new-img">
-                                <legend class="magazine-badge label-yellow">News</legend>                                    
+                                <legend class="magazine-badge label-yellow">Latest Jobs</legend>                                    
                             </div>
-                            <h3><a href="#">Simelque Untine Culpaqui Officia Deserunt Blanditiis Praesentium</a></h3>
-                            <div class="by-author">
-                                <strong>By Jack Villo</strong>
-                                <span>/ September 19, 2013</span>
-                            </div> 
-                            <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate...</p>
+                            {% for job in jobs %}
+								<h5><a href="{% url 'resource:job' slug=job.slug %}">{{ job.title }}</a></h5>
+								
+								
+						 <span>{{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a> </span>
+								<p>{{ job.description|truncatewords:10 |safe }}<p>
+								{% empty %}
+								    <p>No job yet.</p>
+								{% endfor %}              
+                            
                         </div>
                         <div class="col-md-6">
                             <div class="magazine-new-img">
-                                <legend class="magazine-badge label-green">Subscription</legend>
+                                <legend class="magazine-badge label-green">Latest Blogs</legend>
                             </div>
-                            <h3><a href="#">Simelque Untine Culpaqui Officia Deserunt Blanditiis Praesentium</a></h3>
-                            <div class="by-author">
-                                <strong>By Admin</strong>
-                                <span>/ September 19, 2013</span>
-                            </div> 
-                            <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate...</p>
-                        </div>
+                            {% for object in  context_blog %}                           
+                              
+                                    <h5><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h5>
+                                    <div class="by-author">
+                                        {% with authors=object.authors.all %}
+                                           {% if authors|length %}
+                                          <span> 
+                                                {% for author in authors %}
+                                                
+                                           <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
+                                          title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}"><strong> {% trans "By " %} {{ author }} </strong> / {{object.creation_date|date:"F d o"}}</a></span>{% if not forloop.last %}, {% endif %}
+                                                            {% endfor %}                         
+                                      
+                                                 {% endif %}
+                                                     {% endwith %}                                      
+                                    </div>
+                                    <p> {{ object.content|truncatewords:10|safe }}</p>
+                                    {% empty %}
+                                    
+                                    {% endfor %}                                    
+                            </div>
                     </div>
                 </div>
                 <!-- End Magazine News -->

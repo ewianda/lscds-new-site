@@ -8,127 +8,70 @@
 
 
 <div class='row'>
-<div class='col-md-6'>
-<legend>Your profile</legend>
-                <div id="msg" class="alert hide"></div>
+<div class='col-md-6 '>
+<legend>Mailing List</legend>
 
-<table id="user" class="table table-bordered table-striped">
-    <tbody> 
- <tr> <td style="width: 100px"> Email:</td>  <td> {{ object.email}}   </td>  <tr> 
-
-
-
+<div class='row margin-bottom-30  '>
+<div style = "display:none"   class="alert alert-success alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+Your setting was changed
+</div>
 
 
-        {% for field in form %}
-        <tr> 
-{% if field|is_select %}
-    <td style="width: 100px">     {{ field.errors }}
-        {{ field.label_tag }}</td>
-    <td> <a href="#" class="myeditable" data-pk={{user.pk}} data-value={{field.value}}  data-type="select" data-name="{{field.name}}" data-source ='{{field|select_options}}'>{{ field|value_text}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
+<div class='row margin-bottom-30  '>
+<div style = "display:none" class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+There was an error
+</div>
+</div>
 
-{% elif field|is_checkbox %}
- <td style="width: 100px">     {{ field.errors }}
-        {{ field.label_tag }}</td>
-    <td> <a href="#" class="myeditable" data-pk={{user.pk}}  data-type="select" data-value={{field.value}}  data-name="{{field.name}}" data-source ='[{value:"True","text":"Yes"},{value:"False","text":"No"}]'>{{ field}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
-
-
-{% else %}
-
-{% endif %}
-
- </tr> 
-
-        {% endfor %}
-
-</tbody>
-</table>
-
+  <ul class="list-inline col-sm-offset-3">
+    <li>
+      <div class="btn-group btn-toggle"> 
+    	<button class="btn   {% if user.mailinglist == True %}btn-success active {% endif %}">Yes</button>
+    	<button class="btn  {% if user.mailinglist == False %}btn-success active {% endif %}">No</button>
+    	</div>
+    </li>    
+    </ul>          
 
 </div> <!-- End of col-6  -->
-
-
-
 </div> <!-- End of row-->
 
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript">
 jQuery(document).ready(function() {
-$('.registr').on('submit',function(e){
-e.preventDefault()
-var url = $(this).attr('action')
-$.ajax({
-type: "POST",
-url: url,
-data: $(this).serialize(), // serializes the form's elements.
-success: function(data)
-{
-//alert(data); // show response from the php script.
 
-}
-}); /// end ajax call
-}); // end form submission
+$('.btn').click(function() {
+    //$(this).find('.btn').toggleClass('active');    
+    //if ($(this).find('.btn-success').size()>0) {
+    //	$(this).find('.btn').toggleClass('btn-success');
+    //}  
+    
+    //$(this).find('.btn').toggleClass('btn-default');
 
-// In line editting
-$.fn.editable.defaults.mode = 'inline';
-$('.myeditable').editable({
-placement: 'right',
-url:'/profile/', 
-validate: function(v) {
-   if(!v) return 'Required field!';
-   },
-params: function(params) {
-//originally params contain pk, name and value
-newParams = {}
-$('a.myeditable').each(function(){
-  newParams[$(this).attr('data-name')]=$(this).attr('data-value')                     
-  })
-newParams[params.name]=params.value
-newParams.pk = params.pk;
-    return newParams;
-}   
-   
-});// End editable
-
-$('.icon-pencil').click(function(e){    
-       e.stopPropagation();
-      //$(this).closest($('.myeditable').editable('toggle'));
-    $var = $(this).closest('td').find('.editable')
-    $var.editable('toggle')
-    console.log($var)
-    $('.icon-pencil').hide();
-});
-// Show the pencil on click
-  $(document).on('click', '.editable-cancel, .editable-submit', 'body', function(){
-        $('.icon-pencil').show();
-        }) 
-
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (settings.type == 'POST' || settings.type == 'PUT' || settings.type == 'DELETE') {
-            function getCookie(name) {
-                var cookieValue = null;
-                if (document.cookie && document.cookie != '') {
-                    var cookies = document.cookie.split(';');
-                    for (var i = 0; i < cookies.length; i++) {
-                        var cookie = jQuery.trim(cookies[i]);
-                        // Does this cookie string begin with the name we want?
-                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                // Only send the token to relative URLs i.e. locally.
-                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-            }
+    
+    $.ajax({
+    url: '/ajax_mailing_list/',
+    data:{"data":$(this).text()},
+    type: 'post', //this is the default though, you don't actually need to always mention it
+    success: function(data) {
+      if (data == "success"){ 
+        $(".alert.alert-success").show()
+        $('.btn').toggleClass('btn-success');
         }
+      else { $(".alert.alert-danger").show()
+      }
+      
+       
+    },
+    error: function(data) { 
+       $(".alert.alert-danger").show()
     }
+      }); 
+       
 });
+
 
  }); // End of doccument ready
                        </script>

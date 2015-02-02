@@ -5,6 +5,17 @@
 {% load static %}
 {% block main_sidebar %}
 <div class='row'>
+<div class='row margin-bottom-30  '>
+<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+Your records show that you are not a trainee at the University of
+ Toronto or its affiliated institutions. There is an event registration 
+ fee for external trainees.
+
+ <a  href="{% url 'uoft-email-verification' %}">Please verify your University of Toronto (or affiliated institutions) status</a>
+</div>
+</div>
+
 <legend> Your Payment details</legend>
 <table class="table table-bordered">
 <tbody>

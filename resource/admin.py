@@ -6,7 +6,8 @@ from resource.models import (Resource, Jobs ,Files)
 
 
 class JobAdmin(admin.ModelAdmin):
-      pass
+      prepopulated_fields = {"slug": ("title","company","location")}
+
 
 class ResourceAdmin(admin.ModelAdmin):
        pass

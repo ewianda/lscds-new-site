@@ -4,6 +4,7 @@
             {% load staticfiles %}
             {% load static %}
             {% load i18n %}
+{% load cache %}
 
 {% block title %}Latest Photo Galleries{% endblock %}
 {% block css %}
@@ -24,7 +25,9 @@
 
 
   <!--=== Content Part ===-->
-		
+{% cache 500 sidebar %}
+
+	
 <div class="gallery-page">
     {% if latest %}
  <div class="row margin-bottom-20">
@@ -59,7 +62,7 @@
    </div>
 
      <!--=== Content Part ===-->
-
+{% endcache %}	
   {% endblock %}
 
 {% block side_bar %} 

@@ -16,7 +16,8 @@ from event.models import EventType,Registration,Event,RoundTable,RoundTableRegis
 
 
 base_url = Site.objects.get_current().domain
-notify_url = getattr(settings, 'PAYPAL_NOTIFY_URL', "http://" + base_url )
+notify_url = getattr(settings, ' PAYPAL_NOTIFY_URL', "http://" + base_url )
+
 @login_required 
 def event_payment(request):           
             # What you want the button to do.
@@ -52,8 +53,11 @@ def event_payment(request):
 
 from paypal.standard.models import ST_PP_COMPLETED
 from paypal.standard.ipn.signals import valid_ipn_received
+from django.contrib.sites.models import Site
 
 def show_me_the_money(sender, **kwargs):
+
+  site = Site.objects.get_current()           
   ipn_obj = sender
   if ipn_obj.payment_status == ST_PP_COMPLETED:    
         custom = ipn_obj.custom
@@ -67,6 +71,7 @@ def show_me_the_money(sender, **kwargs):
         rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=student,round_table=round_table_2,paid=True)
         rt_1.save()
         rt_2.save()
+        student.send_event_register_mail(event,site,request=None)
     
 
    # else:

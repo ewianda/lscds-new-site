@@ -48,9 +48,26 @@
 </tbody>
 </table>
 
-
 </div> <!-- End of col-6  -->
 
+<div class='col-md-6 row'>
+{% if request.user.is_staff %}
+<legend>Update profiel picture</legend>
+{% if object.avatar %}
+         <div class="col-md-6 col-xs-6" > <img class="img-thumbnail img-responsive" src="{{object.avatar.url}}"/></td>
+         
+          {% else %}
+          <div class="col-md-6 col-xs-6"><img class="img-thumbnail img-responsive" src="http://placehold.it/200x100&text=Image"/>  </div>
+          {% endif %}
+ <div class="col-md-6 col-sm-12" >
+<form method = "post" action={% url "upload-avatar" %} enctype="multipart/form-data"> {{form.avatar}}
+{% csrf_token %}
+<button type="submit" class="pull-right btn btn-primary">Submit</button>
+</form>
+</div> <!-- End of col-6  -->
+{% endif %}
+
+</div> <!-- End of col-6  -->
 
 
 </div> <!-- End of row-->

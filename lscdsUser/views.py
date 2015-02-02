@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
-
-
+from django.utils import timezone
+from django.views.generic.list import ListView
 from django.views.generic.base import RedirectView
 from django.contrib.sites.models import get_current_site
 from django.shortcuts import render_to_response,redirect,render
@@ -20,8 +20,10 @@ from django.contrib import messages
 from registration import signals
 from registration.models import RegistrationProfile
 from registration.backends.default.views import RegistrationView,ActivationView
-from lscdsUser.forms import UserCreationForm,UHNVerificationForm ,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,NetWorkForm
-from lscdsUser.models import LscdsUser
+from lscdsUser.forms import UserCreationForm,UHNVerificationForm \
+,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,\
+NetWorkForm,UploadAvatarForm
+from lscdsUser.models import LscdsUser,LscdsExec
 from event.models import EventType,Registration,Event,RoundTable,RoundTableRegistration
 from lscds_site.decorators import render_to
 
@@ -36,6 +38,47 @@ from django.core.urlresolvers import reverse
 
 from django.views.generic.edit import FormView
 from django.contrib.messages.views import SuccessMessageMixin
+
+@csrf_exempt
+@login_required
+def ajax_mailing_list(request):
+    if request.is_ajax():
+        data= request.POST.get('data',None)
+        print request.POST
+        print data == "Yes"     
+        if   data == "Yes":          
+             request.user.mailinglist = True
+             request.user.save()
+             message = "success" 
+        elif data == "No":
+             request.user.mailinglist = False
+             request.user.save()          
+             message = "success"        
+        else:
+            message = ""
+        return HttpResponse(message)
+    else:
+        message = ""
+    return HttpResponse(message)
+      
+    
+
+def upload_file(request):
+    if request.method == 'POST':               
+        form = UploadAvatarForm(request.POST, request.FILES)        
+        if form.is_valid():
+             request.user.avatar=request.FILES['avatar']
+             request.user.save()
+             messages.add_message(request, messages.SUCCESS, 'Your upload  was successfully verified.',)
+        else:
+           messages.add_message(request, messages.ERROR, 'An error occured in the upload process.Check file format and try again or contact web team for further assistant',extra_tags='danger')
+        return HttpResponsePermanentRedirect(reverse('profile-update'))  
+    else:
+        return HttpResponsePermanentRedirect(reverse('profile-update'))  
+
+
+
+
 
 class UHMVerifyView(RedirectView):
     http_method_names = ['get']
@@ -72,7 +115,7 @@ class UHMVerificationView(FormView):
         uhn_email = str(form.cleaned_data['email']) + '@' + str(form.cleaned_data['choice'])
         site = get_current_site(self.request)
         user = self.request.user
-        user = LscdsUser.objects.create_verify_key(user)
+        user = LscdsUser.objects.create_verify_key(user,uhn_email)
         site.new = site.domain
         user.send_verify_mail(site,uhn_email,request=self.request)
         messages.success(self.request, self.success_message % uhn_email)
@@ -93,15 +136,61 @@ def event_view(request):
     not_registered_list =Event.objects.user_open_events(user)
     context = {'registered_list':registered_list,'not_registered_list':not_registered_list,\
                'nr_list':nr_list,'not_nr_list':not_nr_list,\
-               'event_history':event_history }
+               'event_history':event_history,"now": timezone.now()}
     return render(request, 'profile-event.html', context)
 
 
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login
+def first_login(request):    
+    if str(request.user) == "OldlscdsUser object":
+        form =  SocialExtraDataForm() # An unbound form 
+        if request.method == 'POST':
+           form = SocialExtraDataForm(request.POST)
+           if form.is_valid():
+                password= request.user.raw_password
+                email= request.user.email
+                first_name = request.user.first_name
+                last_name = request.user.last_name
+                new_user=LscdsUser.objects.create_user(email,password)
+                changed = False
+                protected = ('email', 'id', 'pk')
+                # Update user model attributes with the new data sent by the current
+                # provider. Update on some attributes is disabled by default, for
+                # example username and id fields. It's also possible to disable update
+                # on fields defined in SOCIAL_AUTH_PROTECTED_FIELDS.
+                for name, value in form.cleaned_data.items():
+                    if not hasattr(new_user, name):
+                        continue
+                    current_value = getattr(new_user, name, None)
+                    if not current_value or name not in protected:
+                        changed |= current_value != value
+                        setattr(new_user, name, value)
+                new_user.first_name=first_name
+                new_user.last_name=last_name    
+                new_user.save()
+                request.user.delete()
+                logout(request)
+                new_user = authenticate( username=email,password=password)
+                login(request,new_user)
+                return HttpResponseRedirect(reverse('profile-event')) 
+               #LscdsUser.objects.create_user()
+        else:
+                form =  SocialExtraDataForm() # An unbound form    
+        return render(request,'old_lscdsusers.html', {'form': form,}) 
+    else:
+        return HttpResponsePermanentRedirect(reverse('profile-event')) 
+    
 
 @login_required
 def registration_view(request):
-    # Round table registration for Network receptions only
+    # Get the site information for sending emails.
+    if Site._meta.installed:
+            site = Site.objects.get_current()
+    else:
+            site = RequestSite(request)
+    # Round table registration for Network receptions only      
     if 'round_table_registration' in request.POST:
        event_id= request.POST.get('event_id')
        event=get_object_or_404(Event , pk=event_id)
@@ -123,6 +212,7 @@ def registration_view(request):
           rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
           rt_1.save()
           rt_2.save()
+          request.user.send_event_register_mail(event,site,request)          
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
             return render(request, 'profile-event-registration.html', {'form':form})
@@ -141,6 +231,7 @@ def registration_view(request):
           rt_2 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_2)
           rt_1.delete()
           rt_2.delete()
+          request.user.send_event_modifiction_mail(event,site,request)
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
             return render(request, 'profile-event-registration.html', {'form':form})
@@ -160,8 +251,10 @@ def registration_view(request):
            registration,create = Registration.objects.get_or_create(owner=request.user,event=Event(pk=event_id))
            if create:
                registration.save()
+               request.user.send_event_register_mail(event,site,request)
            else:
                registration.delete()
+               request.user.send_event_modifiction_mail(event,site,request)
        return HttpResponsePermanentRedirect(reverse('profile-event'))
     else:
        return HttpResponsePermanentRedirect(reverse('profile-event'))
@@ -238,6 +331,20 @@ class LSCDSRegistrationView(RegistrationView):
         new_user.save()
         return new_user
 
+class ExecListView(ListView):
+    """
+    Class that only allows authentic user to update their profile
+    Composed of first_name,last_name,date_of_birth,gender,
+    """
+    template_name ="lscdsexec_list.html"
+    model = LscdsExec 
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ExecListView, self).dispatch(*args, **kwargs)
+    
+    
+    
+    
 def context(**extra):
     return dict({
         'plus_id': getattr(settings, 'SOCIAL_AUTH_GOOGLE_PLUS_KEY', None),

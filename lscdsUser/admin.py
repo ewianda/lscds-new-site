@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext, ugettext_lazy as _
-from lscdsUser.models import LscdsUser, UHNEmail
+from lscdsUser.models import LscdsUser, UHNEmail,OldlscdsUser,LscdsExec
 
 import adminactions.actions as actions
 
@@ -34,7 +34,24 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+class OldForm(forms.ModelForm):
+    """A form for updating users. Includes all the fields on
+    the user, but replaces the password field with admin's
+    password hash display field.
+    """
+    #password = ReadOnlyPasswordHashField()
 
+    class Meta:
+        model = OldlscdsUser
+        
+
+   # def clean_password(self):
+        # Regardless of what the user provides, return the initial value.
+        # This is done here, rather than on the field, because the
+        # field does not have access to the initial value
+       # return self.initial["password"]
+    
+    
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's
@@ -77,11 +94,24 @@ class LscdsUserAdmin(UserAdmin):
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
-
+class OldLscdsUserAdmin(admin.ModelAdmin):
+    form = OldForm
+    list_display = ('email', 'first_name', 'last_name')
+    search_fields = ('email', 'first_name', 'last_name')
+    
+class LscdsExecAdmin(admin.ModelAdmin):
+      list_display = ('user', 'position', 'admin_image')
+    
+    
+    
 admin.site.add_action(actions.export_as_csv)  
 admin.site.add_action(actions.export_as_xls)
 admin.site.add_action(actions.graph_queryset)
 admin.site.register(UHNEmail)
+admin.site.register(OldlscdsUser,OldLscdsUserAdmin)
+admin.site.register(LscdsExec,LscdsExecAdmin)
+
+
 # Now register the new UserAdmin...
 admin.site.register(LscdsUser, LscdsUserAdmin)
 # ... and, since we're not using Django's built-in permissions,

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load static %}
+{% block main %}
+{% load crispy_forms_tags %}
+<div class='row margin-bottom-30  '>
+<div class="alert alert-info alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+Please update the following information to complete your login
+</div>
+
+{{ user.raw_password}}
+  {% crispy form  %}
+
+
+{% endblock %}

@@ -28,6 +28,29 @@
     <li>No sponsors</li>
 {% endfor %}
 
+<legend> Event Sponsors </legend>
+{% for sponsor in event_sponsors %}
+ <!-- Clients Block-->
+                <div class="row clients-page">
+                    <div class="col-md-2">
+                        {% if sponsor.image %}
+                          <img src="{{sponsor.image.url}}" class="img-responsive" alt="{{sponsor.name}}">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-10">
+                        <h3>{{sponsor.name}}</h3>
+                        <ul class="list-inline">
+                            <li><i class="fa fa-map-marker color-green"></i> Canada</li>
+                            <li><i class="fa fa-globe color-green"></i> <a class="linked" href="{{ sponsor.url }}">{{ sponsor.url }}</a></li>
+                        </ul>
+                        <p>{{ sponsor.description |safe }}
+                   </div>
+                </div>
+                <!-- End Clients Block-->
+{% empty %}
+    <li>No sponsors</li>
+{% endfor %}
+
 
     {% if i_paginated %}
         <ul class="pagination pagination-centered">

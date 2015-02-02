@@ -1,0 +1,45 @@
+{% extends 'base_sidebar.html' %}
+{% load staticfiles %}
+{% load static %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% load form_utils %}
+{% load lscds_tags %}
+
+{% block title %} Our Team{% endblock %}
+
+
+{% block main_sidebar %}
+
+
+<table class='table table-bordered table-striped'>
+    <tbody>
+        {% for exec in object_list%}
+      
+        <tr>
+         {% if exec.user.avatar %}
+         <td class="col-md-4 " > <img class="img-thumbnail img-responsive" src="{{exec.user.avatar.url}}"/></td>
+         
+          {% else %}
+          <td class="col-md-4"><img class="img-thumbnail img-responsive" src="http://placehold.it/200x100&text=Image"/>  </td>
+          {% endif %}
+          
+          <td class="col-md-8">
+            <table class='table'>
+              <tr><td><strong>{{exec.user}}</strong></td></tr>
+              <tr><td>{{exec.position}}</td></tr>  
+                     
+              
+               </td>
+            </table>          
+        </tr>
+        <tr><td colspan= '3'>{{exec.biography | safe}} </td></tr>
+{% endfor %}
+    </tbody>
+     </table> 
+
+{% endblock %}
+
+

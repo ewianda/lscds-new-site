@@ -15,17 +15,10 @@
     {% get_archives_entries "zinnia/tags/entries_archives_link.html" %}
 {% endblock link %}
 
-{% block breadcrumbs %}
-  {% zinnia_breadcrumbs %}
-{% endblock breadcrumbs %}
+
 
 {% block sidebar %}
-<div id="widget-welcome" class="widget">
-  <h3>{% trans "Welcome!" %}</h3>
-  <p>
-    {% trans "This simple theme is the default appearance of Zinnia." %}
-  </p>
- </div>
+
 <div id="widget-categories" class="widget">
   <h3>
     <a href="{% url 'zinnia:category_list' %}">{% trans "Categories" %}</a>
@@ -52,14 +45,8 @@
   <h3>{% trans "Recent comments" %}</h3>
   {% get_recent_comments %}
 </div>
-<div id="widget-linkbacks" class="widget">
-  <h3>{% trans "Recent linkbacks" %}</h3>
-  {% get_recent_linkbacks %}
-</div>
-<div id="widget-randoms" class="widget">
-  <h3>{% trans "Random entries" %}</h3>
-  {% get_random_entries %}
-</div>
+
+
 <div id="widget-populars" class="widget">
   <h3>{% trans "Popular entries" %}</h3>
   {% get_popular_entries %}

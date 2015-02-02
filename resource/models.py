@@ -26,7 +26,7 @@ class Jobs(models.Model):
     location = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
     date_posted = models.DateTimeField(default = timezone.now)
-    slug = models.SlugField(max_length=40)    
+    slug = models.SlugField(max_length=40,unique=True)    
     link = models.URLField()
     class Meta:
         ordering = ['-date_posted']

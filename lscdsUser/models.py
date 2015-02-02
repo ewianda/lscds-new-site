@@ -24,6 +24,8 @@ import hashlib
 import random
 import re
 from django.template.loader import render_to_string
+from ckeditor.fields import RichTextField
+
 
 UPLOAD_TO = getattr(settings, 'USERS_UPLOAD_TO', 'lscdsUsers')
 
@@ -49,7 +51,7 @@ UHN_EMAILS = ['mail.utoronto.ca','sickkids.ca','toronto.ca']
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 class MyUserManager(BaseUserManager):
-    def create_verify_key(self,user):
+    def create_verify_key(self,user,uhn_email):
         """     
         The verify key for the user will be a
         SHA1 hash, generated from a combination of the ``User``'s
@@ -62,6 +64,7 @@ class MyUserManager(BaseUserManager):
             email = email.encode('utf-8')
         verify_key = hashlib.sha1(salt+email).hexdigest()
         user.verify_key=verify_key
+        user.uhn_email = uhn_email
         user.save()
         return user
         
@@ -95,7 +98,7 @@ class MyUserManager(BaseUserManager):
                 user = self.get(verify_key=verify_key)
             except self.model.DoesNotExist:
                 return False
-            user.is_u_of_t = True
+            user.is_u_of_t = True            
             user.expiry_date = expiry_date
             user.save()            
             return user
@@ -122,6 +125,8 @@ class MyUserManager(BaseUserManager):
         user.set_password(password)
         if email.split('@')[1] in str(UHNEmail.objects.all()):
            user.is_u_of_t = True
+           user.save(using=self._db)
+           return user
         user.save(using=self._db)
         return user
 
@@ -143,6 +148,10 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         verbose_name='email address',
         max_length=255,
         unique=True,
+    )
+    uhn_email = models.EmailField(
+        verbose_name='uhn email address',
+        max_length=255,      
     )
     expiry_date = models.DateField(_('Expiry date'),default=timezone.now)
     first_name = models.CharField(_('first name'), max_length=30)
@@ -212,6 +221,39 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         message_html = render_to_string('email/verify_email.html', email_dict)
         email_message.attach_alternative(message_html, 'text/html')
         email_message.send()
+    def send_event_register_mail(self,event,site,request=None):        
+        email_dict={}         
+        if request is not None:
+            email_dict = RequestContext(request, email_dict)
+        subject="%s Event Registration" % (event)
+        email_dict = {
+            "user": self,                     
+            "site": site,            
+        }
+        message_txt = render_to_string('email/event_register_email.txt', email_dict)
+        email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [self.email])
+        message_html = render_to_string('email/event_register_email.html', email_dict)
+        email_message.attach_alternative(message_html, 'text/html')
+        email_message.send()
+    def send_event_modifiction_mail(self,event,site,request=None):        
+        email_dict={}         
+        if request is not None:
+            email_dict = RequestContext(request, email_dict)
+        subject="%s Event Registration" % (event)
+        email_dict = {
+            "user": self,                     
+            "site": site,            
+        }
+        message_txt = render_to_string('email/event_modification_email.txt', email_dict)
+        email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [self.email])
+        message_html = render_to_string('email/event_modification_email.html', email_dict)
+        email_message.attach_alternative(message_html, 'text/html')
+        email_message.send()       
+        
+        
+        
+        
+        
         
         
 class UHNEmail(models.Model):
@@ -220,3 +262,50 @@ class UHNEmail(models.Model):
         verbose_name = _("UHN Email")
     def __unicode__(self):
         return self.name
+
+
+
+
+class OldlscdsUser(models.Model):
+    email = models.EmailField(
+        verbose_name='email address',
+        max_length=255,
+        blank=True,null=True
+    )
+    is_active = models.BooleanField(_('Active'), default=True,
+        help_text=_('Designates whether this user should be treated as '
+                    'active. Unselect this instead of deleting accounts.'))
+    first_name = models.CharField(_('first name'), max_length=30,blank=True,null=True)
+    last_name = models.CharField(_('last name'), max_length=30,blank=True,null=True )
+    password = models.CharField(max_length=100,blank=True,null=True)
+    raw_password = models.CharField(max_length=100,blank=True,null=True)
+    middle_name = models.CharField(_('middle name'), max_length=30 ,null=True,blank=True,)
+    url = models.URLField(blank=True,null=True)
+    #bio = RichTextField(blank=True, null=True)
+    date_joined  = models.DateTimeField(_('date joined'), default=timezone.now) 
+    mailinglist =  models.BooleanField( default=True)
+    last_login = models.DateTimeField(_('last login'), blank=True, null=True)
+
+class LscdsExec(models.Model):
+    user = models.OneToOneField(LscdsUser)
+    position = models.CharField(_('Postion'), max_length=30)
+    start  = models.DateField(_('From'), default=timezone.now)
+    end  = models.DateField(_('To'), default=timezone.now)
+    bio = RichTextField(blank=True, null=True)
+    avatar =  models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
+        help_text=_('Used for illustration.'))
+    def admin_image(self):
+        if self.avatar:
+           return '<img width = "200" src="%s">' % self.user.avatar.url
+        else: 
+           return '<img width = "200" scr="http://placehold.it/200x100&text=Image" >'
+       
+    admin_image.allow_tags = True
+    def __unicode__(self):
+        return self.position
+    
+    
+    
+    
+    
+    

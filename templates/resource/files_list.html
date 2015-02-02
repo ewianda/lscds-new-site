@@ -1,0 +1,16 @@
+{% extends 'base_sidebar.html' %}
+{% load staticfiles %}
+{% load static %}
+ {% load url from future %}
+   {% load i18n %
+ {% load future %}
+
+{% block main_sidebar %}
+
+<h1>Files</h1>
+
+{% for file in object_list %}
+<p><a href = "{{file.file.url}}" >{{ file.name}}</a></p>
+
+{% endfor %}
+{% endblock %}

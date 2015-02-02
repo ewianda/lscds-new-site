@@ -6,7 +6,7 @@ from datetime import datetime
 from django.conf import settings
 from django.core.cache import cache
 import twitter
-
+from resource.models import (Resource, Jobs ,Files) 
 
 def twitterAuthenticate():  
     consumer_key=settings.SOCIAL_AUTH_TWITTER_KEY
@@ -54,7 +54,13 @@ def latest(request):
        photos = Gallery.objects.all().latest()
    except Gallery.DoesNotExist:
          photos = None
-   
+   try:
+       jobs = Jobs.objects.all()[:2]
+   except Jobs.DoesNotExist:
+         jobs = None
 
-   return {'context_eventtype':eventtype,'context_event':event,'context_photos':photos,'context_blog':entry}
+   return {'context_eventtype':eventtype,'context_event':event,\
+           'context_photos':photos,'context_blog':entry,\
+           'jobs':jobs
+           }
 

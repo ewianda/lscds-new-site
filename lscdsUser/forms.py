@@ -2,7 +2,7 @@ import datetime
 
 
 
-from lscdsUser.models import LscdsUser,UHNEmail
+from lscdsUser.models import LscdsUser,UHNEmail, OldlscdsUser
 from django import forms
 from django.forms.models import inlineformset_factory
 from event.models import Registration,RoundTable
@@ -14,6 +14,8 @@ from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 """ Better form Gives more flexibility template rendering than normal django forms"""
 
 
+EXCLUDE=  ('is_staff','service','avatar','relationship', 'date_joined','is_admin','is_active','uhn_email',
+                      'password','last_login','groups','is_superuser','user_permissions','verify_key','expiry_date','is_u_of_t')
 
 
 class UserCreationForm(forms.ModelForm):
@@ -62,8 +64,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = LscdsUser
-        exclude =  ('is_staff','service','relationship', 'date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions','verify_key','expiry_date','is_u_of_t')
+        exclude =  EXCLUDE
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -72,7 +73,16 @@ class UserCreationForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Passwords don't match")
         return password2
-
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        qs = OldlscdsUser.objects.filter(email=email)
+        if qs.count()>0:
+            raise forms.ValidationError("A user with this email address already exist")
+        return email
+        
+       
+        
+        
     def save(self, commit=True):
         # Save the provided password in hashed format
         user = super(UserCreationForm, self).save(commit=False)
@@ -98,9 +108,7 @@ class SocialExtraDataForm(forms.ModelForm):
 
     class Meta:
                model = LscdsUser
-               exclude = ('is_staff', 'service','date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email','verify_key','expiry_date','is_u_of_t')
-
+               exclude = EXCLUDE + ('email','first_name','last_name')
 
 class UserProfileForm(BetterModelForm):
     def __init__(self, *args, **kwargs):
@@ -119,17 +127,16 @@ class UserProfileForm(BetterModelForm):
     class Meta:
         model = LscdsUser
         #fields = ('first_name', 'last_name', 'university')
-        exclude = ('is_staff','service','relationship', 'date_joined','is_admin','is_active',
-                      'password','last_login','groups','is_superuser','user_permissions','first_name','last_name','email','verify_key','expiry_date','is_u_of_t')
-
-
+        exclude = EXCLUDE + ('email','first_name','last_name')
+        
+        
 RegistrationFormSet = inlineformset_factory(LscdsUser, Registration)
 from django.forms import ModelChoiceField
 
 
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        return " Guest (%s) , ( %s spots left)" % (obj.guest, obj.get_spots)
+        return "%s , (spots remaining:%s)" % (obj.guest, obj.get_spots)
 
 
 class NetWorkForm(forms.Form):
@@ -163,9 +170,20 @@ class NetWorkForm(forms.Form):
         # Check that the two password entries match
         round_table_1 = self.cleaned_data.get("round_table_1")
         round_table_2 = self.cleaned_data.get("round_table_2")
+        if not round_table_2.registration_open:
+            raise forms.ValidationError("This table is full")          
         if round_table_1 and  round_table_2  and round_table_1 == round_table_2:
             raise forms.ValidationError("You must select different guest speakers")
+        
         return round_table_2
+    
+     def clean_round_table_1(self):
+        # Check that the two password entries match
+        round_table_1 = self.cleaned_data.get("round_table_1")
+       
+        if not round_table_1.registration_open:
+            raise forms.ValidationError("This table is full")        
+        return round_table_1
 
 
 
@@ -187,14 +205,24 @@ class UHNVerificationForm(forms.Form):
                                )
      def clean_email(self):
          email = self.cleaned_data['email']
+         full_email = str(self.cleaned_data['email']) + '@' \
+                                            + str(self.cleaned_data['choice']) 
+         
+         uhn_email1 = LscdsUser.objects.filter(uhn_email=full_email,is_u_of_t=True)
+         uhn_email2 = LscdsUser.objects.filter(email=full_email)
          if "@" in email:
             raise forms.ValidationError("ID should not contain '@'")
+         if uhn_email1.count()>0 or uhn_email2.count() >0:
+             raise forms.ValidationError("This email is verified as active. Contact web site admin for further assistance")
          return email
 
 
 
 
 
+
+class UploadAvatarForm(forms.Form):  
+    avatar  = forms.ImageField()
 
 
 

@@ -20,7 +20,7 @@ class EventType(models.Model):
     name = models.CharField(max_length=255,unique=True)
     location = models.CharField(max_length=255)
     description = RichTextField(blank=True, null=True)
-    slug = models.SlugField(max_length=100)
+    slug = models.SlugField(max_length=100,unique=True)
     def get_events(self):
         return self.event_type.select_related()
 
@@ -82,6 +82,7 @@ STATUS = (
 class Event(models.Model):
     event_type = models.ForeignKey(EventType, related_name='event_type')
     name = models.CharField(max_length=255)
+    event_information = RichTextField(blank=True, null=True)
     location = models.CharField(max_length=255, null=True, blank=True)
     registration_start = models.DateTimeField()
     registration_end = models.DateTimeField()
@@ -89,7 +90,7 @@ class Event(models.Model):
     ends = models.TimeField()
     registration_limit = models.PositiveSmallIntegerField(null=True,
             blank=True, default=0)
-    slug = models.SlugField(max_length=100)
+    slug = models.SlugField(max_length=100,unique=True)
     status = models.CharField(max_length=40, choices=STATUS)
     objects = EventManager()
     def get_talks(self):
@@ -128,16 +129,16 @@ class Event(models.Model):
 class Presenter(models.Model):
     name = models.CharField(max_length=255)
     qualification = models.CharField(max_length=255)
-    alumni = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
-    email = models.EmailField(verbose_name='email address',
-        max_length=255)
+    position = models.CharField(max_length=255)
+    company = models.CharField(max_length=255)  
+    sector = models.CharField(max_length=255,blank=True, null=True) 
     image = models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
         help_text=_('Used for illustration.'))
     biography = RichTextField(blank=True, null=True)
     def __unicode__(self):
         return self.name
-
+    class Meta:
+        ordering = ('name',)
 
 
 class Talk(models.Model):
@@ -176,12 +177,10 @@ class Registration(models.Model):
 class RoundTable(models.Model):
     event = models.ForeignKey(Event, related_name='event_round_table')
     title = models.CharField(max_length=255, db_index=True)
-    guest = models.ForeignKey(Presenter)
-    description = RichTextField(blank=True, null=True)
+    guest = models.ForeignKey(Presenter)    
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True)
-    table_limit = models.PositiveSmallIntegerField()
-    slug = models.SlugField(max_length=16, null=True, blank=True)
+    table_limit = models.PositiveSmallIntegerField()    
     @property
     def registration_open(self):
         return self.round_table_registrations.count() < self.table_limit
@@ -191,7 +190,10 @@ class RoundTable(models.Model):
 
     def __unicode__(self):
         return u'Round Table for  %s ' % (self.guest,)
-
+    class Meta:
+        ordering = ('guest__name',)
+        
+        
 class RoundTableRegistration(models.Model):
     round_table = models.ForeignKey(RoundTable, related_name='round_table_registrations',
           error_messages={'unique': u'You have already registered for this event'}  )

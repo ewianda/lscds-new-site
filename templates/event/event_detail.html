@@ -6,25 +6,28 @@
 
 
 <h2 style='margin-top:0px'> {{ object.name }}</h2>
-<div class = 'row' >
-<div class = 'col-md-6'>
-<P>Event date: {{object.starts|date:'M-d-o'}} @ {{object.starts|date:'P'}}  </P>
-<P>Location: {{object.location}} </P>
-<P>Time: {{object.starts|date:'P'}} to {{object.starts|date:'P'}} </P>
 
-</div>
-{% if object.registration_open %}
+<div class ='row'>
 
-<div class = 'col-md-6' >
-<a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+    <div class = {% if object.event_information %}'col-md-8' {% endif %}>
+        {{object.event_information|safe}}
+    </div>
 
-</div>
-{% elif object.registration_start > now %}
-<div class="alert alert-info col-md-6" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
 
-{% else %}
-<div class="alert alert-danger col-md-6" role="alert"> Registration closed</div>
-{% endif %}
+    <div class = {% if object.event_information %} 'col-md-4' {% else %}'col-md-12' {%endif %}>
+        Event date: {{object.starts|date:'M-d-o'}} @ {{object.starts|date:'P'}}  <br>
+        Location: {{object.location}} <br>
+        Time: {{object.starts|date:'P'}} to {{object.ends|date:'P'}} <br>
+
+        {% if object.registration_open %}
+        <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+        {% elif object.registration_start > now %}
+        <div class="alert alert-info" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
+
+        {% else %}
+        <div class="alert alert-danger " role="alert"> Registration closed</div>
+        {% endif %}
+    </div>
 </div>
 
 

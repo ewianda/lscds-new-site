@@ -22,6 +22,8 @@ def make_pw_hash(username, password, salt=None):
     return '%s|%s' % (hash, salt)
 
 def correct_password(name, pw, h):
+    if not h:
+        return False        
     salt = h.split('|')[1]
     return h == make_pw_hash(name, pw, salt)
 
@@ -39,25 +41,32 @@ class OldUserAuthenticationBackend(object):
 
     def authenticate(self, username=None, password=None):
         try:            
-            user = OldlscdsUser.objects.get(email = username)
-            pwd_valid = correct_password(username,password,user.password)
+            old_lscds_user = OldlscdsUser.objects.get(email = username)
+            pwd_valid = correct_password(username,password,old_lscds_user.password)
         except OldlscdsUser.DoesNotExist:
-            user = None  
+            old_lscds_user = None  
       
-        if user and pwd_valid:      
-            user.is_active = True
-            user.last_login = timezone.now()
-            user.raw_password = password
-            user.save()      
-            return user
+        if old_lscds_user and pwd_valid: 
+            try:
+               new_user = LscdsUser.objects.get(email=username)  
+            except LscdsUser.DoesNotExist:
+                password=  old_lscds_user.raw_password
+                email=  old_lscds_user.email
+                first_name =  old_lscds_user.first_name
+                last_name =  old_lscds_user.last_name
+                new_user=LscdsUser.objects.create_user(email,password)                
+                new_user.first_name=first_name
+                new_user.last_name=last_name    
+                new_user.save()
+                old_lscds_user.delete()                  
+            return new_user
         return None
 
     def get_user(self, user_id):
         try:
-            user = OldlscdsUser.objects.get(pk=user_id)
-            setattr(user,'backend','OldUserAuthenticationBackend')            
+            user = LscdsUser.objects.get(pk=user_id)                      
             return user
-        except OldlscdsUser.DoesNotExist:
+        except LscdsUser.DoesNotExist:
             return None
 
 

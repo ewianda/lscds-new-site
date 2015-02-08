@@ -9,23 +9,82 @@
 <div class='col-md-6 col-md-offset-2'>
 {% crispy form %}
 </div>
+
+<div id="registration" class="modal">
+	<div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <a href="#" data-dismiss="modal" aria-hidden="true" class="close">×</a>
+             <h3>Registration policy</h3>
+        </div>
+        <div class="modal-body">
+             <p>By clicking this box, I understand that in order to confirm 
+             that I have registered successfully, I must receive a confirmation 
+             email and provide proof if necessary at the time of event attendance.
+             </p>
+             <p>If you do not receive
+              confirmation email, please contact: lscds.uoft[at]gmail.com</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" id="btnYes" class="btn confirm">I Understand</a>
+          <a href="#" data-dismiss="modal" aria-hidden="true" class="btn secondary">No</a>
+        </div>
+      </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
-
 $(document).ready(function() {
+
+$('#submit-id-round_table').on("click",function(e){
+e.preventDefault()
+
+});
+
+$('#submit-id-round_table').attr('data-toggle','modal')
+$('#submit-id-round_table').attr('data-target','#registration')
+console.log($("form").find(".has-error").length)
+if ($("form").find(".has-error").length>0){
+$("#submit-id-round_table_delete").hide()
+}// end if
+
 if ($(".select").val()==""){
 $("#submit-id-round_table_delete").hide()
 }// end if
-$
+
+/*
 $("option").each(function(){
 // This is very hackish, but i had not choice
 if ( ($(this).text().split(':')[1]) == "0)" )
-$(this).prop('disabled',true);
+{$(this).prop('disabled',true);
+if($(this).is(':selected')){
+var name = $(this).parent().attr("name")
+var val = $(this).val()
+$('<input type="hidden" name="'+name+'" value="'+val+'">').appendTo('form')}
+}
+
+})
+*/
+
+$('#registration').on('show', function(e) {
+          $('#registration').focus()
+        
 })
 
+$('#btnYes').click(function() {
+    $("form").unbind().submit();  
+     $('#registration').modal('toggle');
+});
 }) // end document ready
   </script>
 {% endblock %}
+
+
+
+
+
+
+
 

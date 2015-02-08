@@ -17,13 +17,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 
-from registration import signals
-from registration.models import RegistrationProfile
-from registration.backends.default.views import RegistrationView,ActivationView
-from lscdsUser.forms import UserCreationForm,UHNVerificationForm \
-,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,\
-NetWorkForm,UploadAvatarForm
-from lscdsUser.models import LscdsUser,LscdsExec
+
+from lscdsUser.models import LscdsUser,LscdsExec,OldlscdsUser
 from event.models import EventType,Registration,Event,RoundTable,RoundTableRegistration
 from lscds_site.decorators import render_to
 
@@ -38,6 +33,100 @@ from django.core.urlresolvers import reverse
 
 from django.views.generic.edit import FormView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect, QueryDict
+from django.template.response import TemplateResponse
+from django.utils.http import base36_to_int, is_safe_url, urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import ugettext as _
+from django.utils.six.moves.urllib.parse import urlparse, urlunparse
+from django.shortcuts import resolve_url
+from django.utils.encoding import force_bytes, force_text
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+
+# Avoid shadowing the login() and logout() views below.
+from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout, get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.models import get_current_site
+
+
+
+from registration import signals
+from registration.models import RegistrationProfile
+from registration.backends.default.views import RegistrationView,ActivationView
+from lscdsUser.forms import UserCreationForm,UHNVerificationForm \
+,SocialExtraDataForm,UserProfileForm,RegistrationFormSet,\
+NetWorkForm,UploadAvatarForm,SetPasswordForm
+
+"""
+This is copied from django 1.6 docs and modified to suit this site
+"""
+# Doesn't need csrf_protect since no-one can guess the URL
+@sensitive_post_parameters()
+@never_cache
+def password_reset_confirm(request, uidb64=None, token=None,
+                           template_name='registration/password_reset_confirm.html',
+                           token_generator=default_token_generator,
+                           set_password_form=SetPasswordForm,
+                           post_reset_redirect=None,
+                           current_app=None, extra_context=None):
+    """
+    View that checks the hash in a password reset link and presents a
+    form for entering a new password.
+    """
+    UserModel = get_user_model()
+    assert uidb64 is not None and token is not None  # checked by URLconf
+    if post_reset_redirect is None:
+        post_reset_redirect = reverse('password_reset_complete')
+    else:
+        post_reset_redirect = resolve_url(post_reset_redirect)
+    try:
+        uid = urlsafe_base64_decode(uidb64)
+        user = UserModel._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, UserModel.DoesNotExist):
+        user = None
+    """
+    Modification for old LSCDS users
+    """
+    if not user:    
+        try:
+            uid = urlsafe_base64_decode(uidb64)
+            user =qs = OldlscdsUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, OldlscdsUser.DoesNotExist):
+            user = None
+
+    if user is not None and token_generator.check_token(user, token):
+        validlink = True
+        title = _('Enter new password')
+        if request.method == 'POST':
+            form = set_password_form(user, request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(post_reset_redirect)
+        else:
+            form = set_password_form(user)
+    else:
+        validlink = False
+        form = None
+        title = _('Password reset unsuccessful')
+    context = {
+        'form': form,
+        'title': title,
+        'validlink': validlink,
+    }
+    if extra_context is not None:
+        context.update(extra_context)
+
+    if current_app is not None:
+        request.current_app = current_app
+
+    return TemplateResponse(request, template_name, context)
+
+
+
 
 @csrf_exempt
 @login_required
@@ -143,17 +232,15 @@ def event_view(request):
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate, login
-def first_login(request):    
-    if str(request.user) == "OldlscdsUser object":
+def first_login(request): 
+    uni = getattr(request.user,'university',None)  
+    dep = getattr(request.user,'department',None)
+    if  uni==None or dep==None:
         form =  SocialExtraDataForm() # An unbound form 
         if request.method == 'POST':
            form = SocialExtraDataForm(request.POST)
            if form.is_valid():
-                password= request.user.raw_password
-                email= request.user.email
-                first_name = request.user.first_name
-                last_name = request.user.last_name
-                new_user=LscdsUser.objects.create_user(email,password)
+                new_user = request.user
                 changed = False
                 protected = ('email', 'id', 'pk')
                 # Update user model attributes with the new data sent by the current
@@ -167,14 +254,8 @@ def first_login(request):
                     if not current_value or name not in protected:
                         changed |= current_value != value
                         setattr(new_user, name, value)
-                new_user.first_name=first_name
-                new_user.last_name=last_name    
-                new_user.save()
-                request.user.delete()
-                logout(request)
-                new_user = authenticate( username=email,password=password)
-                login(request,new_user)
-                return HttpResponseRedirect(reverse('profile-event')) 
+                new_user.save()                               
+           return HttpResponseRedirect(reverse('profile-event')) 
                #LscdsUser.objects.create_user()
         else:
                 form =  SocialExtraDataForm() # An unbound form    
@@ -191,10 +272,32 @@ def registration_view(request):
     else:
             site = RequestSite(request)
     # Round table registration for Network receptions only      
+    #print request.POST
+    """
+    Delete a Network Reception registration completely
+    """
+    if 'round_table_delete' in request.POST:
+       event_id= request.POST.get('event_id')
+       event=get_object_or_404(Event , pk=event_id)
+       form=NetWorkForm(request.POST,event=event,request=request)
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          round_table_1 = form.cleaned_data['round_table_1']
+          round_table_2 = form.cleaned_data['round_table_2']
+          rt_1 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_1)
+          rt_2 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_2)
+          rt_1.delete()
+          rt_2.delete()
+          request.user.send_event_register_mail("delete",event,site,request)
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form})
+        
+        
     if 'round_table_registration' in request.POST:
        event_id= request.POST.get('event_id')
        event=get_object_or_404(Event , pk=event_id)
-       form=NetWorkForm(request.POST,event=event)
+       form=NetWorkForm(request.POST,event=event,request=request)
        # check if user has paid for event
        paid = request.user.my_round_table.all()
        if paid:
@@ -208,53 +311,35 @@ def registration_view(request):
                request.session['round_table_1'] = round_table_1.pk
                request.session['round_table_2'] = round_table_2.pk
                return HttpResponsePermanentRedirect(reverse('paypal:payment'))
-          rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_1)
-          rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=request.user,round_table=round_table_2)
-          rt_1.save()
-          rt_2.save()
-          request.user.send_event_register_mail(event,site,request)          
+          form.save()
+          form.send_mail()
           return HttpResponsePermanentRedirect(reverse('profile-event'))
        else:
             return render(request, 'profile-event-registration.html', {'form':form})
-    """
-    Delete a Network Reception registration completely
-    """
-    if 'round_table_delete' in request.POST:
-       event_id= request.POST.get('event_id')
-       event=get_object_or_404(Event , pk=event_id)
-       form=NetWorkForm(request.POST,event=event)
-       if form.is_valid():
-          event_id = form.cleaned_data['event_id']
-          round_table_1 = form.cleaned_data['round_table_1']
-          round_table_2 = form.cleaned_data['round_table_2']
-          rt_1 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_1)
-          rt_2 = get_object_or_404(RoundTableRegistration,student=request.user,round_table=round_table_2)
-          rt_1.delete()
-          rt_2.delete()
-          request.user.send_event_modifiction_mail(event,site,request)
-          return HttpResponsePermanentRedirect(reverse('profile-event'))
-       else:
-            return render(request, 'profile-event-registration.html', {'form':form})
+    
 
     if request.POST and request.POST.get('event_id',None):
        event_id= request.POST.get('event_id')
        event=Event.objects.get(pk=event_id)
        if event.get_round_table():
-           nr_list=RoundTable.objects.filter(round_table_registrations__student=request.user,event_id=event_id)
-           if nr_list:
-               initial={'event':event,'event_id':event.id ,'round_table_1':nr_list[0],'round_table_2':nr_list[1]}
+           rt1,rt2=RoundTable.objects.get_user_rountable(request.user,event)           
+           if rt1 and rt2: 
+              reg1 =rt1[0] 
+              reg2 =rt2[0]            
+              initial={'event':event,'event_id':event.id ,'round_table_1':reg1,'round_table_2':reg2}
            else:
                initial={'event':event,'event_id':event.id}
            form=NetWorkForm(event=event,initial=initial)
+        
            return render(request, 'profile-event-registration.html', {'form':form,'event':event})
        else:
            registration,create = Registration.objects.get_or_create(owner=request.user,event=Event(pk=event_id))
            if create:
                registration.save()
-               request.user.send_event_register_mail(event,site,request)
+               request.user.send_event_register_mail("register",event,site,request)
            else:
                registration.delete()
-               request.user.send_event_modifiction_mail(event,site,request)
+               request.user.send_event_register_mail("delete",event,site,request)
        return HttpResponsePermanentRedirect(reverse('profile-event'))
     else:
        return HttpResponsePermanentRedirect(reverse('profile-event'))
@@ -338,7 +423,7 @@ class ExecListView(ListView):
     """
     template_name ="lscdsexec_list.html"
     model = LscdsExec 
-    @method_decorator(login_required)
+   
     def dispatch(self, *args, **kwargs):
         return super(ExecListView, self).dispatch(*args, **kwargs)
     

@@ -171,7 +171,7 @@ INSTALLED_APPS = ('adminactions',
     'institute',
     'crispy_forms','form_utils',
     #'imagestore',
-    #'sorl.thumbnail',
+    'sorl.thumbnail',
     'tagging',
     #'autocomplete_light',
     'appengine_toolkit',
@@ -239,10 +239,13 @@ SOCIAL_AUTH_LOGIN_URL = '/profile-event'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
-#SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
-#    'https://www.googleapis.com/auth/drive',
-#    'https://www.googleapis.com/auth/userinfo.profile'
-#]
+SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/plus.profile.emails.read',
+    'https://www.googleapis.com/auth/plus.login',
+]
+
 # SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
 SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'example.app.mail.send_validation'
@@ -270,6 +273,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 
 USER_FIELDS = ['email']
+PROTECTED_USER_FIELDS= ['email']
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL=True
 USERNAME_IS_FULL_EMAIL=True
 

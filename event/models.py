@@ -173,7 +173,26 @@ class Registration(models.Model):
 
     def __unicode__(self):
         return u'Registration for %s ' % (self.owner,)
+    
+    
+class RoundTableQuerySet(QuerySet):
+    def get_user_rountable(self,user,event):
+        reg1=self.filter\
+                (round_table_registrations__student=user,\
+                round_table_registrations__session=1, event_id=event.id)
+        reg2=self.filter\
+                (round_table_registrations__student=user,\
+                round_table_registrations__session=2, event_id=event.id)         
+        return reg1,reg2
 
+
+
+class RoundTableManager(models.Manager):
+       def get_query_set(self):
+           return  RoundTableQuerySet(self.model, using=self._db)
+       def get_user_rountable(self,user,event):
+           return self.get_query_set().get_user_rountable(user,event)
+      
 class RoundTable(models.Model):
     event = models.ForeignKey(Event, related_name='event_round_table')
     title = models.CharField(max_length=255, db_index=True)
@@ -181,12 +200,17 @@ class RoundTable(models.Model):
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True)
     table_limit = models.PositiveSmallIntegerField()    
+    objects = RoundTableManager()
     @property
     def registration_open(self):
         return self.round_table_registrations.count() < self.table_limit
     @property
     def get_spots(self):
         return self.table_limit -  self.round_table_registrations.count()
+    def session_spot(self,session):
+        return self.table_limit -  self.round_table_registrations\
+                                         .filter(session=session).count()
+    
 
     def __unicode__(self):
         return u'Round Table for  %s ' % (self.guest,)
@@ -203,11 +227,13 @@ class RoundTableRegistration(models.Model):
     fee_option = models.ForeignKey(EventFee, related_name='+', null=True,
             blank=True)
     paid = models.BooleanField(default=False)
+    session = models.PositiveSmallIntegerField(max_length=10,default=1)
+   
     @property
     def event(self):
         return self.round_table.event
     class Meta:
-        ordering = ('created',)
+        ordering = ('session',)
 
     def __unicode__(self):
         return u'Registration for %s ' % (self.student,)

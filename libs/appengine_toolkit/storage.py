@@ -78,7 +78,10 @@ class GoogleCloudStorage(Storage):
         if not name.startswith("/"):
                     name =self.path(name)
         key = blobstore.create_gs_key('/gs' + name)
-        return images.get_serving_url(key)
+        try:
+           return images.get_serving_url(key)
+        except:
+            return None
 
     def created_time(self, name):
         filestat = cloudstorage.stat(self.path(name))

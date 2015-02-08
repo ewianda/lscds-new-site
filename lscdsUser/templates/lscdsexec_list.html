@@ -13,32 +13,25 @@
 
 {% block main_sidebar %}
 
-
-<table class='table table-bordered table-striped'>
-    <tbody>
-        {% for exec in object_list%}
+{% for exec in object_list%}      
       
-        <tr>
-         {% if exec.user.avatar %}
-         <td class="col-md-4 " > <img class="img-thumbnail img-responsive" src="{{exec.user.avatar.url}}"/></td>
+        <div class = "row">
+         <div class = "col-md-4 col-sm-4" >
+         {% if exec.avatar %}
+         <img  class="img-thumbnail" src="{{exec.avatar.url}}" height="100" width="200">
          
           {% else %}
-          <td class="col-md-4"><img class="img-thumbnail img-responsive" src="http://placehold.it/200x100&text=Image"/>  </td>
+        <img class="img-thumbnail" src="http://placehold.it/200x100&text=Image"/>  
           {% endif %}
           
-          <td class="col-md-8">
-            <table class='table'>
-              <tr><td><strong>{{exec.user}}</strong></td></tr>
-              <tr><td>{{exec.position}}</td></tr>  
-                     
+       </div>
+           <strong>{{exec.user}}</strong></br>
+           {{exec.position}}        </br> 
               
-               </td>
-            </table>          
-        </tr>
-        <tr><td colspan= '3'>{{exec.biography | safe}} </td></tr>
+         {{exec.bio| safe}} </div>
 {% endfor %}
-    </tbody>
-     </table> 
+
+ 
 
 {% endblock %}
 

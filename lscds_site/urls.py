@@ -35,12 +35,4 @@ urlpatterns = patterns('',
 
     ) 
 
-if settings.DEBUG:
-    urlpatterns += patterns('',
-                            (r'^' + settings.MEDIA_URL[1:] + '(?P<path>.*)$', 'django.views.static.serve',
-                             {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-                            )
-    try:
-        urlpatterns += staticfiles_urlpatterns()
-    except ImproperlyConfigured:
-        pass
+

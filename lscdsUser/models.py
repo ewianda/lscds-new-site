@@ -20,12 +20,14 @@ from django.conf import settings
 import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template import RequestContext, TemplateDoesNotExist
+from django.template.loader import get_template
+from django.template import Context
 import hashlib
 import random
 import re
 from django.template.loader import render_to_string
 from ckeditor.fields import RichTextField
-
+from sorl.thumbnail import ImageField
 
 UPLOAD_TO = getattr(settings, 'USERS_UPLOAD_TO', 'lscdsUsers')
 
@@ -170,7 +172,7 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
     relationship =  models.CharField(max_length=40, choices=RELATIONSHIP_CHOICES,default='Student')
     mailinglist =  models.BooleanField( default=True)
     status =  models.CharField(max_length=40, choices=STATUS_CHOICES)
-    avatar =  models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
+    avatar =  ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
         help_text=_('Used for illustration.'))
     gender =  models.CharField(max_length=10, choices=GENDER_CHOICES,default='Secret')
     service = models.CharField(max_length=30, blank=True)
@@ -221,34 +223,52 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         message_html = render_to_string('email/verify_email.html', email_dict)
         email_message.attach_alternative(message_html, 'text/html')
         email_message.send()
-    def send_event_register_mail(self,event,site,request=None):        
+    def send_event_register_mail(self,action,event,site,request=None,round_table=None):        
         email_dict={}         
         if request is not None:
             email_dict = RequestContext(request, email_dict)
         subject="%s Event Registration" % (event)
         email_dict = {
+            "event": event,    
             "user": self,                     
-            "site": site,            
+            "site": site,
+            "action": action,            
         }
-        message_txt = render_to_string('email/event_register_email.txt', email_dict)
+        if round_table is not None:
+            rt1=round_table[0]
+            rt2 =round_table[1]
+            email_dict['rt1']=rt1
+            email_dict['rt2']=rt2
+        email_ctx=Context(email_dict)
+        txt = get_template('email/event_register_email.txt')
+        html = get_template('email/event_register_email.html')
+        message_txt = txt.render(email_ctx)
+        message_html =html.render(email_ctx)       
         email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [self.email])
-        message_html = render_to_string('email/event_register_email.html', email_dict)
+        
         email_message.attach_alternative(message_html, 'text/html')
         email_message.send()
-    def send_event_modifiction_mail(self,event,site,request=None):        
+    def send_event_modifiction_mail(self,event,site,request=None,round_table=None):        
         email_dict={}         
         if request is not None:
             email_dict = RequestContext(request, email_dict)
         subject="%s Event Registration" % (event)
         email_dict = {
             "user": self,                     
-            "site": site,            
+            "site": site,    
+             "event": event,             
         }
+        if round_table is not None:
+            rt1=round_table[0]
+            rt2 =round_table[1]
+            email_dict.append({'rt1':rt1,'rt2':rt2})
         message_txt = render_to_string('email/event_modification_email.txt', email_dict)
         email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [self.email])
         message_html = render_to_string('email/event_modification_email.html', email_dict)
         email_message.attach_alternative(message_html, 'text/html')
-        email_message.send()       
+        email_message.send()  
+        
+         
         
         
         
@@ -285,18 +305,22 @@ class OldlscdsUser(models.Model):
     date_joined  = models.DateTimeField(_('date joined'), default=timezone.now) 
     mailinglist =  models.BooleanField( default=True)
     last_login = models.DateTimeField(_('last login'), blank=True, null=True)
+    
+    def set_password(self, raw_password):
+        from lscds_site.backend import make_pw_hash
+        self.password = make_pw_hash(self.email,raw_password)
 
 class LscdsExec(models.Model):
     user = models.OneToOneField(LscdsUser)
-    position = models.CharField(_('Postion'), max_length=30)
+    position = models.CharField(_('Postion'), max_length=255)
+    avatar =  ImageField(_('image'), blank=True,upload_to=UPLOAD_TO)
     start  = models.DateField(_('From'), default=timezone.now)
     end  = models.DateField(_('To'), default=timezone.now)
     bio = RichTextField(blank=True, null=True)
-    avatar =  models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
-        help_text=_('Used for illustration.'))
+   
     def admin_image(self):
         if self.avatar:
-           return '<img width = "200" src="%s">' % self.user.avatar.url
+           return '<img width = "50" src="%s">' % self.avatar.url
         else: 
            return '<img width = "200" scr="http://placehold.it/200x100&text=Image" >'
        

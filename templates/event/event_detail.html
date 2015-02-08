@@ -47,4 +47,17 @@
 {% endif %}
 {% endblock %}
 
+{% block javascript %}
+<script type="text/javascript">
+
+$(document).ready(function() {
+$('.panel').on('show.bs.collapse', function (e) {
+   window.location.hash = '#' + e.target.id;
+   console.log(e.target.id)
+    //alert('Event fired on #' + e.target);
+})
+}) // end document ready
+  </script>
+{% endblock %}
+
 

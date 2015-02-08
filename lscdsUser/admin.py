@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext, ugettext_lazy as _
 from lscdsUser.models import LscdsUser, UHNEmail,OldlscdsUser,LscdsExec
-
+from sorl.thumbnail.admin import AdminImageMixin
 import adminactions.actions as actions
 
 class UserCreationForm(forms.ModelForm):

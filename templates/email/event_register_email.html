@@ -4,31 +4,74 @@
 <!doctype html>
 <html lang="en">
 
-<head>
-    <title>{{site.name}} </title>
-</head>
+    <head>
+        <title>{{site.name}} </title>
+    </head>
 
-<body>
+    <body>
 
-<p>
+        <p>
 
-     Hi <h4> {{user}}</h4>
-    Click on the link below to see your event registrations 
+        <h4> Hi {{user}}</h4>
 
-</p>
+ {% if action == "register" %}  
 
-<p>
-    <a href="http://{{site.domain}}{% url 'profile-event' %}">
-        {{site.domain}}{% url 'profile-event'  %}
-    </a>
-</p>
-<p>
+        {% if event.event_type.pk == 1 %}
+        This is a confirmation that you have registered to attend the {{event}}
+        on  {{event.starts|date:'l, M. dS o'|safe}}
+        </p>   
 
-    Sincerely,
-    {{site.name}} Team
+        <p><strong>*Registration:</strong> 5:45-6:15pm</p>
+        <p><strong>Attire:</strong> Business casual</p>
+        <p><strong>Location:</strong> Chestnut Conference Centre, 89 Chestnut St. Toronto, ON M5G 1R1 </p>
+        <p><strong>Your guests:</strong>
+        <p><strong>Round table session I:</strong> {{rt1.guest}} </p>
+        <p><strong>Round table session II:</strong> {{rt2.guest}}</p>
+        *Please note that if you do not arrive by 6:15 your spot will be given away to student on the waitlist.
+        **On the day of the event please bring a digital or paper copy of this email to confirm your registration.
+        For more information about the event please visit our website at
+        <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
+        LSCDS Networking Reception</a> for the
+        evening's agenda and other information.
+        {% else %}
 
-</p>
-</body>
+        This is a confirmation that you have registered to attend the LSCDS seminar: {{event}}
+        <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'|safe}} at 4:00-5:00pm</p>
+        <p><strong>Location:</strong> MSB 2170</p>
+        For more information about the seminar and the speaker, Lauren Celano, visit <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
+         LSCDS Seminars</a>
+         {% endif %}
+
+ {% elif action == "modify" %} 
+ 
+ {% if event.event_type.pk == 1 %}
+ 
+ You have made a change to your
+  registration for the  {{event}} . Your new guest selections are:
+ <p><strong>Round table session I:</strong> {{rt1.guest}} </p>
+ 
+  <p><strong>Round table session II:</strong> {{rt2.guest}}</p>
+  Thank you, and we look forward to seeing you at the event.
+{% endif %}
+
+
+{% else %} 
+        
+It is unfortunate that you will not be attending our event.
+Remember to check out <a href="http://{{site.domain}}">webiste </a> for upcoming events. 
+
+
+
+{% endif %}
+
+
+        <p>
+
+        Sincerely,<br>
+        {{site.name}} Team
+
+        </p>
+    </body>
 
 </html>
 
@@ -41,32 +84,32 @@ link the user can click to activate the account. This template has the
 following context:
 
 ``activation_key``
-    The activation key for the new account.
+The activation key for the new account.
 
 ``expiration_days``
-    The number of days remaining during which the account may be
-    activated.
+The number of days remaining during which the account may be
+activated.
 
 ``site``
-    An object representing the site on which the user registered;
-    depending on whether ``django.contrib.sites`` is installed, this
-    may be an instance of either ``django.contrib.sites.models.Site``
-    (if the sites application is installed) or
-    ``django.contrib.sites.models.RequestSite`` (if not). Consult `the
-    documentation for the Django sites framework
-    <http://docs.djangoproject.com/en/dev/ref/contrib/sites/>`_ for
-    details regarding these objects' interfaces.
+An object representing the site on which the user registered;
+depending on whether ``django.contrib.sites`` is installed, this
+may be an instance of either ``django.contrib.sites.models.Site``
+(if the sites application is installed) or
+``django.contrib.sites.models.RequestSite`` (if not). Consult `the
+documentation for the Django sites framework
+<http://docs.djangoproject.com/en/dev/ref/contrib/sites/>`_ for
+details regarding these objects' interfaces.
 
 ``user``
-    The new user account
+The new user account
 
 ``request``
-    ``HttpRequest`` instance for better flexibility.
-    For example it can be used to compute absolute register URL:
+``HttpRequest`` instance for better flexibility.
+For example it can be used to compute absolute register URL:
 
-        http{% if request.is_secure %}s{% endif %}://{{ request.get_host }}{% url 'registration_activate' activation_key %}
+http{% if request.is_secure %}s{% endif %}://{{ request.get_host }}{% url 'registration_activate' activation_key %}
 
-    or when using Django >= 1.7:
+or when using Django >= 1.7:
 
-        {{ request.scheme }}://{{ request.get_host }}{% url 'registration_activate' activation_key %}
+{{ request.scheme }}://{{ request.get_host }}{% url 'registration_activate' activation_key %}
 {% endcomment %}

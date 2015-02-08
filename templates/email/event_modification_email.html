@@ -13,9 +13,34 @@
 <p>
 
      Hi <h4> {{user}}</h4>
-    Click on the link below to see your event registrations 
+     
+   
 
-</p>
+     {% if event.event_type.pk == 1 %}
+    This is a confirmation that you have registered to attend the {{event}}
+    on  {{event.starts|date:'M-d-o'}}
+ </p>   
+ 
+    <p><strong>*Registration:</strong> 5:45-6:15pm</p>
+ <p><strong>Attire:</strong> Business casual</p>
+ <p><strong>Location:</strong> Chestnut Conference Centre, 89 Chestnut St. Toronto, ON M5G 1R1 </p>
+ <p><strong>Your guests:</strong>
+<p><strong>Round table session I:</strong> (Insert guest selection)</p>
+<p><strong>Round table session II:</strong> (Insert guest selection)</p>
+*Please not that if you do not arrive by 6:15 your spot will be given away to student on the waitlist.
+ **On the day of the event please bring a digital or paper copy of this email to confirm your registration.
+For more information about the event please visit our website at lscds.org/networkingreception for the
+ evening’s agenda and other information.
+ {% else %}
+   
+   This is a confirmation that you have registered to attend the LSCDS seminar: ABC’s of Informational Interviewing and Networking Effectively.
+ <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'}} at 4:00-5:00pm</p>
+ <p><strong>Location:</strong> MSB 2170</p>
+For more information about the seminar and the speaker, Lauren Celano visit LSCDS.org.
+   
+
+ 
+ {% endif %}
 
 <p>
     <a href="http://{{site.domain}}{% url 'profile-event' %}">

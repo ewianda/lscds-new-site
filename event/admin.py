@@ -79,7 +79,8 @@ class EventFeelineAdmin(admin.TabularInline):
     max_num = 1
     formset = RequiredInlineFormSet
 
-class EventTypeAdmin(admin.ModelAdmin):
+class EventTypeAdmin(admin.ModelAdmin):    
+    
     inlines = [
        EventlineAdmin
     ]
@@ -90,9 +91,14 @@ class EventAdmin(admin.ModelAdmin):
      RoundTablelineAdmin,TalklineAdmin,EventSponsorlineAdmin,EventFeelineAdmin
     ]
     prepopulated_fields = {"slug": ("name","location")}
-
+    list_display = ('name',)
+    
+    
 class PresenterAdmin(admin.ModelAdmin):
-   pass
+    list_display = ('name','qualification', 'position','company')    
+    list_select_related = ('event',)
+    list_filter = ['name']
+#     search_fields = ['name']
 
 class RegistrationAdmin(admin.ModelAdmin):
     list_display = ('owner','event', 'created')

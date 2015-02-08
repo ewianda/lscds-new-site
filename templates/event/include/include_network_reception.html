@@ -12,7 +12,10 @@
         {% for rt in object.get_round_table %}
 
         <tr>   
-            <td><strong>{{rt.guest.name}}<br>{{rt.guest.qualification}}</strong></td>
+            <td><strong> <a data-toggle="collapse" data-parent="#accordion"  href="#collapse{{rt.guest.name |slugify}}" >
+                    {{rt.guest.name}}
+                </a>
+                <br>{{rt.guest.qualification}}</strong></td>
             <td>{{rt.guest.sector}}</td>
             <td>{{rt.guest.company}}<br>{{rt.guest.position}}</td>         
 
@@ -27,13 +30,13 @@
     {% for rt in object.get_round_table %}
     <div class="panel panel-default">
         <div class="panel-heading" role="tab" id="headingOne">
-            <h4 class="panel-title">
+            <h4 id="link{{rt.guest.name|slugify}}" class="panel-title">
                 <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{rt.guest.name |slugify}}" aria-expanded="true" aria-controls="collapseOne">
                     {{rt.guest.name}}
                 </a>
             </h4>
         </div>
-        <div id="collapse{{rt.guest.name|slugify}}" class="panel-collapse collapse {% if forloop.first %} in {% endif %}" role="tabpanel" aria-labelledby="headingOne">
+        <div id="collapse{{rt.guest.name|slugify}}" class="panel-collapse collapse  role="tabpanel" aria-labelledby="headingOne">
             <div class="panel-body">  
                 <div class = "row" >
                     <div class = "col-md-4 col-sm-4" >
@@ -53,6 +56,5 @@
     </div>    
     {% endfor %}
 </div>       
-
 
 

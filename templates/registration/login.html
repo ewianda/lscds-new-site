@@ -30,7 +30,7 @@
             <li><a class="rounded-x social_googleplus" data-original-title="Google Plus" href="{% url 'social:begin' 'google-oauth2' %}?next={% url 'profile-event' %}"></a></li>
             <li><a class="rounded-x social_linkedin" data-original-title="Linkedin" href="{% url 'social:begin' 'linkedin' %}?next={% url 'profile-event' %}"></a></li>
         </ul>
-        <p>Don't Have Account? Click <a  href="{% url 'registration_register' %}">{% trans "Register" %}</a> to registration.</p>            
+        <p>Don't have an account? Click here to <a  href="{% url 'registration_register' %}">{% trans "Sign up" %}</a></p>            
     </div>
  
     
@@ -77,7 +77,7 @@
 
     </form>
 
-    <p>{% trans "Forgot your password?" %} <a href="{% url 'auth_password_reset' %}">{% trans "Reset it" %}</a>.</p>
+    <p>{% trans "Forgot your password?" %} <a href="{% url 'password_reset' %}">{% trans "Reset it" %}</a>.</p>
 </div>
 <!--End Reg Block-->
 {% endblock %}

@@ -1,21 +1,165 @@
 {% extends "admin/base_site.html" %}
 {% load i18n l10n %}
-
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load crispy_forms_tags %}
 {% block content %}
-<form action="" method="post">{% csrf_token %}
-    <p>The following videos will be accepted:</p>
 
-    <ul>{{ queryset|unordered_list }}</ul>
+<link rel="stylesheet" href="{%static "assets/plugins/bootstrap/css/bootstrap.min.css" %}">            
+<style>
+    li, dt, dd {
+        font-size: 15px;
+        line-height: 25px;
+    }
 
-    <div>
-    {% for obj in queryset %}
-    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
-    {% endfor %}
-     {{ form.media }}
-    {{ form.as_p }}
-    <input type="hidden" name="action" value="send_EMAIL" />
-    <input type="hidden" name="post" value="yes" />
-    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+</style>
+<div class ="container" > 
+    <legend>Send email to the following addreses  </legend>
+    <div class="bg-primary col-md-8 row" style = "max-height: 300px; overflow-y:scroll;">  
+      <div class = "col-md-6"> 
+            
+      <ol>
+        {% for obj in queryset %}
+         <li>
+        {% if obj.student  %}
+        {{obj.student.email}}
+        {% elif obj.owner  %}
+        
+        {{obj.owner.email}}
+        {% elif obj.user  %}
+        
+        {{obj.user.email}}
+        {% else %}
+        {{obj.email}}
+        {% endif %}
+         </li> 
+        {% endfor %}
+         </div>        
+        
+      <ol>
+    </div> 
+    <hr>
+    <div class="row bg-success" >
+        {% verbatim %}
+        <ol>
+            <li> By defualt the user name is included. To instert an event name, add {{ event }} e.g. 
+            Our {{ event }} == Our Network reception.
+            </li> 
+            <li> To  add name of round table for each user use <font color = "red"> {{ rt1 }} and {{ rt2 }} </font> for guest names e.g 
+            Rountable I: {{rt}} == Roundtable I: FirstName, LastName
+            </li> 
+        </ol>  
+        {% endverbatim %}     
+    </div>  
+    <hr>
+  <div class="row">
+    <form class="form-horizontal"  action="" method="post">{% csrf_token %} 
+        {% with queryset|first as example %}
+        <input type="hidden" name="model" value="{{model}}"/>
+        
+        <input type="hidden" name="example" value="{% firstof  example.owner.pk example.student.pk example.pk  %}"/>
+        {% endwith %}
+        {% for obj in queryset %}
+        <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+        {% endfor %}
+        {{ form.media }}
+        {% crispy  form %}
+        <input type="hidden" name="action" value="send_EMAIL" />
+        <input type="hidden" name="post" value="yes" />
+        <button class = "btn btn-primary btn-lg" type="submit"/> <i class="icon-user icon-white">{% trans "Send Emails" %}</button>
+
+        </form>
+        <a id = "email" class = "btn btn-primary btn-lg"/> <i class="icon-user icon-white">{% trans "Preveiw" %}</a>
+
+        </div>
+
     </div>
-</form>
-{% endblock %}
+
+
+    <script type="text/javascript" src="{%static "assets/js/jquery.validate.min.js" %}"></script>
+
+    <script>
+        $(document).ready(function() {
+        // override jquery validate plugin defaults
+$.validator.setDefaults({
+    highlight: function(element) {
+        $(element).closest('.form-group').addClass('has-error');
+    },
+    unhighlight: function(element) {
+        $(element).closest('.form-group').removeClass('has-error');
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, element) {
+        if(element.parent('.input-group').length) {
+            error.insertAfter(element.parent());
+        } else {
+            error.insertAfter(element);
+        }
+    }
+});
+        
+            $('form input,form select, form textarea').not([type="submit"]).addClass('required');
+
+            $("form").validate( {
+                
+            })
+
+            $("#email").on("click",function(e){
+     
+            for ( instance in CKEDITOR.instances ) {
+                    CKEDITOR.instances[instance].updateElement(); } 
+                    
+                if ( $("form").valid() ){
+                    $.ajax({
+                        url: '/events/email_preview/',
+                        data:$("form").serialize(),
+                        type: 'post', //this is the default though, you don't actually need to always mention it
+                        success: function(data) { 
+                            var h = 500;
+                            var w= 500   
+                            title ='email preview'
+                            var url = '/events/email_preview/';
+                            var left = (screen.width/2)-(w/2);
+                            var top = (screen.height/2)-(h/2);
+                            return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);	      
+                        },
+                        error: function(data,ee,rr) {		
+                            alert("An error occured . Contact site admin")
+                        }
+                    }); // ajax
+
+                }    // end if
+
+                e.preventDefault()
+
+
+            }); // click
+         $("#id_template").on("change",function(e){ 
+              $.ajax({
+                        url: '/load_template/',
+                        data:{"pk":$(this).val()},
+                        type: 'post', //this is the default though, you don't actually need to always mention it
+                        success: function(data) { 
+                      for ( instance in CKEDITOR.instances ) {
+                    CKEDITOR.instances[instance].setData(data);                    
+                    CKEDITOR.instances[instance].resize( 700, 400,true); } 
+                  
+                           
+                             },
+                        error: function(data,ee,rr) {		
+                            alert("An error occured . Contact site admin")
+                        }
+                    }); // ajax
+            
+         
+         })// end select 
+            
+            
+        }); // document ready
+
+
+    </script>
+    {% endblock %}

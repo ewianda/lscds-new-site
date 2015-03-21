@@ -5,123 +5,134 @@
 {% load i18n %}
 
 <style>
-blockquote.twitter-tweet {
-  display: inline-block;
-  padding: 16px;
-  margin: 10px 0;
-  max-width: 468px;
-  border: #ddd 1px solid;
-  border-top-color: #eee;
-  border-bottom-color: #bbb;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  font: bold 14px/18px Helvetica, Arial, sans-serif;
-  color: #000;
-}
- 
-blockquote.twitter-tweet p {
-  font: normal 12px/18px Georgia, "Times New Roman", Palatino, serif;
-  margin: 0 5px 10px 0;
-}
- 
-blockquote.twitter-tweet a[href^="https://twitter.com"] {
-  font-weight: normal;
-  color: #666;
-  font-size: 1px;
-}</style>
+    blockquote.twitter-tweet {
+        display: inline-block;
+        padding: 16px;
+        margin: 10px 0;
+        max-width: 468px;
+        border: #ddd 1px solid;
+        border-top-color: #eee;
+        border-bottom-color: #bbb;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        font: bold 14px/18px Helvetica, Arial, sans-serif;
+        color: #000;
+    }
+
+    blockquote.twitter-tweet p {
+        font: normal 12px/18px Georgia, "Times New Roman", Palatino, serif;
+        margin: 0 5px 10px 0;
+    }
+
+    blockquote.twitter-tweet a[href^="https://twitter.com"] {
+        font-weight: normal;
+        color: #666;
+        font-size: 1px;
+    }
+</style>
 
 <!-- Begin Content -->
-                        <div class="col-md-8">
+<div class="col-md-8">
 
-                            {% block main_sidebar %} 
+    {% block main_sidebar %} 
 
-                            {% endblock %}
+    {% endblock %}
 
 
-                        </div>
-                        <!-- End Content -->
+</div>
+<!-- End Content -->
 
-                        <!-- Begin Sidebar -->
-                        <div class="col-md-4">
-                            <!-- Magazine Posts -->
-                            <div class="row margin-bottom-0">
-                                <div class="magazine-posts col-md-12 col-sm-6 margin-bottom-30">
-                                  <div class="headline"><h2>Upcoming events</h2></div>
-                                    {% if context_event %}
-                                      {% for event in context_event%}
-                                       <span><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue"> {{event.name}}</a> / on {{event.starts|date:'M-d-o'}} @ {{event.starts|date:'P'}}</span>
-                                      {% empty %}
-                                    <font>No event at this time</font>
-                                    {% endfor %}
-                                    {% else %}
-                                    <font color="blue">No event at this time</font>
-                                    {% endif %}                           
-                                    
-                                </div>
-                            </div>
-                            <!-- End Magazine Posts -->
-                            {% comment %}
+<!-- Begin Sidebar -->
+<div class="col-md-4">
+    <!-- Magazine Posts -->
+    <div class="row margin-bottom-0">
+        <div class="magazine-posts col-md-12 col-sm-6 margin-bottom-">
+            <div class="headline"><h2>Upcoming events</h2></div>
+            {% if context_event %}
+            {% for event in context_event%}
+            <span><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue"> {{event.name}}</a> / on {{event.starts|date:'M-d-o'}} @ {{event.starts|date:'P'}}</span>
+            {% empty %}
+            <font>No event at this time</font>
+            {% endfor %}
+            {% else %}
+            <font color="blue">No event at this time</font>
+            {% endif %}                           
 
-                            <!-- Quick Links -->
-                            <div class="magazine-sb-categories margin-bottom-20">
-                                <div class="headline headline-md"><h2>Quick Links</h2></div>
-                                <div class="row">
-                                    <ul class="list-unstyled col-xs-6">
-                                        <li><a href="{% url 'sponsors:sponsor-list' %}">Sponsor</a> </li>
-                                        <li><a href="#">Resources</a> </li>
-                                        
-                                    </ul>                        
-                                    <ul class="list-unstyled col-xs-6">
-                                        <li> <a href="{% url 'event:event-list' %}">Our Events</a> </li>
-                                        <li><a href="{% url 'zinnia:entry_archive_index' %}">Our Blog</a></li>
-                                        
-                                    </ul>                        
-                                </div>
-                            </div>
-                            <!-- End Quick Links -->
-                            {% endcomment %}
-                            <!-- Photo Stream -->
-                            <div class="headline"><h2>Latest Tweets</h2></div> 
-                           {% for tweet in tweets %} 
-                           <blockquote class="twitter-tweet">
-                             <a href="https://twitter.com/{{tweet.user}}/status/{{tweet.id}}" </a>
-                             </blockquote>   
-                             {% endfor %}             
-                           {% comment %}
-                            <!-- End Photo Stream -->
-                           <div class="headline"><h2>Latest blog</h2></div>   
-                            <!-- Latest News -->
-                            <div class="margin-bottom-40">
-                                <div class="magazine-mini-news">   
-                                {% for object in  context_blog %}                             
-                                    <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
-                                    <h3><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
-                                    <div class="post-author">
-                                        {% with authors=object.authors.all %}
-                                           {% if authors|length %}
-                                          {% trans "Written by" %}
-                                                {% for author in authors %}
-                                                 <span class="vcard author">
-                                           <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
-                                          title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}">{{ author }}</a></span>{% if not forloop.last %}, {% endif %}
-                                                            {% endfor %}                         
-                                      
-                                                 {% endif %}
-                                                     {% endwith %}                                      
-                                    </div>
-                                    <p> {{ object.content|truncatewords:10|safe }}</p>
-                                    {% empty %}
-                                    
-                                    {% endfor %}
-                                </div>
-                                <hr class="hr-md">
-                            </div>
-                            <!-- End Latest News -->
-                               {% endcomment %}
-                        </div>
-                        <!-- End Sidebar -->
+        </div>
+    </div>
+    <!-- End Magazine Posts -->
+    {% comment %}
 
-            {% endblock %}
+    <!-- Quick Links -->
+    <div class="magazine-sb-categories margin-bottom-20">
+        <div class="headline headline-md"><h2>Quick Links</h2></div>
+        <div class="row">
+            <ul class="list-unstyled col-xs-6">
+                <li><a href="{% url 'sponsors:sponsor-list' %}">Sponsor</a> </li>
+                <li><a href="#">Resources</a> </li>
+
+            </ul>                        
+            <ul class="list-unstyled col-xs-6">
+                <li> <a href="{% url 'event:event-list' %}">Our Events</a> </li>
+                <li><a href="{% url 'zinnia:entry_archive_index' %}">Our Blog</a></li>
+
+            </ul>                        
+        </div>
+    </div>
+    <!-- End Quick Links -->
+    {% endcomment %}
+    <!-- Photo Stream -->
+    <div class="headline"><h2>Latest Tweets</h2></div> 
+    <div style="overflow:scroll;height:500px">
+        {% for tweet in tweets %} 
+        <blockquote class="twitter-tweet">
+            <a href="https://twitter.com/{{tweet.user}}/status/{{tweet.id}}"> </a>
+        </blockquote>   
+        {% endfor %} 
+    </div>
+    <!-- ad one -->
+    <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-7042664722043634"
+        data-ad-slot="2027567907"
+        data-ad-format="auto">
+    </ins>           
+    {% comment %}
+    <!-- End Photo Stream -->
+    <div class="headline"><h2>Latest blog</h2></div>   
+    <!-- Latest News -->
+    <div class="margin-bottom-40">
+        <div class="magazine-mini-news">   
+            {% for object in  context_blog %}                             
+            <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
+                <h3><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
+                <div class="post-author">
+                    {% with authors=object.authors.all %}
+                    {% if authors|length %}
+                    {% trans "Written by" %}
+                    {% for author in authors %}
+                    <span class="vcard author">
+                        <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
+                            title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}">{{ author }}</a></span>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}                         
+
+                    {% endif %}
+                    {% endwith %}                                      
+                </div>
+                <p> {{ object.content|truncatewords:10|safe }}</p>
+                {% empty %}
+
+                {% endfor %}
+            </div>
+            <hr class="hr-md">
+        </div>
+        <!-- End Latest News -->
+        {% endcomment %}
+    </div>
+
+    <!-- End Sidebar -->
+
+    {% endblock %}
 
 
 

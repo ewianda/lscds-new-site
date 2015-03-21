@@ -1,5 +1,8 @@
 from django.contrib import admin
-from event.models import (Event, Registration, Talk, Presenter,EventType,RoundTable,RoundTableRegistration,EventFee,EventBanner)
+from event.models import (Event, Registration, Talk, Presenter,\
+                          EventType,RoundTable,RoundTableRegistration,EventFee,EventBanner,\
+                          AlumniRegistration,GuestRegistration
+                          )
 from django.contrib.admin import helpers
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
@@ -8,7 +11,15 @@ from ckeditor.widgets import CKEditorWidget
 from django.core.mail import send_mass_mail
 from sponsor.models import EventSponsor
 from django.forms.models import BaseInlineFormSet
-
+from event.forms import EmailAdminForm
+from smtplib import SMTPException
+from lscds_site.utils import send_mass_html_mail
+from lscds_site.utils  import export_as_csv_action
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+from django.template import Context, Template
+from google.appengine.api import mail
+from communication.action import send_EMAIL
 
 class RequiredInlineFormSet(BaseInlineFormSet):
     """
@@ -23,14 +34,6 @@ class RequiredInlineFormSet(BaseInlineFormSet):
         form.empty_permitted = False
         return form
 
-
-
-
-class EmailAdminForm(forms.Form):
-    subject = forms.CharField()
-    message = forms.CharField(widget=CKEditorWidget())
-
-
 class EventCreationForm(forms.ModelForm):
     model = Event
     def clean(self):
@@ -39,10 +42,10 @@ class EventCreationForm(forms.ModelForm):
         registration_end = cleaned_data.get("registration_end")
         starts = cleaned_data.get("starts")
 
-        if registration_start > registration_end:
+        if registration_start and registration_end and registration_start > registration_end:
              raise forms.ValidationError("Registration must start before it ends. Please check the registration dates")
 
-        elif registration_start > starts:
+        elif registration_start and starts and registration_start > starts:
              raise forms.ValidationError("Registration cannot start after event date. Please check the Event dates")
         else:
              return self.cleaned_data
@@ -95,16 +98,22 @@ class EventAdmin(admin.ModelAdmin):
     
     
 class PresenterAdmin(admin.ModelAdmin):
-    list_display = ('name','qualification', 'position','company')    
+    list_display = ('full_name','email','qualification', 'position','company')    
     list_select_related = ('event',)
     list_filter = ['name']
+    send_EMAIL.short_description = 'Send RSVP'
+    actions = [send_EMAIL]
 #     search_fields = ['name']
 
 class RegistrationAdmin(admin.ModelAdmin):
-    list_display = ('owner','event', 'created')
+    list_display = ('owner','email' ,'event', 'created')
     list_filter = ['event']
-    search_fields = ['owner']
-
+    search_fields = ['owner__email','owner__last_name','owner__first_name']
+    send_EMAIL.short_description = 'Send Reminder email'
+    actions = [send_EMAIL,export_as_csv_action("Export CVS")]
+    
+    
+    
 class BannerAdmin(admin.ModelAdmin):
     list_display = ('eventtype','position', 'admin_image')
 
@@ -114,16 +123,17 @@ class BannerAdmin(admin.ModelAdmin):
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
-from smtplib import SMTPException
-from lscds_site.utils import send_mass_html_mail
 
-from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
 class RoundTableRegistrationAdmin(admin.ModelAdmin):
-    list_display = ('student','round_table', 'created','event')
-    list_filter = ['round_table','round_table__event']
-    search_fields = ['student']
-    actions = ['send_EMAIL']
+    list_display = ('student','round_table', 
+                    'session','department','faculty','event','created')
+    
+    list_filter = ['session','round_table','round_table__event']
+    search_fields = ['student__email','student__last_name','student__first_name']
+    actions = ['send_EMAIL',export_as_csv_action("Export CVS")]
+ 
+    
+    
     def send_EMAIL(self, request, queryset):
         cont_html = "email/email.html"
         cont_txt = "email/email.txt"
@@ -134,23 +144,45 @@ class RoundTableRegistrationAdmin(admin.ModelAdmin):
                 'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
 
             }
+        email_message = mail.EmailMessage(sender="Life Sciences Career Development Society <contact@lscds.org>")
 
         if request.POST.get('post'):
             form = EmailAdminForm(request.POST)
             if form.is_valid():
                 messages = ()
+                from django.contrib.sites.models import Site       
+                if Site._meta.installed:
+                     site = Site.objects.get_current()
+                else:
+                     site = RequestSite(request) 
                 subject = form.cleaned_data['subject']
-                message = form.cleaned_data['message']
+                form_message = form.cleaned_data['message']
+                event = form.cleaned_data['event']  
+                t=Template(form_message) 
+                email_message.subject = subject 
+                #for i in range(20):    
                 for q in queryset:
-                    content = {"user":q.student.get_full_name(),"message":message}
+                    user = q.student
+                    rt1,rt2=RoundTable.objects.get_user_rountable(user,event)
+                    
+                    c =Context({'rt1':rt1[0].guest,'rt2':rt2[0].guest,'event':event})
+                    render_message= t.render(c)    
+                                  
+                    content = {"user":user,"message":render_message,'site':site}                      
                     txt=render_to_string(cont_txt,content)
                     html=render_to_string(cont_html,content)
+                    email_message.body=txt
+                    email_message.html = html
+                    email_message.to = q.student.email
+                    email_message.send()
+                    
                     compose=(subject,txt,html,"no-reply@lscds.org",[q.student.email])
                     messages =messages + (compose,)
+                    
             # process the queryset here
 
                 try:
-                    send_mass_html_mail(messages ,fail_silently=False)
+                    #send_mass_html_mail(messages ,fail_silently=False)
                     self.message_user(request, "Mail sent successfully ")
                 except SMTPException:
                     self.message_user(request, "Mail was no sent please contact admin for assistance")
@@ -164,7 +196,66 @@ class RoundTableRegistrationAdmin(admin.ModelAdmin):
             return TemplateResponse(request, 'admin/send_email.html',
                 context, current_app=self.admin_site.name)
 
+from django.contrib.admin.models import LogEntry, DELETION
+from django.utils.html import escape
+from django.core.urlresolvers import reverse
 
+
+class LogEntryAdmin(admin.ModelAdmin):
+
+    date_hierarchy = 'action_time'
+
+    readonly_fields = LogEntry._meta.get_all_field_names()
+
+    list_filter = [
+        'user',
+        'content_type',
+        'action_flag'
+    ]
+
+    search_fields = [
+        'object_repr',
+        'change_message'
+    ]
+
+
+    list_display = [
+        'action_time',
+        'user',
+        'content_type',
+        'object_link',
+        'action_flag',
+        'change_message',
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser and request.method != 'POST'
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def object_link(self, obj):
+        if obj.action_flag == DELETION:
+            link = escape(obj.object_repr)
+        else:
+            ct = obj.content_type
+            link = u'<a href="%s">%s</a>' % (
+                reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[obj.object_id]),
+                escape(obj.object_repr),
+            )
+        return link
+    object_link.allow_tags = True
+    object_link.admin_order_field = 'object_repr'
+    object_link.short_description = u'object'
+    
+    def queryset(self, request):
+        return super(LogEntryAdmin, self).queryset(request) \
+            .prefetch_related('content_type')
+            
+admin.site.register(LogEntry, LogEntryAdmin)             
 admin.site.register(EventType, EventTypeAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(Presenter, PresenterAdmin)
@@ -172,3 +263,11 @@ admin.site.register(RoundTable,RoundTableAdmin)
 admin.site.register(RoundTableRegistration,RoundTableRegistrationAdmin)
 admin.site.register(Registration,RegistrationAdmin)
 admin.site.register(EventBanner,BannerAdmin)
+
+admin.site.register(AlumniRegistration)
+admin.site.register(GuestRegistration)
+
+
+
+
+

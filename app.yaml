@@ -1,5 +1,5 @@
-application: lscds-new-site-v3
-version: 1
+application: lscdsv4
+version: django-site
 runtime: python27
 api_version: 1
 threadsafe: false 

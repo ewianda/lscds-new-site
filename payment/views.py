@@ -56,7 +56,6 @@ from paypal.standard.ipn.signals import valid_ipn_received
 from django.contrib.sites.models import Site
 
 def show_me_the_money(sender, **kwargs):
-
   site = Site.objects.get_current()           
   ipn_obj = sender
   if ipn_obj.payment_status == ST_PP_COMPLETED:    
@@ -67,11 +66,11 @@ def show_me_the_money(sender, **kwargs):
         event=Event.objects.get(pk=event_id)
         round_table_1 = RoundTable.objects.get(event=event,pk = round_table_1_id)
         round_table_2 = RoundTable.objects.get(event=event,pk = round_table_2_id)    
-        rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=student,round_table=round_table_1,paid=True)
-        rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=student,round_table=round_table_2,paid=True)
+        rt_1,cr1 = RoundTableRegistration.objects.get_or_create(student=student,round_table=round_table_1,paid=True,session=1)
+        rt_2,cr2 = RoundTableRegistration.objects.get_or_create(student=student,round_table=round_table_2,paid=True,session=2)
         rt_1.save()
         rt_2.save()
-        student.send_event_register_mail(event,site,request=None)
+        student.send_event_register_mail("register",event,site,request=None,round_table=[round_table_1,round_table_2])           
     
 
    # else:

@@ -31,10 +31,6 @@ table {
   border-spacing: 0; }
 
 .zinnia {
-  line-height: 1.5;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 75%;
-  color-profile: sRGB;
   rendering-intent: auto; }
   .zinnia h1, .zinnia h2, .zinnia h3, .zinnia h4, .zinnia h5, .zinnia h6 {
     font-weight: normal; }

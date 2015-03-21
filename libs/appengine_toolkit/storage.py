@@ -81,7 +81,7 @@ class GoogleCloudStorage(Storage):
         try:
            return images.get_serving_url(key)
         except:
-            return None
+            return  'https://storage.googleapis.com' + name
 
     def created_time(self, name):
         filestat = cloudstorage.stat(self.path(name))

@@ -37,7 +37,7 @@ def latest_tweets( request ):
 
 def latest(request):
    try:
-         event= Event.objects.filter(starts__gte = timezone.now(),status = "publish")
+         event= Event.objects.filter(starts__gte = timezone.now(),status = "publish").order_by('starts')
    except Event.DoesNotExist:
         event = None
    try:

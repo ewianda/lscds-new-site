@@ -11,7 +11,7 @@
 {% block main %}
 
 
-<h3>Hi {{user.get_full_name}}</h3>
+<h3>Hi {{user.get_full_name}} {% if request.user.is_staff %}<br>    <a href="{% url  'admin:index'  %}" > Go to admin page </a> {% endif %}  </h3>
 
     {% if messages %}
         {% for message in messages %}

@@ -32,9 +32,10 @@ class ContactForm(forms.Form):
     def send_email(self):
         # send email using the self.cleaned_data dictionary
         recipient = ['lscds.uoft@gmail.com']
-        subject = self.cleaned_data['subject']
+        subject ="[Contact] Mail from %s,<%s> %s" % (self.cleaned_data['name'], self.cleaned_data['email'], self.cleaned_data['subject'])
         message = self.cleaned_data['message']
         sender ="%s,<%s>" % (self.cleaned_data['name'], self.cleaned_data['email'])
+        
         send_mail(subject, message, sender, recipient)
         
         

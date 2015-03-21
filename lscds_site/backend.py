@@ -41,16 +41,23 @@ class OldUserAuthenticationBackend(object):
 
     def authenticate(self, username=None, password=None):
         try:            
-            old_lscds_user = OldlscdsUser.objects.get(email = username)
-            pwd_valid = correct_password(username,password,old_lscds_user.password)
+            old_lscds = OldlscdsUser.objects.filter(email = username)
+            if  old_lscds.count()>0:
+                old_lscds_user =  old_lscds[0]
+                pwd_valid = correct_password(username,password,old_lscds_user.password)
+            else:
+                old_lscds_user = None
+                
+            
         except OldlscdsUser.DoesNotExist:
             old_lscds_user = None  
       
         if old_lscds_user and pwd_valid: 
             try:
-               new_user = LscdsUser.objects.get(email=username)  
+               new_user = LscdsUser.objects.get(email=username) 
+               #old_lscds_user.delete()  
             except LscdsUser.DoesNotExist:
-                password=  old_lscds_user.raw_password
+                #password=  old_lscds_user.raw_password
                 email=  old_lscds_user.email
                 first_name =  old_lscds_user.first_name
                 last_name =  old_lscds_user.last_name
@@ -58,7 +65,7 @@ class OldUserAuthenticationBackend(object):
                 new_user.first_name=first_name
                 new_user.last_name=last_name    
                 new_user.save()
-                old_lscds_user.delete()                  
+               # old_lscds_user.delete()                  
             return new_user
         return None
 

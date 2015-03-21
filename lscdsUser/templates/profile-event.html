@@ -49,16 +49,17 @@
 
 {% for eventtype in eventtype_list %}
     <h4>{{ eventtype.grouper }}</h4>
-  
+     {% for event in eventtype.list %}
       
-         <form class="registration" id="EventForm" action="{% url 'profile-event-registration' %}" method="post">
+         <form class="registration" id="EventForm{{forloop.parentloop.counter}}" action="{% url 'profile-event-registration' %}" method="post">
                 <table  class='table table-bordered'>
                     <tbody> 
-                      {% for event in eventtype.list %}
+                   
                       {% if event.registration_open %}
-                        <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+                        <tr>  <td>  <strong>{{event.name}} </strong>
+                         {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <a data-toggle="modal" data-target="#registration" type="submit" class="btn btn-primary pull-right">Register</a></td>
+                            <td> <a data-toggle="modal" data-id = "EventForm{{forloop.parentloop.counter}}" data-target="#registration" type="submit" class="btn btn-primary pull-right">Register</a></td>
                       {% elif event.registration_start > now %}
                       <td>  <strong>{{event.name}} </strong> </td>
                         <td class="alert alert-info col-md-6" role="alert">Registration starts in {{event.registration_start|timeuntil}}</td>
@@ -70,15 +71,15 @@
                        </td>
                       
                         </tr> 
-                        {% empty %}
+                      
+                    </tbody>
+                </table> 
+            </form>       
+            {% empty %}
 
                         No event in this category
 
                         {% endfor %}
-                    </tbody>
-                </table> 
-            </form>       
-          
         {% endfor %}
        
    
@@ -187,16 +188,27 @@ $(document).ready(function() {
 $('#registration').on('show', function(e) {
   //  var link = $(this).data('link'),
    //     confirmBtn = $(this).find('.confirm');
+ 
           $('#registration').focus()
         
+})
+
+//We need to capture the right form to submit by using its ID
+$('#registration').on('show.bs.modal', function(e) {
+  var formId = $(e.relatedTarget).data('id');
+  $("#btnYes").attr('data-id',formId)
+ 
+
 })
 
 $('#btnYes').click(function() {
   
     // handle form processing here
   	   $('#registration').modal('toggle')
- 
-    $("#EventForm").submit();
+     var formID = $(this).data('id')
+   // $("#EventForm").submit();
+     $('#'+formID).submit()
+
   
 });
 

@@ -7,10 +7,32 @@
 
 {% block main_sidebar %}
 
-<h1>Files</h1>
 
-{% for file in object_list %}
-<p><a href = "{{file.file.url}}" >{{ file.name}}</a></p>
 
-{% endfor %}
+
+<table class="table table-condensed table-striped ">
+ {% for file in object_list %}
+ <tr> <td align="left" > {{ file.name}} </td> <td align="right"><a  class="btn btn-primary" href = "{{file.file.url}}" >Download</a> </td> </tr>
+ {% endfor %}
+</table>
+
+{% if is_paginated %}
+        <ul class="pagination pagination-centered">
+            {% if page_obj.has_previous %}
+                <li><a href="?page=1"><<</a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}"><</a></li>
+            {% endif %}
+
+            {% for i in paginator.page_range %}
+                <li {% if page_obj.number == i %} class="active" {% endif %}><a href="?page={{i}}">{{i}}</a></li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}">></a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">>></a></li>
+            {% endif %}
+        </ul>
+    {% endif %}
+
+
 {% endblock %}

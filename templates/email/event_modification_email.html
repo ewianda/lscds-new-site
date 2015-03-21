@@ -33,10 +33,11 @@ For more information about the event please visit our website at lscds.org/netwo
  evening’s agenda and other information.
  {% else %}
    
-   This is a confirmation that you have registered to attend the LSCDS seminar: ABC’s of Informational Interviewing and Networking Effectively.
- <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'}} at 4:00-5:00pm</p>
- <p><strong>Location:</strong> MSB 2170</p>
-For more information about the seminar and the speaker, Lauren Celano visit LSCDS.org.
+   This is a confirmation that you have registered to attend the LSCDS seminar:{{event}}.
+ <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'}} at {{event.starts|date:'P'}} to {{event.ends|date:'P'}} </p>
+ <p><strong>Location:</strong>{{event.location}}</p>
+For more information about the seminar and the speakers,{% for talks in event.get_talks %} {{talks.name}} {% endif %} visit
+ <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}> LSCDS Seminar</a>
    
 
  

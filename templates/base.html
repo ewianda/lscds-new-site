@@ -14,7 +14,7 @@
                 {% block title %}
                                   LSCDS HOME
 
-                                  {% endblock %}
+                {% endblock %}
                  </title>
 
                 <!-- Meta -->
@@ -76,7 +76,12 @@
                                             <li><a href="{% url 'registration_register' %}">{% trans "Register" %}</a></li>
                                              <!--li><a href="{% url 'auth_login' %}">{% trans "Subscribe" %}</a></li-->
                                              {% endif %}
+                                             <li><a href="{% url 'mailing_list-form' %}">{% trans "Subscribe to mailing List" %}</a></li>
+                                              <li><a href="{% url 'web-unsubscribe' %}">{% trans "Unubscribe from mailing List" %}</a></li>
+                                            
+                                            
                                              <li>
+                                             
                                             <a href="https://www.facebook.com/groups/5847151923/" target="_blank" class="tooltips" data-toggle="tooltip" data-placement="top" title="" data-original-title="Facebook">
                                                 <i class="fa fa-facebook"></i>
                                             </a>
@@ -181,7 +186,7 @@
                                         <a href="#">Opportunities</a>  
                                         <ul class='dropdown-menu'>
                                          <li> <a href="{% url 'resource:job-list' %}">Jobs</a> </li> 
-                                       <li> <a href="{% url 'resource:files' %}">Other</a> </li> 
+                                       <li> <a href="{% url 'resource:files' %}">Files</a> </li> 
                                           </ul>
                                         </li>                    
                                         <!-- End Resources -->
@@ -243,8 +248,6 @@
                     <div class="footer-v1">
                         <div class="footer">
                             <div class="container">
-
-
                                 <div class="row">
                                     <!-- Latest -->
                                     <div class="col-md-4 md-margin-bottom-40">
@@ -313,6 +316,8 @@
                         </div><!--/copyright-->
                     </div>     
                     <!--=== End Footer Version 1 ===-->
+    
+                    
                 </div><!--/wrapper-->
 
                 <!-- JS Global Compulsory -->           
@@ -330,19 +335,63 @@
                 <script type="text/javascript" src="{%static "assets/js/app.js" %}"></script>
           
                 <script src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
                 
                 {% block javascript %}{% endblock %}
 
 
-<script>
 
 
+  <script>
  $(document).ready(function() {
+ $('#mailinglist').on('show', function(e) {
+          $('#mailinglist').focus()
+        
+})
+
+$('#submitMailinglist').click(function() {
+    $("form#mailinglistForm :input").each(function(){
+     if ($(this).val()==="") {
+      // invalid 
+       $($(this)).closest('.form-group').addClass('has-error')    
+      $($(this)).next('.help-inline').show();
+      return false;
+       }
+       else{
+        $.ajax({
+                 url: '/ajax_mailing_list/',
+                   data:{"data":$(this).text()},
+                  type: 'post', //this is the default though, you don't actually need to always mention it
+                   success: function(data) {
+                     if (data == "success"){ 
+                     $('#submitMailinglist').html("Success")
+                       }
+                       else{
+                       $('#submitMailinglist').html("Success")
+             
+                      }    
+        },
+                     error: function(data) { 
+     console.log(data)
+    }
+      }); 
+       
+       }
+    })
+    
+    //$("form").unbind().submit();  
+     //$('#registration').modal('toggle');
+});
+
+
  window.setTimeout(function(){
     $(".twitter-tweet").contents().find(".e-entry-title").css("font-size","12");
     $(".twitter-tweet").contents().find(".tweet").css("font-family","sans-serif");
      $(".twitter-tweet-rendered").css("width","100%");
-        $(".twitter-tweet-rendered").css("max-width","none"); 
+      
     $(document).on("click",'.nav  a', function(){
 
    $(".nav").find(".active").removeClass("active");

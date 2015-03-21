@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
+{% load static %}
 {% load i18n %}
-
 {% block main %}
+<style>
+a:hover {
+color: #fff; 
+text-decoration: underline;
+}
+</style>
 
     <div id="faq" class="faq">
     {% for topic in topics %}

@@ -5,156 +5,164 @@
 {% load i18n %}
 {% block main_sidebar %}
 
- <div class="row magazine-page">
-                       <!-- Magazine Slider -->
-                       
-                
-                <div class="carousel slide carousel-v1 margin-bottom-40" id="myCarousel-1">            
-                
-                    <div class="carousel-inner">
-                    {% for banner in banners %}
-                       <div class="item {% if forloop.first %} active {% endif %}">
-                            <img alt="" src="{{ banner.banner.url }}">
-                            <div class="carousel-caption">
-                                <p>{{banner.eventtype}}</p>
-                            </div>
-                        </div>
-                      {% empty %}
-              
-                        <div class="item active">
-                            <img alt="" src="{%static "images/_img"%}">
-                            <div class="carousel-caption">
-                                <p>Facilisis odio, dapibus ac justo acilisis gestinas.</p>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <img alt="" src="{%static "images/_img1"%}">
-                            <div class="carousel-caption">
-                                <p>Cras justo odio, dapibus ac facilisis into egestas.</p>
-                            </div>
-                            </div>
-                        <div class="item">
-                            <img alt="" src="{%static "images/_img2"%}">
-                            <div class="carousel-caption">
-                                <p>Justo cras odio apibus ac afilisis lingestas de.</p>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <img alt="" src="{%static "images/_img3"%}">
-                            <div class="carousel-caption">
-                                <p>Justo cras odio apibus ac afilisis lingestas de.</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    
-                    <div class="carousel-arrow">
-                        <a data-slide="prev" href="#myCarousel-1" class="left carousel-control">
-                            <i class="fa fa-angle-left"></i>
-                        </a>
-                        <a data-slide="next" href="#myCarousel-1" class="right carousel-control">
-                            <i class="fa fa-angle-right"></i>
-                        </a>
-                    </div>
+<div class="row magazine-page">
+    <!-- Magazine Slider -->
+
+
+    <div class="carousel slide carousel-v1 margin-bottom-10" id="myCarousel-1">            
+
+        <div class="carousel-inner">
+            {% for banner in banners %}
+
+            <div class="item {% if forloop.first %} active {% endif %}">
+
+                <a href="{% if banner.link %}{{banner.link}}
+                    {% else %}{{banner.eventtype.get_absolute_url }}
+                    {% endif %}">  
+                    <img alt="" src="{{ banner.banner.url }}" width="1000">
+                </a> 
+                <div class="carousel-caption">
+                    <p>{{banner.eventtype}}</p>
                 </div>
-                <!-- End Magazine Slider -->
 
-                <!-- Magazine News -->
-                <div class="magazine-news">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="magazine-new-img">
-                                <legend class="magazine-badge label-red">Our Mission</legend>                                    
-                            </div>
-                            <p>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
-their career knowledge</p>                            
-                        </div>
-                    </div>
+            </div>
+            {% empty %}
+
+            <div class="item active">
+                <img alt="" src="{%static "images/_img"%}">
+                <div class="carousel-caption">
+                    <p>Facilisis odio, dapibus ac justo acilisis gestinas.</p>
                 </div>
-                <!-- End Magazine News -->
-
-                <div class="margin-bottom-35"><hr class="hr-md"></div>
-                
-                <!-- Magazine News -->
-                <div class="magazine-news">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="magazine-new-img">
-                                <legend class="magazine-badge label-yellow">Latest Jobs</legend>                                    
-                            </div>
-                            {% for job in jobs %}
-								<h5><a href="{% url 'resource:job' slug=job.slug %}">{{ job.title }}</a></h5>
-								
-								
-						 <span>{{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a> </span>
-								<p>{{ job.description|truncatewords:10 |safe }}<p>
-								{% empty %}
-								    <p>No job yet.</p>
-								{% endfor %}              
-                            
-                        </div>
-                        <div class="col-md-6">
-                            <div class="magazine-new-img">
-                                <legend class="magazine-badge label-green">Latest Blogs</legend>
-                            </div>
-                            {% for object in  context_blog %}                           
-                              
-                                    <h5><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h5>
-                                    <div class="by-author">
-                                        {% with authors=object.authors.all %}
-                                           {% if authors|length %}
-                                          <span> 
-                                                {% for author in authors %}
-                                                
-                                           <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
-                                          title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}"><strong> {% trans "By " %} {{ author }} </strong> / {{object.creation_date|date:"F d o"}}</a></span>{% if not forloop.last %}, {% endif %}
-                                                            {% endfor %}                         
-                                      
-                                                 {% endif %}
-                                                     {% endwith %}                                      
-                                    </div>
-                                    <p> {{ object.content|truncatewords:10|safe }}</p>
-                                    {% empty %}
-                                    
-                                    {% endfor %}                                    
-                            </div>
-                    </div>
+            </div>
+            <div class="item">
+                <img alt="" src="{%static "images/_img1"%}">
+                <div class="carousel-caption">
+                    <p>Cras justo odio, dapibus ac facilisis into egestas.</p>
                 </div>
-                <!-- End Magazine News -->
-
-                <div class="margin-bottom-35"><hr class="hr-md"></div>
-                
-                <!-- Magazine News -->
-                <div class="magazine-news">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="magazine-new-img">
-                                <legend class="magazine-badge label-purple">Testimonia</legend>                                    
-                            </div>
-                            <h3><a href="#">Seminar Series</a></h3>
-                            <div class="by-author">
-                                <strong>By Mira</strong>
-                                <span>/Department of Medical Biophysics to Seminar</span>
-                            </div> 
-                            <p>
-                            I personally gained from the workshop hosted on Tuesday January 31. So I would like to thank you for bringing inspiring speakers and look forward
-                             for workshops aimed to help students network and ppare for life after school.
-to Seminar
-                            </p>
-                             <h3><a href="#">Networking Reception</a></h3>
-                           
-                            <p>
-                           I found the after informal session most helpful. The guest who stayed behind 
-                           was genuinely interested in providing mentorship.
-                            </p>
-                        </div>
-                    </div>
+            </div>
+            <div class="item">
+                <img alt="" src="{%static "images/_img2"%}">
+                <div class="carousel-caption">
+                    <p>Justo cras odio apibus ac afilisis lingestas de.</p>
                 </div>
-                <!-- End Magazine News -->
-
-           
-
+            </div>
+            <div class="item">
+                <img alt="" src="{%static "images/_img3"%}">
+                <div class="carousel-caption">
+                    <p>Justo cras odio apibus ac afilisis lingestas de.</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+
+
+        <div class="carousel-arrow">
+            <a data-slide="prev" href="#myCarousel-1" class="left carousel-control">
+                <i class="fa fa-angle-left"></i>
+            </a>
+            <a data-slide="next" href="#myCarousel-1" class="right carousel-control">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        </div>
+    </div>
+    <!-- End Magazine Slider -->
+
+    <!-- Magazine News -->
+    <div class="magazine-nes">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="magazine-new-img">
+                    <legend class="magazine-badge label-red">Our Mission</legend>                                    
+                </div>
+                <p>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
+                their career knowledge
+                </p>                            
+            </div>
+        </div>
+    </div>
+    <!-- End Magazine News -->
+
+
+
+    <!-- Magazine News -->
+    <div class="magazine">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="magazine-new-img">
+                    <legend class="magazine-badge label-yellow">Latest Jobs</legend>                                    
+                </div>
+                {% for job in jobs %}
+                <h5><a href="{% url 'resource:job' slug=job.slug %}">{{ job.title }}</a></h5>
+
+
+                <span>{{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a> </span>
+                <p>{{ job.description|truncatewords:10 |safe }}<p>
+                {% empty %}
+                <p>No job yet.</p>
+                {% endfor %}              
+
+            </div>
+            <div class="col-md-6">
+                <div class="magazine-new-img">
+                    <legend class="magazine-badge label-green">Latest Blogs</legend>
+                </div>
+                {% for object in  context_blog %}                           
+
+                <h5><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h5>
+                <div class="by-author">
+                    {% with authors=object.authors.all %}
+                    {% if authors|length %}
+                    <span> 
+                        {% for author in authors %}
+
+                        <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
+                            title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}"><strong> {% trans "By " %} {{ author }} </strong> / {{object.creation_date|date:"F d o"}}</a></span>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}                         
+
+                    {% endif %}
+                    {% endwith %}                                      
+                </div>
+                <p> {{ object.content|truncatewords:10|safe }}</p>
+                {% empty %}
+
+                {% endfor %}                                    
+            </div>
+        </div>
+    </div>
+    <!-- End Magazine News -->
+
+
+
+    <!-- Magazine News -->
+    <div class="magazine-nws">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="magazine-new-img">
+                    <legend class="magazine-badge label-purple">Testimonies</legend>                                    
+                </div>
+                <h3><a href="#">Seminar Series</a></h3>
+                <div class="by-author">
+                    <strong>By Mira</strong>
+                    <span>/Department of Medical Biophysics to Seminar</span>
+                </div> 
+                <p>
+                I personally gained from the workshop hosted on Tuesday January 31. So I would like to thank you for bringing inspiring speakers and look forward
+                for workshops aimed to help students network and ppare for life after school.
+                to Seminar
+                </p>
+                <h3><a href="#">Networking Reception</a></h3>
+
+                <p>
+                I found the after informal session most helpful. The guest who stayed behind 
+                was genuinely interested in providing mentorship.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- End Magazine News -->
+
+
+
+</div>
 
 {% endblock %}

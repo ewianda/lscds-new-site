@@ -11,6 +11,13 @@ from ckeditor.fields import RichTextField
 from django.db.models.query import QuerySet
 from django.db.models import Q,Count
 User=UserModel()
+from lscdsUser.models import LscdsExec
+from lscds_site.utils import send_event_register_mail
+        
+
+
+
+
 
 
 UPLOAD_TO = getattr(settings, 'PRESENTERS_UPLOAD_TO', 'presenters')
@@ -28,7 +35,9 @@ class EventType(models.Model):
     def __unicode__(self):
         return self.name
 
-
+    @models.permalink
+    def get_absolute_url(self):
+        return 'event:event-type-detail', (), {'slug': self.slug}
 
 # First, define the Manager subclass.
 
@@ -93,12 +102,20 @@ class Event(models.Model):
     slug = models.SlugField(max_length=100,unique=True)
     status = models.CharField(max_length=40, choices=STATUS)
     objects = EventManager()
+    
+    class Meta:
+        ordering = ('-starts',)
+    
+    
+  
     def get_talks(self):
         return self.event.select_related('presenter').all()
     def get_round_table(self):
         return self.event_round_table.all()
     def get_round_table_registration(self):
         return self.event.select_related('round_table_registrations')
+    def break_location(self):
+        return self.location.replace(',','<br>')
 
     @property
     def has_fee(self):
@@ -122,12 +139,14 @@ class Event(models.Model):
         else:
           return False
 
-
-
-
-
 class Presenter(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(_('First name'),max_length=255)
+    last_name = models.CharField(_('Last name'), max_length=255 )
+    email = models.EmailField(
+        verbose_name='email address',
+        max_length=255,blank=True, null=True
+ 
+    )
     qualification = models.CharField(max_length=255)
     position = models.CharField(max_length=255)
     company = models.CharField(max_length=255)  
@@ -135,11 +154,26 @@ class Presenter(models.Model):
     image = models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO,
         help_text=_('Used for illustration.'))
     biography = RichTextField(blank=True, null=True)
+    rsvp_code = models.CharField(_('Rsvp code'), max_length=255 ,blank=True, null=True)
+    affiliation = models.CharField(_('Affiliation for old database'), max_length=32 ,blank=True, null=True)
+    year  = models.DateField(_('Year for old database'), default=timezone.now)
+    def full_name(self):
+        return "%s %s" % (self.name,self.last_name)
+        
+    full_name.allow_tags = True
+    
     def __unicode__(self):
-        return self.name
+        return "%s %s" % (self.name,self.last_name)
     class Meta:
-        ordering = ('name',)
-
+        ordering = ('-email','name')
+        verbose_name_plural = _("Event Guests and Presenters")
+        
+    def send_email(self,event):
+        action="send"
+        template = ["alumni/event_register_email.txt","alumni/event_register_email.txt"]
+        return send_event_register_mail(self,action,event,template,request=None,round_table=None)
+        
+        
 
 class Talk(models.Model):
     event = models.ForeignKey(Event, related_name='event')
@@ -167,9 +201,13 @@ class Registration(models.Model):
     fee_option = models.ForeignKey(EventFee, related_name='+', null=True,
             blank=True)
     paid = models.BooleanField(default=False)
+    
+    def email(self):
+        return self.owner.email    
+        
 
     class Meta:
-        ordering = ('created',)
+        ordering = ('-created',)
 
     def __unicode__(self):
         return u'Registration for %s ' % (self.owner,)
@@ -201,9 +239,10 @@ class RoundTable(models.Model):
             null=True, blank=True)
     table_limit = models.PositiveSmallIntegerField()    
     objects = RoundTableManager()
-    @property
-    def registration_open(self):
-        return self.round_table_registrations.count() < self.table_limit
+    
+    def registration_open(self,session):
+        return self.round_table_registrations\
+                            .filter(session=session).count() < self.table_limit
     @property
     def get_spots(self):
         return self.table_limit -  self.round_table_registrations.count()
@@ -228,12 +267,15 @@ class RoundTableRegistration(models.Model):
             blank=True)
     paid = models.BooleanField(default=False)
     session = models.PositiveSmallIntegerField(max_length=10,default=1)
-   
+    def department(self):
+        return self.student.department
+    def faculty(self):
+        return self.student.faculty 
     @property
     def event(self):
         return self.round_table.event
     class Meta:
-        ordering = ('session',)
+        ordering = ('student',)
 
     def __unicode__(self):
         return u'Registration for %s ' % (self.student,)
@@ -254,4 +296,30 @@ class EventBanner(models.Model):
         return self.eventtype.name
     class Meta:
         ordering = ('position',)
+        
+        
+        
+class AlumniRegistration(models.Model):
+    event = models.ForeignKey(Event, related_name='alumniEvent')
+    alumni = models.ForeignKey(LscdsExec, related_name='+', null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False,
+            null=True, blank=True) 
+
+    class Meta:
+        ordering = ('-created',)
+
+    def __unicode__(self):
+        return u'Registration for %s ' % (self.alumni,)        
+        
+class GuestRegistration(models.Model):
+    event = models.ForeignKey(Event, related_name='guest_event')
+    guest = models.ForeignKey(Presenter, related_name='+', null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False,
+            null=True, blank=True) 
+
+    class Meta:
+        ordering = ('-created',)
+
+    def __unicode__(self):
+        return u'Registration for %s ' % (self.guest)  
 

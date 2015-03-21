@@ -24,7 +24,7 @@ DATABASES = {
 #print DATABASES
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['.lscds-new-site-v3.appspot.com','.localhost:8080']
+ALLOWED_HOSTS = ['.lscds.org','.localhost:8080','.lscdsv4.appspot.com']
 
 
 # Local time zone for this installation. Choices can be found here:
@@ -123,6 +123,7 @@ IMAGESTORE_UPLOAD_TO = 'imagestore'
 CKEDITOR_UPLOAD_PATH = "ckeditor/uploads/"
 CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'
 ROOT_URLCONF = 'lscds_site.urls'
+ZINNIA_AUTO_MODERATE_COMMENTS=True
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'lscds_site.wsgi.application'
@@ -160,10 +161,10 @@ INSTALLED_APPS = ('adminactions',
     'home',
     'registration',
     'resource',
-    'contact',
+    'contact','alumni',
     'event','ckeditor',
      'photologue', 
-     'imagekit',
+     'imagekit','communication',
      #'sortedm2m',
    #  'south',
     'captcha',
@@ -187,14 +188,14 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
-        'height': 180,
+        'height': 200,
     'width': 735,
     },
 }
 APPENGINE_TOOLKIT = {
     # other settings here
  'APP_YAML': os.path.join(PROJECT_PATH, 'app.yaml'),
-    'BUCKET_NAME': 'lscds-new-site-v2',
+    'BUCKET_NAME': 'lscds-bucket',
 }
 
 IMAGEKIT_DEFAULT_FILE_STORAGE= 'appengine_toolkit.storage.GoogleCloudStorage'
@@ -235,7 +236,7 @@ SEND_ACTIVATION_EMAIL = True
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/first-login'
-SOCIAL_AUTH_LOGIN_URL = '/profile-event'
+SOCIAL_AUTH_LOGIN_URL = '/first-login'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
@@ -332,7 +333,7 @@ EMAIL_PORT          = 587
 EMAIL_HOST_USER     = ""
 EMAIL_HOST_PASSWORD = ""
 EMAIL_USE_TLS       = True # Yes for Gmail
-DEFAULT_FROM_EMAIL  = "Life Science Carrier Development Services"
+DEFAULT_FROM_EMAIL  = "Life Sciences Career Development Society"
 SERVER_EMAIL        = DEFAULT_FROM_EMAIL
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'

@@ -36,9 +36,12 @@
         {% else %}
 
         This is a confirmation that you have registered to attend the LSCDS seminar: {{event}}
-        <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'|safe}} at 4:00-5:00pm</p>
-        <p><strong>Location:</strong> MSB 2170</p>
-        For more information about the seminar and the speaker, Lauren Celano, visit <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
+        <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'}} at {{event.starts|date:'P'}} to {{event.ends|date:'P'}}</p>
+        <p><strong>Location: </strong>{{event.break_location|safe}} </p>
+        For more information about the seminar and the speaker{{event.get_talks|pluralize}},
+       <br> <br>{% for talks in event.get_talks %}<strong> {{talks.presenter.name}}</strong><br/><br/> {% endfor %} 
+        
+       visit   <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
          LSCDS Seminars</a>
          {% endif %}
 
@@ -55,12 +58,13 @@
 {% endif %}
 
 
-{% else %} 
-        
-It is unfortunate that you will not be attending our event.
-Remember to check out <a href="http://{{site.domain}}">webiste </a> for upcoming events. 
+{% else %}        
 
-
+This is a confirmation that you have <strong> unregistered </strong>
+from attending LSCDS' {{event}} on </p> {{event.starts|date:'l, M. dS o'|safe}}
+.<p>
+Remember to check out <a href="http://{{site.domain}}">LSCDS webiste </a> for upcoming events. 
+</p>
 
 {% endif %}
 

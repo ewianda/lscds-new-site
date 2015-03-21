@@ -13,6 +13,8 @@ admin.autodiscover()
 
 
 urlpatterns = patterns('',
+    url(r'', include('communication.urls')),                  
+    url(r'', include('alumni.urls')),                   
     url(r'', include('home.urls')),
     url(r'^events/', include('event.urls', namespace='event')),
     url(r'^resources/', include('resource.urls', namespace='resource')),
@@ -21,7 +23,7 @@ urlpatterns = patterns('',
     url(r'', include('contact.urls')),
     url(r'', include('social.apps.django_app.urls', namespace='social')),
     url(r'', include('lscdsUser.urls')),
-    url(r'^admin/', include(admin.site.urls)), 
+    url(r'^admin-lsdcds-main-page/', include(admin.site.urls)), 
     url(r'^accounts/',include('registration.backends.default.urls')),
     url(r'^weblog/', include('zinnia.urls',namespace='zinnia')),
     url(r'^comments/', include('django_comments.urls')),  

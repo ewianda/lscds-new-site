@@ -2,29 +2,28 @@
 {% load url from future %}
 <!doctype html>
 <html lang="en">
+<style type="text/css">
+.header {
+background:url("http://www.lscds.org/static/images/lscds-logo.jpg");
+ background-size: 400px;
+ background-repeat: no-repeat;
+ padding-top: 60px;
+}
 
+   
+
+ </style>
 <head>
 
 </head>
 <body>
-<p>
-    {% blocktrans %}
-Hi {{ user }} 
-    {% endblocktrans %}
-</p>
-<p>
-    {% blocktrans %}
-    {{ message|safe }} 
-    {% endblocktrans %}
-</p>
-
-
 
 <p>
-    {% blocktrans %}
-    Sincerely
+    {{ message|safe }}
 
-    {% endblocktrans %}
+</p> 
+
+
 </p>
 </body>
 

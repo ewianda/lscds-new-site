@@ -1,14 +1,87 @@
 from django.core.mail import get_connection, EmailMultiAlternatives
-"""
-from BeautifulSoup import BeautifulSoup
-
+from django.contrib import admin
+from django.template import RequestContext, TemplateDoesNotExist,loader, Context
+from django.contrib.sites.models import RequestSite,Site
+from django.template.loader import get_template, render_to_string
 from django.conf import settings
-from django.template import loader, Context
-from django.core.mail import EmailMultiAlternatives
 
-from email.MIMEImage import MIMEImage
-import email.Charset
-"""
+
+
+import csv
+
+def send_event_register_mail(user,action,event,template,request=None,round_table=None):
+        if Site._meta.installed:
+            site = Site.objects.get_current()    
+        else:
+            if request is not None:
+                site = RequestSite(request)   
+        email_dict={}         
+        if request is not None:
+            email_dict = RequestContext(request, email_dict)
+        subject="%s Event Registration" % (event)
+        email_dict = {
+            "event": event,    
+            "user": user,                     
+            "site": site,
+            "action": action,            
+        }
+        if round_table is not None:
+            rt1=round_table[0]
+            rt2 =round_table[1]
+            email_dict['rt1']=rt1
+            email_dict['rt2']=rt2
+        email_ctx=Context(email_dict)
+        txt = get_template(template[0])
+        html = get_template(template[1])
+        message_txt = txt.render(email_ctx)
+        message_html =html.render(email_ctx)       
+        email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [user.email])
+        
+        email_message.attach_alternative(message_html, 'text/html')
+        email_message.send()
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+from django.http import HttpResponse
+
+def export_as_csv_action(description="Export selected objects as CSV file",
+                         fields=None, exclude=None, header=True):
+    """
+    This function returns an export csv action
+    'fields' and 'exclude' work like in django ModelForm
+    'header' is whether or not to output the column names as the first row
+    """
+    def export_as_csv(modeladmin, request, queryset):
+        """
+        Generic csv export admin action.
+        based on http://djangosnippets.org/snippets/1697/
+        """
+        fields= list(modeladmin.get_list_display(request))
+        opts = modeladmin.model._meta 
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
+
+        writer = csv.writer(response)
+        if header:
+            writer.writerow(list(fields))
+        for obj in queryset:
+            writer.writerow([unicode(getattr(obj, field)() if callable(getattr(obj, field))\
+                                      else getattr(obj, field)).encode("utf-8","replace") for field in fields])
+        return response
+    export_as_csv.short_description = description
+    return export_as_csv
+
 
 
 def send_mass_html_mail(datatuple, fail_silently=False, user=None, password=None, 
@@ -32,6 +105,29 @@ def send_mass_html_mail(datatuple, fail_silently=False, user=None, password=None
         message.attach_alternative(html, 'text/html')
         messages.append(message)
     return connection.send_messages(messages)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 """

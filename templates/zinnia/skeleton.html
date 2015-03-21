@@ -1,9 +1,16 @@
 {% extends "base.html" %}
-{% block main %}
+
 
 {% load i18n staticfiles %}
 
-       {% block title %}Weblog - {% block title-page %}{% endblock title-page %}{% endblock title %}
+  {% block title %}LSCDS Blog - {% block title-page %}
+  
+  {% endblock title-page %}
+  {% endblock %}
+      
+      
+      
+      
       {% block meta %}
 
     <meta name="description" content="{% block meta-description %}{% trans "LSCDS Blog." %}{% endblock meta-description %}{% block meta-description-page %}{% endblock meta-description-page %}" />
@@ -21,7 +28,9 @@
     <![endif]-->
     {% block link %}{% endblock link %}
     {% block script %}{% endblock script %}
-  <div class="zinnia {% block theme-class %}default{% endblock theme-class %} {% block color-class %}blue{% endblock color-class %} {% block sidebar-class %}right-sidebar{% endblock sidebar-class %} {% block body-class %}{% endblock body-class %}">
+  
+ {% block main %}
+  <div class="zinnia {% block theme-class %}blue{% endblock theme-class %} {% block color-class %}blue{% endblock color-class %} {% block sidebar-class %}right-sidebar{% endblock sidebar-class %} {% block body-class %}{% endblock body-class %}">
     <div class="container">
      
       {% block slider %}{% endblock slider %}

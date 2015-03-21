@@ -14,5 +14,6 @@ class JobDetailView(DetailView):
        
 class FileListView(ListView):
        model = Files
+       paginate_by = 10
     
 

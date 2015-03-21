@@ -1,8 +1,21 @@
-<a id="question-anchor-{{ question.id }}" class="question">{{ question.text }}
-    <img id="question-image-{{ question.id }}" class="question_image" src="{{ MEDIA_URL }}{{ question.header_picture }}"></a>
+
+ <div class="panel-heading" role="tab" id="headingOne">
+            <h4 id="link{{ question.text }}" class="panel-title"> 
+             
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ question.id }}" aria-expanded="true" aria-controls="collapseOne">
+                  {{ question.text }}
+                </a>
+            </h4>
+        </div>
+        <div id="collapse{{ question.id }}" class="panel-collapse collapse  role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">  
+                <div class = "row" >    
 <div id="question-answer-{{ question.id }}" class="question_answer">
     {% autoescape off %}
         {{ question.answer_text }}
     {% endautoescape %}
 </div>
 
+       </div>
+            </div>
+        </div>

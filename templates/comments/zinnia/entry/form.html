@@ -1,0 +1,54 @@
+{% load comments i18n %}
+{% load firstof from future %}
+
+   <div class="row">
+<form class="form-horizontal"  action="{% comment_form_target %}" method="post" id="comment-form">
+  <div>{% csrf_token %}</div>
+  {% if form.non_field_errors %}
+  <div class="error alert alert-error ">
+    {{ form.non_field_errors }}
+  </div>
+  {% endif %}
+  <fieldset>
+    <legend>{% trans "Post your comment" %}</legend>
+    <input type="hidden" name="next" value="{% url 'zinnia:comment_success' %}"/>
+    {% for field in form %}
+    {% if field.is_hidden %}{{ field }}{% else %}
+    {% if user.email and field.name in "namemailurl" %}
+    
+    {% elif field.name in "url"  %}
+       
+     {% else %}
+    
+    <div{% if field.errors %} class="control-group"  {% endif %}
+    {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
+    
+    
+     <label class="control-label col-sm-2"> {{ field.label_tag }}</label>
+     <div class="controls col-sm-10">
+      {% if field.errors %}{{ field.errors }}{% endif %}
+      {{ field }}
+       </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+    {% if user.is_authenticated %}
+    <p class="auth">
+      {% trans "Comment as" %} <strong>{% firstof user.get_full_name user.get_username %}</strong>. <a href="{% url 'admin:logout' %}">{% trans "Log out" %}</a>.
+    </p>
+    {% endif %}
+    <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+      <button type="submit" name="preview"  class="btn btn-primary">Preview</button>
+    </div>
+  </div>
+    
+  </fieldset>
+</form>
+ </div>
+
+
+
+

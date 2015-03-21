@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}{% trans "Mailing List Confirmation" %}{% endblock %}
+
+{% block main %}
+{% if success %}
+<div class="alert alert-success" role="alert">
+Thank you very much for joining the LSCDS mailing list. Your email has been successfully added to the LSCDS mailing list. 
+Please stay tuned for our upcoming events.
+
+<br><br> If at any time you wish to unsubscribe, please click 
+<a href = "{% url 'unsubscribe' pk=object.pk first_name=object.first_name last_name=object.last_name  %}" >here</a>
+</div>
+
+{% else %}
+<div class="alert alert-danger" role="alert">
+Ops!! Session expired please try again
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load i18n %}
+{% load url from future %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>{{ site.name }} </title>
+</head>
+
+<body>
+<p>
+ Hi {{user}}</br>
+    You (or someone pretending to be you) have asked to join the mailing list of
+    {{ site.name }}.  If this wasn't you, please ignore this email
+    and your address will be removed from our records.
+</p>
+<p>
+    To to confirm your email, please click the following link within the next
+    30 minutes
+
+</p>
+
+<p>
+    <a href="http://{{site.domain}}{% url 'mailing_list' key %}">
+        {{site.domain}}{% url 'mailing_list' key %}
+    </a>
+</p>
+<p>
+
+    Sincerely,
+    {{ site.name }} Team
+ 
+</p>
+</body>
+
+</html>

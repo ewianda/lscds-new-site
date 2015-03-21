@@ -1,0 +1,62 @@
+{% extends 'base_sidebar.html' %}
+{% load staticfiles %}
+{% load static %}
+ {% load url from future %}
+   {% load i18n %
+ {% load future %}
+
+{% block main_sidebar %}
+
+  {% if messages %}
+        {% for message in messages %}
+         
+            <div class="alert {%if  message.tags == "error" %} alert-danger {% else %}alert-success {% endif %}">  <!-- singular -->
+                <a class="close" data-dismiss="alert">×</a>
+                {{ message|safe }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+<h1>Who is coming</h1>
+<legend>Guest</legend>
+{% for obj in object_list %}
+<ol>
+<li>{{ obj.guest}}</li>
+
+</ol>
+{% empty %}
+    <li>No guest yet.</li>
+{% endfor %}
+
+
+<legend> Alumni </legend>
+<ol>
+
+{% for alumni in alumni_list %}
+
+<li>{{ alumni.alumni}}</li>
+
+
+{% empty %}
+    <li>No guest yet.</li>
+{% endfor %}
+</ol>
+
+    {% if is_paginated %}
+        <ul class="pagination pagination-centered">
+            {% if page_obj.has_previous %}
+                <li><a href="?page=1"></a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}"></a></li>
+            {% endif %}
+
+            {% for i in paginator.page_range %}
+                <li {% if page_obj.number == i %} class="active" {% endif %}><a href="?page={{i}}">{{i}}</a></li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}">></a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">>></a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+{% endblock %}

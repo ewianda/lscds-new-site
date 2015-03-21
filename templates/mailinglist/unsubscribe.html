@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}{% trans "Mailing List Confirmation" %}{% endblock %}
+
+{% block main %}
+
+<div class="alert alert-success" role="alert">
+You have successfully unsubscribe from our mailing list
+</div>
+
+
+{% endblock %}

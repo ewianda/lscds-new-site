@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}{% trans "Subscribe to Mailing List" %}{% endblock %}
+
+{% block main %}
+ {% if form.errors %}
+ <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {% for field in form %} 
+        {% if field.errors %}
+        <li>{{ field.label }}: {{ field.errors|striptags }}</li>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}   
+    {% crispy form  %}
+
+{% endblock %}
+

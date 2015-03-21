@@ -2,6 +2,8 @@ local_settings.py
 *.pyc
 *.db
 *.txt
+.project
+.pydevproject
 media
 *.json
 lscd_user

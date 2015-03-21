@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}{% trans "Alumni Reception RSVP" %}{% endblock %}
+
+{% block main %}
+{% if success %}
+<div class="alert alert-success" role="alert">
+<legend>You have successfully registered</legend>
+Miho provide the information you want  to display here
+</div>
+ {% else %}
+ <div class="alert alert-danger" role="alert">
+Somthing went wrong. Please contact  <a href="mailto:alumni.lscds@lscds.org">  alumini reception team for help </a>
+</div>
+
+ 
+ {% endif %}
+{% endblock %}

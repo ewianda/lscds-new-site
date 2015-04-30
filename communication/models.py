@@ -1,5 +1,6 @@
 from django.db import models
 from ckeditor.fields import RichTextField
+from lscdsUser.models import LscdsUser
 # Create your models here.
 from django.utils.translation import ugettext_lazy as _
 class LscdsEmail(models.Model):
@@ -17,4 +18,7 @@ class EmailTemplate(models.Model):
       
       def __unicode__(self):
         return self.template
-      
+    
+class ListServ(LscdsUser):
+    class Meta:
+        proxy = True

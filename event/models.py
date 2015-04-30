@@ -42,6 +42,18 @@ class EventType(models.Model):
 # First, define the Manager subclass.
 
 class EventQuerySet(QuerySet):
+    # Get career day event registration for a particular user
+    def user_cd(self,user):
+        return self.filter(event_type_id=2,starts__gte = timezone.now(),status="publish"). \
+                         filter(event_pannels__cd_registration__student=user).\
+                         annotate(dcount=Count('event_type'))
+
+    def user_open_cd(self,user):
+        return self.filter(event_type_id=2,starts__gte = timezone.now(),status="publish"). \
+                         exclude(event_pannels__cd_registration__student=user)
+    
+    
+    
     def user_nr(self,user):
         return self.filter(event_type_id=1,starts__gte = timezone.now(),status="publish"). \
                          filter(event_round_table__round_table_registrations__student=user).\
@@ -52,13 +64,11 @@ class EventQuerySet(QuerySet):
                          exclude(event_round_table__round_table_registrations__student=user)
 
     def user_events(self,user):
-        return self.filter(starts__gte = timezone.now(),status="publish",registrations__owner=user).\
-                           exclude(event_type_id=1)
+        return self.filter(event_type_id=3,starts__gte = timezone.now(),status="publish",registrations__owner=user)
+                           
 
     def user_open_events(self,user):
-        return self.filter(starts__gte = timezone.now(),status="publish").\
-                           exclude(event_type_id=1).\
-                                  exclude(registrations__owner=user)
+        return self.filter(event_type_id=3,starts__gte = timezone.now(),status="publish").exclude(registrations__owner=user)
     def user_event_history(self,user):
         return self.filter(Q(registrations__owner=user)|Q(event_round_table__round_table_registrations__student=user)).\
                           filter(starts__lte = timezone.now(),status="publish").\
@@ -69,10 +79,17 @@ class EventQuerySet(QuerySet):
 class EventManager(models.Manager):
        def get_query_set(self):
            return EventQuerySet(self.model, using=self._db)
+       def user_cd(self,user):
+           return self.get_query_set().user_cd(user)
+       def user_open_cd(self,user):
+           return self.get_query_set().user_open_cd(user)
+       
        def user_nr(self,user):
            return self.get_query_set().user_nr(user)
        def user_open_nr(self,user):
            return self.get_query_set().user_open_nr(user)
+       
+       
 
        def user_events(self,user):
            return self.get_query_set().user_events(user)
@@ -112,10 +129,16 @@ class Event(models.Model):
         return self.event.select_related('presenter').all()
     def get_round_table(self):
         return self.event_round_table.all()
+    
+    def get_cd_pannels(self):
+        return self.event_pannels.all()
+    
     def get_round_table_registration(self):
         return self.event.select_related('round_table_registrations')
     def break_location(self):
         return self.location.replace(',','<br>')
+    def get_companies(self):
+        return self.company.all()
 
     @property
     def has_fee(self):
@@ -180,7 +203,10 @@ class Talk(models.Model):
     title = models.CharField(max_length=255, db_index=True)
     presenter = models.ForeignKey(Presenter)
     description = RichTextField(blank=True, null=True)
-
+    class Meta:
+        verbose_name_plural = _("Key note and Talks") 
+        
+        
 class EventFee(models.Model):
     event = models.ForeignKey(Event, related_name='fee_options')
     available = models.BooleanField(default=True)
@@ -213,6 +239,47 @@ class Registration(models.Model):
         return u'Registration for %s ' % (self.owner,)
     
     
+
+
+class CDPanels(models.Model): 
+       name = models.CharField(max_length=255)
+       event = models.ForeignKey(Event, related_name='event_pannels')
+       panel_limit = models.PositiveSmallIntegerField()  
+       room = models.CharField(max_length=255,blank=True, null=True)
+       def get_panelists(self):
+           return self.panelists.all()
+       def __unicode__(self):
+            return u'%s' % (self.name,)
+        
+       class Meta:
+           ordering = ('event',)
+           verbose_name_plural = _("Career Day Panels")
+       
+class CDPanelist(models.Model):
+       cdpanel = models.ForeignKey(CDPanels,related_name='panelists')
+       panelist = models.ForeignKey(Presenter)  
+        
+class CDRegistration(models.Model):
+    cd_pannel = models.ForeignKey(CDPanels, related_name='cd_registration',
+          error_messages={'unique': u'You have already registered for this event'}  )
+    created = models.DateTimeField(auto_now_add=True, editable=False,
+            null=True, blank=True)
+    student =  models.ForeignKey(User, related_name='my_cd_pannel')    
+    paid = models.BooleanField(default=False)
+    session = models.PositiveSmallIntegerField(max_length=10,default=1)
+    def department(self):
+        return self.student.department
+    def faculty(self):
+        return self.student.faculty 
+    @property
+    def event(self):
+        return self.cd_pannel.event
+    class Meta:
+        ordering = ('student',)
+
+    def __unicode__(self):
+        return u'%s' % (self.student,)
+    
 class RoundTableQuerySet(QuerySet):
     def get_user_rountable(self,user,event):
         reg1=self.filter\
@@ -221,10 +288,8 @@ class RoundTableQuerySet(QuerySet):
         reg2=self.filter\
                 (round_table_registrations__student=user,\
                 round_table_registrations__session=2, event_id=event.id)         
-        return reg1,reg2
-
-
-
+        return reg1,reg2   
+        
 class RoundTableManager(models.Manager):
        def get_query_set(self):
            return  RoundTableQuerySet(self.model, using=self._db)
@@ -255,7 +320,7 @@ class RoundTable(models.Model):
         return u'Round Table for  %s ' % (self.guest,)
     class Meta:
         ordering = ('guest__name',)
-        
+        verbose_name_plural = _("Network Reception Round Tables")
         
 class RoundTableRegistration(models.Model):
     round_table = models.ForeignKey(RoundTable, related_name='round_table_registrations',
@@ -321,5 +386,76 @@ class GuestRegistration(models.Model):
         ordering = ('-created',)
 
     def __unicode__(self):
-        return u'Registration for %s ' % (self.guest)  
+        return u'Registration for %s ' % (self.guest)
+    
+    
+class AdditionalGuestRegistration(models.Model):
+    event = models.ForeignKey(Event, related_name='additional_guest_event')
+    name = models.CharField(_('First name'),max_length=255)
+    last_name = models.CharField(_('Last name'), max_length=255 )
+    email = models.EmailField(
+        verbose_name='email address',
+        max_length=255,
+ 
+    )
+    qualification = models.CharField(max_length=255,blank=True, null=True)
+    position = models.CharField(max_length=255)
+    company = models.CharField(max_length=255)  
+    sector = models.CharField(max_length=255,blank=True, null=True) 
+    created = models.DateTimeField(auto_now_add=True, editable=False,
+            null=True, blank=True)     
+    attending = models.BooleanField(default=True)   
+    class Meta:
+        ordering = ('-created',)
 
+    def __unicode__(self):
+        return u'%s %s' % (self.name,self.last_name)  
+    
+    def full_name(self):
+        return "%s %s" % (self.name,self.last_name)
+        
+    full_name.allow_tags = True 
+    
+    def send_email(self,event):
+        action="send"
+        template = ["alumni/event_register_email.txt","alumni/event_register_email.txt"]
+        return send_event_register_mail(self,action,event,template,request=None,round_table=None)
+    
+UPLOAD_TO_COMPANY = getattr(settings, 'COMPANY_UPLOAD_TO', 'company')   
+class EventCompany(models.Model):
+    event = models.ForeignKey(Event, related_name='company')
+    name = models.CharField(max_length=255)
+    description = RichTextField(blank=True, null=True)
+    link = models.URLField()
+    image = models.ImageField(_('image'), blank=True,upload_to=UPLOAD_TO_COMPANY,
+        help_text=_('Picture'))
+    class Meta:
+        ordering=('name',)
+        verbose_name_plural = _("Career Day Companies")          
+    def __unicode__(self):
+        return self.name
+    
+    
+ 
+ 
+    
+'''
+class Schedule(models.Model):
+    name = models.CharField(max_length=255)
+    description = RichTextField(blank=True, null=True)    
+    class Meta:
+        ordering=('name',)
+       
+          
+    def __unicode__(self):
+        return self.name 
+    
+       
+class EventSchedule(models.Model):
+    event = models.ForeignKey(Event, related_name='event_schedule')
+    schedule = models.ForeignKey(Schedule, related_name='+')
+    def __unicode__(self):
+        return str(self.event)
+    
+'''  
+    

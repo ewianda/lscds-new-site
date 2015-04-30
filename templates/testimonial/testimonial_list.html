@@ -7,15 +7,15 @@
 
 {% block main_sidebar %}
 
-<h1>Jobs</h1>
+<h1>Testimonies</h1>
 
-{% for job in object_list %}
-<P><a href="{% url 'resource:job' slug=job.slug %}"> <strong> {{ job.title }}</strong> </a></P>
+{% for test in object_list %}
+<legend><a href="{{test.event.get_absolute_url}}"> <strong> {{ test.event }}</strong> </a></legend>
 
 <div class = 'container col-md-12' >
 <div class = 'row' >
-<p>{{ job.description|truncatewords:20 |safe }} <br>
- {{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a></p>
+<p>{{ test.testimony |safe }} <br>
+By {{test.name}}
 </div >
 </div >
 {% empty %}

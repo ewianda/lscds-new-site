@@ -352,7 +352,8 @@ class MailingList(models.Model):
       last_name = models.CharField(_('last name'), max_length=30)
       def __unicode__(self):
         return u'%s %s ' % (self.first_name, self.last_name)
-      
+
+
       
       
       

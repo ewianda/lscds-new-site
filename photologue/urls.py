@@ -10,7 +10,6 @@ from .views import PhotoListView, PhotoDetailView, GalleryListView, \
 
 
 urlpatterns = patterns('',
-
     url(r'^gallery/(?P<year>\d{4})/(?P<month>[a-z]{3})/(?P<day>\w{1,2})/(?P<slug>[\-\d\w]+)/$',
         GalleryDateDetailView.as_view(),
         name='pl-gallery-detail'),

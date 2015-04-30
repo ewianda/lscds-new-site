@@ -5,19 +5,20 @@
    
         <tr>
           {% if ev.presenter.image %}
+       <td class="col-md-4"><img class="img-thumbnail img-responsive" src="{{ev.presenter.image.url}}"/></td>
           {% else %}
           <td class="col-md-4"><img src="http://placehold.it/200x100&text=Image"/>  </td>
           {% endif %}
           <td class="col-md-8">
             <table class='table'>
-              <tr><td>{{ev.presenter.name}}</td></tr>
+              <tr><td><strong>{{ev.presenter.full_name}}</strong></td></tr>
               <tr><td>{{ev.presenter.qualification}}</td></tr>
               <tr><td>{{ev.presenter.company}}</td></tr>
            
                </td>
             </table>          
         </tr>
-        <tr><td colspan= '2'>{{rt.guest.biography | safe}} </td></tr>
+
         <tr> <td colspan = '2'> {{ev.description|safe}}</td></tr>
 {% endfor %}
     </tbody>

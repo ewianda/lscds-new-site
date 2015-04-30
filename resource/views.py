@@ -7,8 +7,17 @@ from django.utils import timezone
 
 class ResourceDetailView(DetailView):
       model = Resource
+ 
+class ResourceListView(ListView):
+      model = Resource     
+      paginate_by = 5
+      
+      
 class JobListView(ListView):
        model = Jobs 
+       paginate_by = 5
+       
+       
 class JobDetailView(DetailView):
        model = Jobs 
        

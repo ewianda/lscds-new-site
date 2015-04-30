@@ -23,16 +23,19 @@
       <ol>
         {% for obj in queryset %}
          <li>
-        {% if obj.student  %}
-        {{obj.student.email}}
-        {% elif obj.owner  %}
-        
-        {{obj.owner.email}}
-        {% elif obj.user  %}
-        
-        {{obj.user.email}}
+         {# Get the corresponding email list based on the model #}
+         {% if obj.alumni  %}
+             {{obj.alumni.user.email}}
+        {% elif obj.guest  %}           
+              {{obj.guest.email}}           
+        {% elif obj.student  %}
+              {{obj.student.email}}
+        {% elif obj.owner  %}        
+              {{obj.owner.email}}
+        {% elif obj.user  %}        
+              {{obj.user.email}}
         {% else %}
-        {{obj.email}}
+              {{obj.email}}
         {% endif %}
          </li> 
         {% endfor %}

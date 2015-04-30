@@ -74,8 +74,9 @@
                 <div class="magazine-new-img">
                     <legend class="magazine-badge label-red">Our Mission</legend>                                    
                 </div>
-                <p>To bridge the gap between academia and industry by providing opportunities for academics to network with professionals and build 
-                their career knowledge
+                <p>To bridge the gap between academia and industry for life sciences 
+                graduate students and postgraduate research trainees by providing 
+                opportunities to build career knowledge and network with professionals
                 </p>                            
             </div>
         </div>
@@ -140,6 +141,21 @@
                 <div class="magazine-new-img">
                     <legend class="magazine-badge label-purple">Testimonies</legend>                                    
                 </div>
+                {% if testimonies %}
+                {% for testimony in testimonies %}
+                <h4><a href="{{testimony.event.get_absolute_url}}">{{testimony.event}}</a></h4>
+                <div class="by-author">
+                    <strong>By {{testimony}}</strong>
+                   
+                </div> 
+                <p>
+                {{ testimony.testimony|safe}}
+                </p>
+                <a href="{% url 'testimonial-list' %}"> More</a>
+                {% endfor %}
+                
+                
+                {% else %}
                 <h3><a href="#">Seminar Series</a></h3>
                 <div class="by-author">
                     <strong>By Mira</strong>
@@ -156,6 +172,7 @@
                 I found the after informal session most helpful. The guest who stayed behind 
                 was genuinely interested in providing mentorship.
                 </p>
+                {% endif %}
             </div>
         </div>
     </div>

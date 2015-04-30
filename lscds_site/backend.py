@@ -23,8 +23,11 @@ def make_pw_hash(username, password, salt=None):
 
 def correct_password(name, pw, h):
     if not h:
-        return False        
-    salt = h.split('|')[1]
+        return False   
+    try:     
+       salt = h.split('|')[1]
+    except:
+        salt = None
     return h == make_pw_hash(name, pw, salt)
 
 
@@ -65,7 +68,7 @@ class OldUserAuthenticationBackend(object):
                 new_user.first_name=first_name
                 new_user.last_name=last_name    
                 new_user.save()
-               # old_lscds_user.delete()                  
+                old_lscds_user.delete()                  
             return new_user
         return None
 

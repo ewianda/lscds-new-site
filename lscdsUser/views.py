@@ -272,11 +272,14 @@ def event_view(request):
     user = request.user
     nr_list = Event.objects.user_nr(user)
     not_nr_list = Event.objects.user_open_nr(user)
+    cd_list = Event.objects.user_cd(user)
+    not_cd_list = Event.objects.user_open_cd(user)
+    
     registered_list = Event.objects.user_events(user)
     event_history = Event.objects.user_event_history(user)
     not_registered_list = Event.objects.user_open_events(user)
     context = {'registered_list':registered_list, 'not_registered_list':not_registered_list, \
-               'nr_list':nr_list, 'not_nr_list':not_nr_list, \
+               'nr_list':nr_list, 'not_nr_list':not_nr_list,'cd_list':cd_list, 'not_cd_list':not_cd_list, \
                'event_history':event_history, "now": timezone.now()}
     return render(request, 'profile-event.html', context)
 
@@ -309,7 +312,19 @@ def first_login(request):
         return render(request, 'old_lscdsusers.html', {'form': form, }) 
     else:
         return HttpResponsePermanentRedirect(reverse('profile-event')) 
-    
+ 
+@login_required
+def cd_registration(request):
+    # Get the site information for sending emails.
+    if Site._meta.installed:
+            site = Site.objects.get_current()
+    else:
+            site = RequestSite(request)   
+            
+            
+            
+            
+            
 
 @login_required
 def registration_view(request):

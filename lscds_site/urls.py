@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'', include('communication.urls')),                  
     url(r'', include('alumni.urls')),                   
     url(r'', include('home.urls')),
+    url(r'', include('testimonial.urls')),
     url(r'^events/', include('event.urls', namespace='event')),
     url(r'^resources/', include('resource.urls', namespace='resource')),
     url(r'', include('payment.urls', namespace='paypal')),
@@ -33,7 +34,7 @@ urlpatterns = patterns('',
      url(r'^faq/', include('simple_faq.urls')),
      #url(r'^support/', include('live_support.urls')),
        (r'^adminactions/', include('adminactions.urls')),
-
+(r'^search/', include('googlesearch.urls')),
 
     ) 
 

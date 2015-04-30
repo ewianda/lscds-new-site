@@ -91,6 +91,8 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
@@ -116,9 +118,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+     'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+
 IMAGESTORE_UPLOAD_TO = 'imagestore'
 CKEDITOR_UPLOAD_PATH = "ckeditor/uploads/"
 CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'
@@ -149,6 +154,7 @@ INSTALLED_APPS = ('adminactions',
     # 'django.contrib.admindocs',
     # other stuff here,
     #'django_admin_bootstrapped',
+    'googlesearch',
     'django.contrib.admin',
     'django_comments',
     'tagging',
@@ -178,7 +184,7 @@ INSTALLED_APPS = ('adminactions',
     'appengine_toolkit',
  'paypal.standard.ipn',
   'paypal.standard',
-    'paypal.pro',
+    'paypal.pro','testimonial'
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -237,6 +243,9 @@ SEND_ACTIVATION_EMAIL = True
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/first-login'
 SOCIAL_AUTH_LOGIN_URL = '/first-login'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+
+
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'

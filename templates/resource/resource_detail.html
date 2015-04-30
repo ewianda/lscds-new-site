@@ -1,0 +1,18 @@
+{% extends 'base_sidebar.html' %}
+
+{% load staticfiles %}
+{% load static %}
+{% block main_sidebar %}
+
+
+
+
+
+<legend style='margin-top:0px'> {{ object.name }}</legend>
+<div class = 'row' >
+{{ object.description|safe}}
+</div>
+
+{% endblock %}
+
+

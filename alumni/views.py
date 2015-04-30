@@ -1,11 +1,13 @@
 from django.shortcuts import render,redirect
 from linkedin import linkedin
 from django.http import Http404
-from event.models import Event,Presenter,AlumniRegistration,GuestRegistration
-from alumni.forms import AlumniRsvpForm,GuestRsvpForm
+from event.models import Event,Presenter,AlumniRegistration,GuestRegistration,AdditionalGuestRegistration
+from alumni.forms import AlumniRsvpForm,GuestRsvpForm,AdditionalRSVPForm
+from alumni.models import AlumniTab
 from lscdsUser.models import LscdsExec,MailingList
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -23,16 +25,31 @@ API_SECRET="h9xjMHDM35fD9bhG"
 #people=[{"people": { "id","first-name","last-name","positions":{"id","title","is-current","company":{"id","name"}},"educations":{"id","school-name",}},"num-results"}]
 
 
+class AlumniTabDetailView(DetailView):
+      model = AlumniTab
+
+
+
+
 class AluminiRegistrationListView(ListView):
     model = GuestRegistration
     template_name= 'alumni/guest_list.html'
+    
+    def get_queryset(self):
+        return self.model.objects.all().exclude(event__starts__lt=timezone.now())
+                                                
     def get_context_data(self, **kwargs):
         context = super(AluminiRegistrationListView, self).get_context_data(**kwargs)
         context['now'] = timezone.now()
-        context['alumni_list'] = AlumniRegistration.objects.all()
+        context['alumni_list'] = AlumniRegistration.objects.all().exclude(event__starts__lt=timezone.now(),\
+                                                                          ).exclude(alumni__active=True)
+        context['exec_list'] = AlumniRegistration.objects.all().exclude(event__starts__lt=timezone.now(),\
+                                                                          ).exclude(alumni__active=False)
+        context['guest_list'] = AdditionalGuestRegistration.objects.all().exclude(event__starts__lt=timezone.now(),\
+                                                                          )    
         return context
     
-    
+        
     
 rsvp_message='Your have successfully registered to attend the %s event'
 class LscdsExecUdateView(UpdateView):
@@ -105,6 +122,7 @@ class GuestUdateView(UpdateView):
                obj,created = GuestRegistration.objects.get_or_create(event=Event(pk=event_id),guest=form.instance)
                self.registration = obj # Save the registration object
                form.instance.send_email(event)
+               
             else:
                 self.not_coming = True
         if updates:
@@ -144,8 +162,36 @@ def rsvp_view(request,rsvp_code=None):
     except Presenter.DoesNotExist:
         return render(request,'alumni/rsvp.html', {"success":False})
     
+    
+    
+    
  
- 
+# THis view was used for additional alumni reception registration for personal guest inviations. 
+def additional_rsvp_view(request,event_slug=None):
+    if not event_slug:
+        raise Http404("Page not found") 
+    if request.method == "POST":
+       event  = get_object_or_404(Event,slug=event_slug)   
+       form = AdditionalRSVPForm(request.POST)
+       if not  event.registration_open:
+            messages.add_message(request, messages.ERROR, "It seems registration for this event has closed."
+                                                             "Please contact <a href='mailto:alumni.lscds@lscds.org'> Alumni Reception team </a> if you are having"
+                                                             " difficulties") 
+            return HttpResponseRedirect(reverse('guest-list'))
+        
+       if form.is_valid():
+           obj, created = AdditionalGuestRegistration.objects.get_or_create(event=event,**form.cleaned_data)           
+           obj.save()
+           obj.send_email(event)
+           messages.add_message(request, messages.SUCCESS, rsvp_message % event,) 
+           return HttpResponseRedirect(reverse('guest-list'))
+    else:
+        form = AdditionalRSVPForm()
+    return render(request, 'alumni/additional_rsvp.html', {'form': form})
+    
+    
+    
+     
     
 
 def linkedin_authentication(request):    

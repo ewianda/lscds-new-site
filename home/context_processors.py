@@ -1,13 +1,15 @@
 from event.models import Event,EventType
 from zinnia.models.entry import Entry
 from photologue.models import Gallery
+from testimonial.models import Testimonial
+
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime,timedelta
 from django.conf import settings
 from django.core.cache import cache
 import twitter
 from resource.models import (Resource, Jobs ,Files) 
-
+from alumni.models import AlumniTab
 def twitterAuthenticate():  
     consumer_key=settings.SOCIAL_AUTH_TWITTER_KEY
     consumer_secret=settings.SOCIAL_AUTH_TWITTER_SECRET
@@ -37,7 +39,7 @@ def latest_tweets( request ):
 
 def latest(request):
    try:
-         event= Event.objects.filter(starts__gte = timezone.now(),status = "publish").order_by('starts')
+         event= Event.objects.filter(starts__gte = timezone.now()-timedelta(hours=4),status = "publish").order_by('starts')
    except Event.DoesNotExist:
         event = None
    try:
@@ -58,9 +60,30 @@ def latest(request):
        jobs = Jobs.objects.all()[:2]
    except Jobs.DoesNotExist:
          jobs = None
+         
+   try:
+       resources = Resource.objects.all()
+   except Resoucres.DoesNotExist:
+         resources = None
+
+   try:
+       alumni_tab = AlumniTab.objects.all()
+   except AlumniTab.DoesNotExist:
+         alumni_tab = None
+   
+   try:
+       testimonial = Testimonial.objects.all()
+   except Testimonial.DoesNotExist:
+       testimonial = None
+
+
+
+
 
    return {'context_eventtype':eventtype,'context_event':event,\
            'context_photos':photos,'context_blog':entry,\
-           'jobs':jobs
+           'jobs':jobs,'context_resource':resources,\
+           'context_alumni_tab':alumni_tab,"now":timezone.now()-timedelta(hours=4),
+           'testimonies':testimonial
            }
 

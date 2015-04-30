@@ -1,0 +1,141 @@
+
+
+{% if object.get_cd_pannels %}
+<legend>Career Discussion Session</legend>
+  <ol>
+    {% for pannel in object.get_cd_pannels %}
+      
+       <li> <h3> {{pannel}} </h3> </li>          
+          <table class='table table-bordered table-condensed table-striped col-md-offset-1'>
+           <thead>
+              <tr>
+                <th>Panelist</th>  
+                 <th>Position</th>          
+                <th>Company</th>
+              </tr>
+           </thead>
+           <tbody>
+              {% for panelist in pannel.get_panelists %}
+                  <tr>   
+                   <td class="col-md-4"><strong> <a data-toggle="collapse" data-parent="#accordion"  href="#collapse{{panelist.panelist.name |slugify}}" >
+                    {{panelist.panelist}}     
+                    </a>
+                    <br>{{panelist.panelist.qualification}}</strong></td>       
+                     <td class="col-md-4" >{{panelist.panelist.position}}</td>             
+                   <td class="col-md-4">{{panelist.panelist.company}}</td>         
+                   </tr>       
+               {% endfor %}
+             </tbody>
+            </table>     
+           
+           {% endfor %}
+        </ol>
+
+ 
+ 
+<legend>Guest Biography</legend>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  
+     {% for pannel in object.get_cd_pannels %}
+     {% for panelist in pannel.get_panelists %}
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="heading{{panelist.panelist.pk}}">
+            <h4  class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{panelist.panelist.name|slugify}}" aria-expanded="true" aria-controls="collapseOne">
+                    {{panelist.panelist}}
+                </a>
+            </h4>
+        </div>
+        <div id="collapse{{panelist.panelist.name|slugify}}" class="panel-collapse collapse  role="tabpanel" aria-labelledby="heading{{panelist.panelist.pk}}">
+            <div class="panel-body">  
+                <div class = "row" >
+                    <div class = "col-md-4 col-sm-4" >
+                        {% if panelist.panelist.image %}
+                        <img class="img-thumbnail img-responsive" src="{{panelist.panelist.image.url}}"/>
+
+                        {% else %}
+                        <img class="img-thumbnail img-responsive" src="http://placehold.it/200x100&text=Image"/> 
+                        {% endif %}  
+                    </div>
+                   
+                        {{panelist.panelist.biography | safe}}
+                  
+                </div>
+            </div>
+        </div>
+    </div>    
+    {% endfor %}
+    {% endfor %}
+</div>       
+
+{% endif %}
+
+
+
+
+{% if object.get_companies %}
+
+<legend>Company Information Fair </legend>
+<table class='table table-bordered table-condensed table-striped'>
+    <thead>
+        <tr>
+            <th>Company</th>
+            <th>Link</th>
+        
+
+        </tr>
+    </thead>
+    <tbody>
+        {% for company in object.get_companies %}
+
+        <tr>   
+            <td><strong> <a data-toggle="collapse" data-parent="#accordion"  href="#collapse{{company.name |slugify}}" >
+                    {{company.name}}
+                </a>
+                </strong></td>
+            <td> <a target="_blank" href ="{{company.link}}" > {{company.link}}</a> </td>
+            
+
+
+        </tr>
+        <!-- tr><td colspan= '3'><strong>Spots remaining</strong><br>
+                          Round table I: {{session1}}<br>
+                           Round table II:{{session2}}<br>
+                            </td></tr-->
+        {% endfor %}
+    </tbody>
+</table>
+<legend>  Company Description</legend>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  {% for company in object.get_companies %}
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 id="link{{company.name|slugify}}" class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{company.name|slugify}}" aria-expanded="true" aria-controls="collapseOne">
+                    {{company.name}}
+                </a>
+            </h4>
+        </div>
+        <div id="collapse{{company.name|slugify}}" class="panel-collapse collapse  role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">  
+                <div class = "row" >
+                    <div class = "col-md-4 col-sm-4" >
+                        {% if company.image %}
+                        <img class="img-thumbnail img-responsive" src="{{company.image.url}}"/>
+
+                        {% else %}
+                        <img class="img-thumbnail img-responsive" src="http://placehold.it/200x100&text=Image"/> 
+                        {% endif %}  
+                    </div>
+                   
+                        {{company.description | safe}}
+                  
+                </div>
+            </div>
+        </div>
+    </div>    
+    {% endfor %}
+</div>       
+
+{% endif %}
+

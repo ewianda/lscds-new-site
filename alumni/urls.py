@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 from alumni.views import linkedin_authentication,linkedin_callback,rsvp_view,\
-                         GuestUdateView,LscdsExecUdateView,AluminiRegistrationListView
+                         GuestUdateView,LscdsExecUdateView,AluminiRegistrationListView,AlumniTabDetailView,additional_rsvp_view
 
 urlpatterns = patterns('',
                  url('^alumni-reception-list/$',
@@ -10,5 +10,7 @@ urlpatterns = patterns('',
                     url('^alumni/rsvp/(?P<pk>[\w-]+)/(?P<event>[\w-]+)/$', LscdsExecUdateView.as_view(),name='alumni-rsvp'),  
                     url(r'^alumin-reception/rsvp/(?P<rsvp_code>[-\w]+)/$',rsvp_view, name='rsvp'),
                     url(r'^linkedin/$', linkedin_authentication, name='lnin'),
-                    url(r'^auth/linkedin/callback/$', linkedin_callback, name='linkin_callback'),                    
+                    url(r'^auth/linkedin/callback/$', linkedin_callback, name='linkin_callback'), 
+                    url(r'^alumni/(?P<slug>[\w-]+)/$', AlumniTabDetailView.as_view(), name='alumni_tab'), 
+                    url('^rsvp/(?P<event_slug>[\w-]+)/$', additional_rsvp_view ,name='additional-rsvp'),                 
                     )

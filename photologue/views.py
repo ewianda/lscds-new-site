@@ -20,7 +20,10 @@ class GalleryView(object):
 
 class GalleryListView(GalleryView, ListView):
     paginate_by = GALLERY_PAGINATE_BY
-
+    def get_context_data(self, **kwargs):
+        context = super(GalleryListView, self).get_context_data(**kwargs)
+        context['gallery_list'] = self.queryset
+        return context
 
 class GalleryDetailView(GalleryView, DetailView):
     slug_field = 'title_slug'

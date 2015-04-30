@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}{% trans "Alumni Reception RSVP" %}{% endblock %}
+
+{% block main %}
+<legend>RSVP to Alumni Reception Event</legend>
+<div class="col-md-7"> 
+{% crispy form %}
+</div>
+{% endblock %}

@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit,Field,Div,Hidden
 from event.models import (Event, Registration, Talk, Presenter,\
                           EventType,RoundTable,RoundTableRegistration,EventFee,EventBanner,\
-                          AlumniRegistration,GuestRegistration
+                          AlumniRegistration,GuestRegistration,AdditionalGuestRegistration
                           )
 from lscdsUser.models import LscdsExec
 from django.utils.translation import ugettext_lazy as _
@@ -14,6 +14,29 @@ from django.utils.translation import ugettext_lazy as _
 
 
 CHOICES = ((True, 'YES',), (False, 'NO',))
+
+class  AdditionalRSVPForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AdditionalRSVPForm, self).__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        # You can dynamically adjust your layout
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-md-4'
+        self.helper.field_class = 'col-md-8'
+        self.helper.form_tag = True
+        self.helper.layout.append(ButtonHolder(
+                Submit('submit', 'Submit', css_class='button white')
+            ))              
+    class Meta:
+               model = AdditionalGuestRegistration
+               exclude =('event',)
+    
+    
+    
+    
+    
 class  RSVPForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RSVPForm, self).__init__(*args, **kwargs)

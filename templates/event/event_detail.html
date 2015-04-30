@@ -8,35 +8,34 @@
 <h2 style='margin-top:0px'> {{ object.name }}</h2>
 
 <div class ='row'>
-
-    <div class = {% if object.event_information %}'col-md-8' {% endif %}>
-        {{object.event_information|safe}}
-    </div>
-
-
-    <div class = {% if object.event_information %} 'col-md-4' {% else %}'col-md-12' {%endif %}>
-        Event date: {{object.starts|date:'M-d-o'}} @ {{object.starts|date:'P'}}  <br>
-        Location: {{object.location}} <br>
-        Time: {{object.starts|date:'P'}} to {{object.ends|date:'P'}} <br>
+ <div class = {% if object.event_information %} 'col-md-12' {% else %}'col-md-12' {%endif %}>
 
         {% if object.registration_open %}
-        <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+        <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-left"> Register</a>
         {% elif object.registration_start > now %}
-        <div class="alert alert-info" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
+        <div class="col-md-4 alert alert-info" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
 
         {% else %}
-        <div class="alert alert-danger " role="alert"> Registration closed</div>
+        <div class="col-md-4 alert alert-danger " role="alert"> Registration closed</div>
         {% endif %}
     </div>
 </div>
 
+    <div class = {% if object.event_information %}'col-md-12' {% endif %}>
+        {{object.event_information|safe}}
+    </div>
 
 
-{% if object.event_type.pk == 1 %}
+   
 
-{% include "event/include/include_network_reception.html" %}
-{% else %}
+
+{% if object.event_type.pk == 3 %} 
 {% include "event/include/include_other_events.html" %}
+
+{% elif object.event_type.pk == 2 %}
+{% include "event/include/include_career_day.html" %}
+{% else %}
+{% include "event/include/include_network_reception.html" %}
 {% endif %}
 
 
@@ -51,8 +50,9 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-$('.panel').on('show.bs.collapse', function (e) {
-   window.location.hash = '#' + e.target.id;
+$('.panel').on('shown.bs.collapse', function (e) {
+  window.location.hash = '#' + e.target.id;
+  // window.location.hash = '';
    console.log(e.target.id)
     //alert('Event fired on #' + e.target);
 })

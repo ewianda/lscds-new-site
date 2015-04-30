@@ -7,15 +7,14 @@
 
 {% block main_sidebar %}
 
-<h1>Jobs</h1>
+<h1>Job search resources</h1>
 
 {% for job in object_list %}
-<P><a href="{% url 'resource:job' slug=job.slug %}"> <strong> {{ job.title }}</strong> </a></P>
+<legend> <strong> {{ job.name }}</strong> </legend>
 
 <div class = 'container col-md-12' >
 <div class = 'row' >
-<p>{{ job.description|truncatewords:20 |safe }} <br>
- {{job.date_posted|timesince}} ago - <a href="{% url 'resource:job' slug=job.slug %}"> More </a></p>
+{{ job.description|safe }} 
 </div >
 </div >
 {% empty %}
@@ -25,7 +24,7 @@
 
     {% if is_paginated %}
         <ul class="pagination pagination-centered">
-             {% if page_obj.has_previous %}
+           {% if page_obj.has_previous %}
                 <li><a href="?page=1"><<</a></li>
                 <li><a href="?page={{ page_obj.previous_page_number }}"><</a></li>
             {% endif %}
@@ -36,8 +35,8 @@
             {% endfor %}
 
             {% if page_obj.has_next %}
-                <li><a href="?page={{ page_obj.next_page_number }}"> ></a></li>
-                <li><a href="?page={{ page_obj.paginator.num_pages }}"> >></a></li>
+                <li><a href="?page={{ page_obj.next_page_number }}">></a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">>></a></li>
             {% endif %}
         </ul>
         {% endif %}

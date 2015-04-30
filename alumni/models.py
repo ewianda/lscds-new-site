@@ -1,38 +1,15 @@
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
-from event.models import Event
+from ckeditor.fields import RichTextField
 # Create your models here.
-class Alumni(models.Model):
-    email = models.EmailField(
-        verbose_name='email address',
-        max_length=255,blank=True, null=True
- 
-    ) 
-    last_updated = models.DateField(_('Last Updated'),default=timezone.now)
-    first_name = models.CharField(_('first name'), max_length=255)
-    last_name = models.CharField(_('last name'), max_length=255 )
-    
-    position = models.CharField(_('Position'), max_length=255, blank=True, null=True)
-    company = models.CharField(_('Comapany'), max_length=255 ,blank=True, null=True)
-    rsvp_code = models.CharField(_('Rsvp code'), max_length=255 ,blank=True, null=True)
-    
-    class Meta:
-        ordering = ('-email','first_name')
-        
-        
-    def __unicode__(self):              # __unicode__ on Python 2
-        return u'%s %s ' % (self.first_name,self.last_name)
-    
-    
-class AlumniRegistration(models.Model):
-    event = models.ForeignKey(Event, related_name='alumni_event')
-    alumni = models.ForeignKey(Alumni, related_name='+', null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True, editable=False,
-            null=True, blank=True) 
+from django.utils.translation import ugettext_lazy as _
 
-    class Meta:
-        ordering = ('-created',)
-
+class AlumniTab(models.Model):
+    name = models.CharField(max_length=255,unique=True)
+    description = RichTextField(blank=True, null=True)
+    slug = models.SlugField(max_length=40)
+    @models.permalink
+    def get_absolute_url(self):
+         return 'alumni_tab',(),{'slug': self.slug}
+         
     def __unicode__(self):
-        return u'Registration for %s ' % (self.alumni,)
+        return self.name

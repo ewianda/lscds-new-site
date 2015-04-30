@@ -1,8 +1,7 @@
 from django.contrib import admin
-from event.models import (Event, Registration, Talk, Presenter,\
-                          EventType,RoundTable,RoundTableRegistration,EventFee,EventBanner,\
-                          AlumniRegistration,GuestRegistration
-                          )
+from event.models import *
+
+
 from django.contrib.admin import helpers
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
@@ -20,6 +19,11 @@ from django.utils.safestring import mark_safe
 from django.template import Context, Template
 from google.appengine.api import mail
 from communication.action import send_EMAIL
+from django.contrib.admin.models import LogEntry, DELETION
+from django.utils.html import escape
+from django.core.urlresolvers import reverse
+
+
 
 class RequiredInlineFormSet(BaseInlineFormSet):
     """
@@ -53,6 +57,8 @@ class EventCreationForm(forms.ModelForm):
 class EventlineAdmin(admin.StackedInline):
     model = Event
     extra = 0
+    
+    
 class EventSponsorlineAdmin(admin.StackedInline):
     model = EventSponsor
     extra = 0
@@ -61,7 +67,10 @@ class EventSponsorlineAdmin(admin.StackedInline):
 
 class TalklineAdmin(admin.TabularInline):
     model = Talk
-    extra = 1
+    extra = 0
+class CompanylineAdmin(admin.TabularInline):
+    model = EventCompany
+    extra = 0   
 class RoundTableRegistrationlineAdmin(admin.TabularInline):
      model = RoundTableRegistration
      extra = 1
@@ -69,6 +78,8 @@ class RoundTableRegistrationlineAdmin(admin.TabularInline):
 class PresenterlineAdmin(admin.TabularInline):
     model = Presenter
     extra = 1
+    
+    
 class RegistrationlineAdmin(admin.TabularInline):
     model = Registration
     extra = 2
@@ -76,12 +87,29 @@ class RegistrationlineAdmin(admin.TabularInline):
 class RoundTablelineAdmin(admin.TabularInline):
     model = RoundTable
     extra = 0
+    
+class CDPanelistlineAdmin(admin.TabularInline):
+    model = CDPanelist
+    extra = 6   
+    
 class EventFeelineAdmin(admin.TabularInline):
     model =EventFee
     extra = 1
     max_num = 1
     formset = RequiredInlineFormSet
-
+    
+class EventTypeAdmin(admin.ModelAdmin):    
+    
+    inlines = [
+       EventlineAdmin
+    ]
+  
+class CDPanelAdmin(admin.ModelAdmin):    
+    
+    inlines = [CDPanelistlineAdmin
+      
+    ]  
+    
 class EventTypeAdmin(admin.ModelAdmin):    
     
     inlines = [
@@ -91,7 +119,7 @@ class EventTypeAdmin(admin.ModelAdmin):
 class EventAdmin(admin.ModelAdmin):
     form = EventCreationForm
     inlines = [
-     RoundTablelineAdmin,TalklineAdmin,EventSponsorlineAdmin,EventFeelineAdmin
+     RoundTablelineAdmin,TalklineAdmin,CompanylineAdmin,EventSponsorlineAdmin,EventFeelineAdmin
     ]
     prepopulated_fields = {"slug": ("name","location")}
     list_display = ('name',)
@@ -123,7 +151,14 @@ class BannerAdmin(admin.ModelAdmin):
 class RoundTableAdmin(admin.ModelAdmin):
     inlines = [RoundTableRegistrationlineAdmin
     ]
-
+class CDRegistrationAdmin(admin.ModelAdmin):
+     list_display = ('student','cd_pannel', 
+                    'session','department','faculty','event','created')
+    
+     list_filter = ['session','cd_pannel','cd_pannel__event']
+     search_fields = ['student__email','student__last_name','student__first_name']
+    
+    
 class RoundTableRegistrationAdmin(admin.ModelAdmin):
     list_display = ('student','round_table', 
                     'session','department','faculty','event','created')
@@ -196,9 +231,7 @@ class RoundTableRegistrationAdmin(admin.ModelAdmin):
             return TemplateResponse(request, 'admin/send_email.html',
                 context, current_app=self.admin_site.name)
 
-from django.contrib.admin.models import LogEntry, DELETION
-from django.utils.html import escape
-from django.core.urlresolvers import reverse
+
 
 
 class LogEntryAdmin(admin.ModelAdmin):
@@ -255,6 +288,25 @@ class LogEntryAdmin(admin.ModelAdmin):
         return super(LogEntryAdmin, self).queryset(request) \
             .prefetch_related('content_type')
             
+            
+class AdditionalGuestAdmin(admin.ModelAdmin):
+    list_display = ('full_name','email','qualification', 'position','company','event')  
+    list_filter = ['attending','name']
+    search_fields = ['name','last_name']
+    send_EMAIL.short_description = 'Send Reminder email'
+    actions = [send_EMAIL,export_as_csv_action("Export CVS")]
+    
+    
+ # This is a general admin for Exec, Alumini and general registration    
+class EventRegistrationAdmin(admin.ModelAdmin):   
+    send_EMAIL.short_description = 'Send Reminder email'
+    actions = [send_EMAIL,export_as_csv_action("Export CVS")]
+    
+    
+    
+admin.site.register(AdditionalGuestRegistration,AdditionalGuestAdmin)
+    
+          
 admin.site.register(LogEntry, LogEntryAdmin)             
 admin.site.register(EventType, EventTypeAdmin)
 admin.site.register(Event, EventAdmin)
@@ -262,12 +314,17 @@ admin.site.register(Presenter, PresenterAdmin)
 admin.site.register(RoundTable,RoundTableAdmin)
 admin.site.register(RoundTableRegistration,RoundTableRegistrationAdmin)
 admin.site.register(Registration,RegistrationAdmin)
+admin.site.register(CDRegistration,CDRegistrationAdmin)
 admin.site.register(EventBanner,BannerAdmin)
+admin.site.register(EventCompany)
+admin.site.register(AlumniRegistration,EventRegistrationAdmin)
+admin.site.register(GuestRegistration,EventRegistrationAdmin)
+admin.site.register(CDPanels,CDPanelAdmin)
 
-admin.site.register(AlumniRegistration)
-admin.site.register(GuestRegistration)
 
 
 
+#admin.site.register(EventSchedule)
+#admin.site.register(Schedule)
 
 

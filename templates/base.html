@@ -8,6 +8,7 @@
             {% load static %}
             {% load url from future %}
             {% load i18n %}
+            {% load googlesearch_inclusion_tags %}
             <head>
                   <title>
 
@@ -97,7 +98,8 @@
                                                 <i class="fa fa-twitter"></i>
                                             </a>
                                             </li>
-                                       
+                                          
+                                        <li>{% googlesearch_form %}</li>
                                         </ul>
                                     </div>
                                 </div>        
@@ -141,7 +143,7 @@
 
                                         <!-- Pages -->                        
                                         <li class="dropdown">
-                                        <a href="{% url 'about' %}" >
+                                        <a href="{% url 'about' %}" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" >
                                             About Us
                                         </a>
                                         <ul class="dropdown-menu">
@@ -161,8 +163,9 @@
 
                                         <!-- Events -->
                                         <li class="dropdown">
-                                        <a href="{% url 'event:event-list' %}">Our Events</a>  
+                                        <a href="{% url 'event:event-list' %}" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" >Our Events</a>  
                                         <ul class="dropdown-menu">
+                                             <a href="{% url 'event:event-list' %}"> Our Events</a>  
                                             {% if context_eventtype %}
                                             {% for ent in context_eventtype %}
                                             <li><a href="{% url 'event:event-type-detail' slug=ent.slug %}">{{ent.name}}</a></li>
@@ -183,10 +186,19 @@
 
                                         <!-- Resources -->
                                         <li class="dropdown">
-                                        <a href="#">Opportunities</a>  
+                                        <a href="#" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">Resources</a>  
                                         <ul class='dropdown-menu'>
                                          <li> <a href="{% url 'resource:job-list' %}">Jobs</a> </li> 
-                                       <li> <a href="{% url 'resource:files' %}">Files</a> </li> 
+                                         {% if context_resource %}
+                                            {% for resource in context_resource %}
+                                            <li><a href="{{resource.get_absolute_url}}">{{resource.name}}</a></li>
+                                           
+                                            {% endfor %}
+                                            {% endif%}
+                                      
+                                                                                 
+                                       <li> <a href="{% url 'resource:files' %}">Additional Resources</a> </li>
+                                       
                                           </ul>
                                         </li>                    
                                         <!-- End Resources -->
@@ -208,15 +220,33 @@
                                         <a href="{% url 'sponsors:sponsor-list' %}">Sponsor</a>  
                                         </li>                    
                                         <!-- End Sponsor -->
+                                       
+                                         <!-- Alumni -->                        
+                                        <li class="dropdown">
+                                        
+                                        
+                                        {% with context_alumni_tab|first as tab1 %}
+                                        <a href="{{tab1.get_absolute_url}}" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">{% firstof tab1.name "Alumni of LSCDS" %} </a>  
+                                        {% endwith %}
+                                        <ul class='dropdown-menu'>   
+                                                                             
+                                         {% if context_alumni_tab %}
+                                            {% for tab in context_alumni_tab %}
+                                            <li><a href="{{tab.get_absolute_url}}">{{tab.name}}</a></li>
+                                           
+                                            {% endfor %}
+                                            {% endif%}
+                                          </ul>
+                                        </li>   
+                                        <!-- End Alumni -->
 
-
-                                        <!-- Contact -->
+                                        <!-- Contact  -->
                                         <li>
-                                        <a href="{% url 'contact' %}">Contact us</a>  
+                                        <a href="{% url 'contact' %}">Contact Us</a>  
                                         </li>                    
                                         <!-- End Contact -->
                                         
-                                         <!-- Contact -->
+                                         <!-- Contact
                                         <li>
                                         <a href="{% url 'faq' %}">Faq</a>  
                                         </li>                    
@@ -276,9 +306,9 @@
                                         <ul class="list-unstyled link-list">
                                             <li><a href="{% url 'about' %}">About Us</a><i class="fa fa-angle-right"></i></li>
                                             <li><a href="{% url 'event:event-list' %}">Our Events</a><i class="fa fa-angle-right"></i></li>
-                                            <li><a href="{% url 'resource:job-list' %}">Latest Jobs</a><i class="fa fa-angle-right"></i></li>
-                                            <li><a href="{% url 'zinnia:entry_archive_index' %}">Our Blog</a><i class="fa fa-angle-right"></i></li>
+                                            <li><a href="{% url 'resource:job-list' %}">Latest Jobs</a><i class="fa fa-angle-right"></i></li>                                         
                                             <li><a href="{% url 'contact' %}">Contact Us</a><i class="fa fa-angle-right"></i></li>
+                                            <li><a href="{% url 'faq' %}">Faq</a></li>
                                         </ul>
                                     </div><!--/col-md-3-->
                                     <!-- End Link List -->                    
@@ -340,7 +370,10 @@
                 (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 
-                {% block javascript %}{% endblock %}
+                {% block javascript %}
+                
+                
+                {% endblock %}
 
 
 

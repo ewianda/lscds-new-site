@@ -18,29 +18,66 @@
     {% endif %}
     
 <h1>Who is coming</h1>
-<legend>Guest</legend>
+<legend>Guest and Alumni</legend>
+<table class="table  table-bordered condensed table-striped">
+<thead> <tr><th class="col-sm-3" >Name </th><th class="col-sm-3">Position </th> <th class="col-sm-6">Company </th> </tr> </thead>
+ <tbody>
 {% for obj in object_list %}
-<ol>
-<li>{{ obj.guest}}</li>
 
-</ol>
-{% empty %}
-    <li>No guest yet.</li>
+<tr><td>{{ obj.guest}}</td><td>{{ obj.guest.position}}</td><td>{{ obj.guest.company}}</td></tr>
+
+
+
+{% endfor %} 
+{% for obj in alumni_list %}
+
+<tr><td>{{ obj.alumni}}</td><td>{{ obj.alumni.current_position}}</td><td>{{ obj.alumni.company}}</td></tr>
+
+
+
 {% endfor %}
 
+{% for obj in guest_list %}
 
+<tr><td>{{ obj.full_name}}</td><td>{{ obj.position}}</td><td>{{ obj.company}}</td></tr>
+
+
+{% endfor %}
+ 
+</tbody>
+</table>
+{% comment %}
 <legend> Alumni </legend>
-<ol>
+<table class="table  table-bordered condensed table-striped">
+<thead> <tr><th class="col-sm-3" >Name </th><th class="col-sm-3">Position </th> <th class="col-sm-6">Company </th> </tr> </thead>
+ <tbody>
+{% for obj in alumni_list %}
 
-{% for alumni in alumni_list %}
-
-<li>{{ alumni.alumni}}</li>
+<tr><td>{{ obj.alumni}}</td><td>{{ obj.alumni.current_position}}</td><td>{{ obj.alumni.company}}</td></tr>
 
 
 {% empty %}
     <li>No guest yet.</li>
-{% endfor %}
-</ol>
+{% endfor %} 
+</tbody>
+</table>
+{% endcomment %}
+<legend> Lscds Exec </legend>
+<table class="table  table-bordered table-striped">
+<thead> <tr><th class="col-sm-3" >Name </th><th class="col-sm-3">Position </th> <th class="col-sm-6">Company </th> </tr> </thead>
+ <tbody>
+{% for obj in exec_list %}
+
+<tr><td>{{ obj.alumni}}</td><td>{{ obj.alumni.position}}</td><td>{{ obj.alumni.company}}</td></tr>
+
+
+{% empty %}
+    <li>No guest yet.</li>
+{% endfor %} 
+</tbody>
+</table>
+
+
 
     {% if is_paginated %}
         <ul class="pagination pagination-centered">

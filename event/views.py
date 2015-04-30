@@ -10,7 +10,6 @@ from django.http import HttpResponseRedirect,HttpResponse,HttpResponsePermanentR
 from event.forms import EmailAdminForm
 from event.models import Registration,RoundTable,RoundTableRegistration,Presenter
 from lscdsUser.models import LscdsUser,LscdsExec
-from alumni.models import Alumni
 from django.template.loader import render_to_string
 
 
@@ -45,7 +44,10 @@ class EventDetailView(DetailView):
         context['now'] = timezone.now()
         return context
 
-from django.template import Context, Template
+from django.template import Context,Template
+
+
+
 
 
 @login_required    

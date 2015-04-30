@@ -73,6 +73,16 @@ def send_EMAIL(modeladmin, request, queryset):
                     elif hasattr(q,"owner"):
                          user = q.owner
                          c =Context({'event':event,'site':site,"user":user})
+                    
+                    # Check if this is for AR Guest registration
+                    elif hasattr(q,"guest"):
+                         user = q.guest
+                         c =Context({'event':event,'site':site,"user":user})    
+                   
+                    # Check for AR exec/alumin registration
+                    elif hasattr(q,"alumni"):
+                         user = q.alumni
+                         c =Context({'event':event,'site':site,"user":user})   
                          
                     # This will match Lscds Exec/Alumni and Presenters/Guest
                     else:

@@ -3,11 +3,14 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'libs'))
 # end generated code
+import ssl
 try:
   from google.appengine.tools.devappserver2.python import sandbox
   sandbox._WHITE_LIST_C_MODULES += ['_ssl', '_socket']
   from lscds_site import socket as patched_socket
   sys.modules['socket'] = patched_socket
+  sys.modules['ssl'] = ssl
+
   socket = patched_socket
 except ImportError:
     pass

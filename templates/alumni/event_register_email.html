@@ -21,20 +21,30 @@
         <h4> Hi {{user}} </h4>
         
         This is a confirmation that you have registered to attend the {{event}}
- on  {{event.starts|date:'l, M. dS o'|safe}} from {{event.starts|date:'P'}} to 
+ on  {{event.starts|date:'l, F dS o'|safe}} from {{event.starts|date:'P'}} to 
      {{event.ends|date:'P'}}<br><br>
         <strong>Location:<br><br> </strong>{{event.break_location|safe}} 
  .<p>
-Remember to check out <a href="http://{{site.domain}}{% url 'guest-list' %}">
-the list </a> of those coming. 
+   <strong>Program </strong><br><br>
+6:00 pm Reception<br>
+6:45 pm Remarks<br>
+7:15 pm - 9:30 pm Networking
+  
+   </p>
+   
+  <p>   
+To see the list of who's coming, please   <a href="http://{{site.domain}}{% url 'guest-list' %}">
+click here </a>
 </p>
  
  
 
         <p>
 
-        Sincerely,<br>
-        {{site.name}} Team
+      Sincerely,<br>
+        {{site.name}} Team<br>
+        {{site.domain}}<br>
+        alumni.lscds@lscds.org  
 
         </p>
     </body>

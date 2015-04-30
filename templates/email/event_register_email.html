@@ -39,7 +39,7 @@
         <p><strong>Date and time:</strong> {{event.starts|date:'M-d-o'}} at {{event.starts|date:'P'}} to {{event.ends|date:'P'}}</p>
         <p><strong>Location: </strong>{{event.break_location|safe}} </p>
         For more information about the seminar and the speaker{{event.get_talks|pluralize}},
-       <br> <br>{% for talks in event.get_talks %}<strong> {{talks.presenter.name}}</strong><br/><br/> {% endfor %} 
+       <br> <br>{% for talks in event.get_talks %}<strong> {{talks.presenter.full_name}}</strong><br/><br/> {% endfor %} 
         
        visit   <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
          LSCDS Seminars</a>

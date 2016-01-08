@@ -5,12 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
 from lscdsUser.forms import PasswordResetForm
-from lscdsUser.views import UHMVerificationView, UHMVerifyView, \
-    LSCDSRegistrationView, require_email, social_extra_data, UserUpdateView, \
-    LSCDSActivationView, event_view, registration_view, ExecListView, upload_file, \
-    ajax_mailing_list, first_login, password_reset_confirm, mailing_list, \
-    MailingListView, unsubscribe, WebUnsubscribeView
-
+from lscdsUser.views import *
 
 admin.autodiscover()
 urlpatterns = patterns('',
@@ -33,6 +28,7 @@ urlpatterns = patterns('',
                            UHMVerifyView.as_view(),
                            name='uhn_verify'),
      url(r'^profile-event/$', event_view, name='profile-event'),
+     url(r'^cd-registration/$', cd_registration, name='cd-registration'),
      url(r'^profile-event-registration/$', registration_view, name='profile-event-registration'),
      url(r'^profile-notification/$', login_required(TemplateView.as_view(template_name="profile-notification.html")),
                                                     name='profile-notification'),

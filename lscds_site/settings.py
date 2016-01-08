@@ -24,7 +24,7 @@ DATABASES = {
 #print DATABASES
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['.lscds.org','.localhost:8080','.lscdsv4.appspot.com']
+ALLOWED_HOSTS = ['.fwd.wf','.lscds.org','.localhost:8080','.appspot.com']
 
 
 # Local time zone for this installation. Choices can be found here:
@@ -171,6 +171,7 @@ INSTALLED_APPS = ('adminactions',
     'event','ckeditor',
      'photologue', 
      'imagekit','communication',
+     'logo',
      #'sortedm2m',
    #  'south',
     'captcha',
@@ -179,6 +180,7 @@ INSTALLED_APPS = ('adminactions',
     'crispy_forms','form_utils',
     #'imagestore',
     'sorl.thumbnail',
+    'easy_select2',
     'tagging',
     #'autocomplete_light',
     'appengine_toolkit',
@@ -196,6 +198,7 @@ CKEDITOR_CONFIGS = {
         'toolbar': 'full',
         'height': 200,
     'width': 735,
+      'extraPlugins': 'youtube',
     },
 }
 APPENGINE_TOOLKIT = {
@@ -208,8 +211,16 @@ IMAGEKIT_DEFAULT_FILE_STORAGE= 'appengine_toolkit.storage.GoogleCloudStorage'
 DEFAULT_FILE_STORAGE = 'appengine_toolkit.storage.GoogleCloudStorage'
 STATICFILE_STORAGE = 'appengine_toolkit.storage.GoogleCloudStorage'
 
+# 2.5MB - 2621440
+# 5MB - 5242880
+# 10MB - 10485760
+# 20MB - 20971520
+# 50MB - 5242880
+# 100MB 104857600
+# 250MB - 214958080
+# 500MB - 429916160
 
-
+FILE_UPLOAD_MAX_MEMORY_SIZE = "10485760"
 
 IMAGESTORE_SHOW_USER =False
 THUMBNAIL_PREFIX = 'gallery/'

@@ -1,7 +1,7 @@
 import hashlib
 import json
 import random
-
+import logging
 from django.conf import settings, settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, \
@@ -33,9 +33,9 @@ from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView, FormView
 from django.views.generic.list import ListView
 from event.models import EventType, Registration, Event, RoundTable, \
-    RoundTableRegistration
+    RoundTableRegistration,CDPanels,CDRegistration
 from lscdsUser.forms import UserCreationForm, UHNVerificationForm, \
-    SocialExtraDataForm, UserProfileForm, RegistrationFormSet, NetWorkForm, \
+    SocialExtraDataForm, UserProfileForm, RegistrationFormSet, NetWorkForm, CDRegistrationForm,\
     UploadAvatarForm, SetPasswordForm, MailingListForm, WebUnsubscribeForm
 from lscdsUser.models import LscdsUser, LscdsExec, OldlscdsUser, MailingList
 from lscds_site.decorators import render_to
@@ -248,7 +248,10 @@ class UHMVerificationView(FormView):
     success_message = "An email was sent to %s. Login into your account and click on the link to verify your email"
     def get_success_url(self):
         return reverse('profile-event')
-
+    def get_form_kwargs(self):
+         kwargs = super(UHMVerificationView, self).get_form_kwargs()
+         kwargs['request'] = self.request         
+         return kwargs
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
@@ -319,9 +322,73 @@ def cd_registration(request):
     if Site._meta.installed:
             site = Site.objects.get_current()
     else:
-            site = RequestSite(request)   
+            site = RequestSite(request)  
             
-            
+    """
+    Delete a Network Reception registration completely
+    """
+    if 'delete' in request.POST:
+       event_id = request.POST.get('event_id')
+       event = get_object_or_404(Event , pk=event_id)
+       form = CDRegistrationForm(request.POST, event=event, request=request)
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          cd_pannel1 = form.cleaned_data['session_1']
+          cd_pannel2 = form.cleaned_data['session_2']
+          rt_1 = get_object_or_404(CDRegistration, student=request.user, cd_pannel=cd_pannel1)
+          rt_2 = get_object_or_404(CDRegistration, student=request.user, cd_pannel=cd_pannel2)
+          rt_1.delete()
+          rt_2.delete()
+          request.user.send_event_register_mail("delete", event, site, request)
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form})     
+        
+    if 'registration' in request.POST:
+       event_id = request.POST.get('event_id')
+       event = get_object_or_404(Event , pk=event_id)
+       form = CDRegistrationForm(request.POST, event=event, request=request)
+       # check if user has paid for event
+       paid = request.user.my_cd_pannel.all()
+       
+       if paid:
+           paid = paid.filter( cd_pannel__event_id=event_id)[0].paid
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          cd_pannel1 = form.cleaned_data['session_1']
+          cd_pannel2 = form.cleaned_data['session_2']
+          if not request.user.has_membership and not paid and event.has_fee:
+               logging.error(cd_pannel1.pk)
+               request.session['event_id'] = event_id
+               request.session['session_1'] = cd_pannel1.pk
+               request.session['session_2'] = cd_pannel2.pk
+               return HttpResponsePermanentRedirect(reverse('paypal:payment'))
+          form.save()
+          form.send_mail()
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form})   
+        
+       
+             
+    if request.POST and request.POST.get('event_id', None):
+       event_id = request.POST.get('event_id')
+       event = Event.objects.get(pk=event_id)
+       initial = {'event':event, 'event_id':event.id}
+       form = CDRegistrationForm(event=event, initial=initial)       
+       panel1, panel2 = CDPanels.objects.get_user_panels(request.user, event)           
+       if panel1 and panel2: 
+              reg1 = panel1[0] 
+              reg2 = panel2[0]            
+              initial = {'event':event, 'event_id':event.id , 'session_1':reg1, 'session_2':reg2}
+       else:
+               initial = {'event':event, 'event_id':event.id}
+       form = CDRegistrationForm(event=event, initial=initial)        
+       return render(request, 'profile-event-registration.html', {'form':form, 'event':event})
+    else:
+       return HttpResponsePermanentRedirect(reverse('profile-event'))
+           
+          
             
             
             
@@ -368,10 +435,10 @@ def registration_view(request):
           event_id = form.cleaned_data['event_id']
           round_table_1 = form.cleaned_data['round_table_1']
           round_table_2 = form.cleaned_data['round_table_2']
-          if not request.user.is_u_of_t and not paid and event.has_fee:
+          if not request.user.has_membership and not paid and event.has_fee:
                request.session['event_id'] = event_id
-               request.session['round_table_1'] = round_table_1.pk
-               request.session['round_table_2'] = round_table_2.pk
+               request.session['session_1'] = round_table_1.pk
+               request.session['session_2'] = round_table_2.pk
                return HttpResponsePermanentRedirect(reverse('paypal:payment'))
           form.save()
           form.send_mail()
@@ -395,14 +462,23 @@ def registration_view(request):
         
            return render(request, 'profile-event-registration.html', {'form':form, 'event':event})
        else:
-           registration, create = Registration.objects.get_or_create(owner=request.user, event=Event(pk=event_id))
-           if create:
-               registration.save()
-               request.user.send_event_register_mail("register", event, site, request)
-           else:
-               registration.delete()
-               request.user.send_event_register_mail("delete", event, site, request)
-       return HttpResponsePermanentRedirect(reverse('profile-event'))
+           try:
+              regs = Registration.objects.get(owner=request.user, event=Event(pk=event_id))
+              regs.delete()
+              request.user.send_event_register_mail("delete", event, site, request)
+              return HttpResponsePermanentRedirect(reverse('profile-event'))
+           except Registration.DoesNotExist:
+               if not request.user.has_membership  and event.has_fee:
+                  request.session['event_id'] = event_id  
+                  request.session['session_1'] = 'dummy'
+                  request.session['session_2'] = 'dummy'             
+                  return HttpResponsePermanentRedirect(reverse('paypal:payment'))
+               else:
+                   registration, create = Registration.objects.get_or_create(owner=request.user, event=Event(pk=event_id))
+                   if create:
+                      registration.save()
+                      request.user.send_event_register_mail("register", event, site, request)
+                      return HttpResponsePermanentRedirect(reverse('profile-event'))
     else:
        return HttpResponsePermanentRedirect(reverse('profile-event'))
 

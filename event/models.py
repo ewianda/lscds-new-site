@@ -116,6 +116,9 @@ class Event(models.Model):
     ends = models.TimeField()
     registration_limit = models.PositiveSmallIntegerField(null=True,
             blank=True, default=0)
+    none_u_of_t_limit =  models.PositiveSmallIntegerField(null=True,
+            blank=True, default=0)
+    
     slug = models.SlugField(max_length=100,unique=True)
     status = models.CharField(max_length=40, choices=STATUS)
     objects = EventManager()
@@ -123,6 +126,10 @@ class Event(models.Model):
     class Meta:
         ordering = ('-starts',)
     
+    def get_alumi(self):
+       return  self.alumniEvent.all().filter(alumni__active=False)
+    def get_exec(self):
+        return  self.alumniEvent.all().filter(alumni__active=True)
     
   
     def get_talks(self):
@@ -150,12 +157,22 @@ class Event(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return 'event:event-detail', (), {'slug': self.slug}
-
-
+    def get_registration_url(self):
+        if self.event_type.pk ==2:            
+           return reverse('cd-registration')
+        else:
+           return reverse('profile-event-registration') 
+    @property
+    def registration_open_non_u_of_t(self): 
+           if self.none_u_of_t_limit==0 or self.registrations.filter(owner__is_u_of_t=False).count()<self.none_u_of_t_limit:
+               return True
+           else:
+              return False
     @property
     def registration_open(self):
         if self.registration_start < timezone.now() <  self.registration_end:
-            if self.registration_limit == 0 or self.registrations.count() < self.registration_limit:
+            if self.registration_limit == 0 or \
+                self.registrations.count() < self.registration_limit:
                return True
             else:
                 return False
@@ -167,7 +184,7 @@ class Presenter(models.Model):
     last_name = models.CharField(_('Last name'), max_length=255 )
     email = models.EmailField(
         verbose_name='email address',
-        max_length=255,blank=True, null=True
+        max_length=255,
  
     )
     qualification = models.CharField(max_length=255)
@@ -206,6 +223,11 @@ class Talk(models.Model):
     class Meta:
         verbose_name_plural = _("Key note and Talks") 
         
+class   MembershipFee(models.Model):
+        amount = models.DecimalField(max_digits=65,decimal_places=2)
+        def __unicode__(self):
+            return u'Anual Membership Fee %s' % (self.amount,)
+        
         
 class EventFee(models.Model):
     event = models.ForeignKey(Event, related_name='fee_options')
@@ -227,7 +249,7 @@ class Registration(models.Model):
     fee_option = models.ForeignKey(EventFee, related_name='+', null=True,
             blank=True)
     paid = models.BooleanField(default=False)
-    
+    attended =   models.BooleanField(default=False)
     def email(self):
         return self.owner.email    
         
@@ -239,13 +261,28 @@ class Registration(models.Model):
         return u'Registration for %s ' % (self.owner,)
     
     
-
+class CDPanelsQuerySet(QuerySet):
+    def get_user_panels(self,user,event):
+        reg1=self.filter\
+                (cd_registration__student=user,\
+                cd_registration__session=1, event_id=event.id)
+        reg2=self.filter\
+                (cd_registration__student=user,\
+                cd_registration__session=2, event_id=event.id)         
+        return reg1,reg2   
+        
+class CDPanelsManager(models.Manager):
+       def get_query_set(self):
+           return  CDPanelsQuerySet(self.model, using=self._db)
+       def get_user_panels(self,user,event):
+           return self.get_query_set().get_user_panels(user,event)
 
 class CDPanels(models.Model): 
        name = models.CharField(max_length=255)
        event = models.ForeignKey(Event, related_name='event_pannels')
        panel_limit = models.PositiveSmallIntegerField()  
        room = models.CharField(max_length=255,blank=True, null=True)
+       objects = CDPanelsManager()
        def get_panelists(self):
            return self.panelists.all()
        def __unicode__(self):
@@ -254,7 +291,14 @@ class CDPanels(models.Model):
        class Meta:
            ordering = ('event',)
            verbose_name_plural = _("Career Day Panels")
-       
+       def session_spot(self,session):
+           return self.panel_limit -  self.cd_registration\
+                                         .filter(session=session).count()
+       def registration_open(self,session):
+          return self.cd_registration\
+                            .filter(session=session).count() < self.panel_limit                                  
+                                         
+                                         
 class CDPanelist(models.Model):
        cdpanel = models.ForeignKey(CDPanels,related_name='panelists')
        panelist = models.ForeignKey(Presenter)  
@@ -267,10 +311,13 @@ class CDRegistration(models.Model):
     student =  models.ForeignKey(User, related_name='my_cd_pannel')    
     paid = models.BooleanField(default=False)
     session = models.PositiveSmallIntegerField(max_length=10,default=1)
+    attended =   models.BooleanField(default=False)
     def department(self):
         return self.student.department
     def faculty(self):
-        return self.student.faculty 
+        return self.student.faculty
+    def degree(self):
+        return self.student.degree
     @property
     def event(self):
         return self.cd_pannel.event
@@ -332,6 +379,7 @@ class RoundTableRegistration(models.Model):
             blank=True)
     paid = models.BooleanField(default=False)
     session = models.PositiveSmallIntegerField(max_length=10,default=1)
+    attended =   models.BooleanField(default=False)
     def department(self):
         return self.student.department
     def faculty(self):
@@ -369,18 +417,24 @@ class AlumniRegistration(models.Model):
     alumni = models.ForeignKey(LscdsExec, related_name='+', null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True) 
+    plus_one = models.CharField(_('Guest info'), max_length=255 )
 
     class Meta:
         ordering = ('-created',)
 
     def __unicode__(self):
-        return u'Registration for %s ' % (self.alumni,)        
-        
+        return u'Registration for %s ' % (self.alumni,) 
+           
+    def name(self):
+        return "%s" % (self.alumni)
+       
 class GuestRegistration(models.Model):
     event = models.ForeignKey(Event, related_name='guest_event')
     guest = models.ForeignKey(Presenter, related_name='+', null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False,
             null=True, blank=True) 
+    
+    plus_one = models.CharField(_('Name of plus one guest'), max_length=255 )
 
     class Meta:
         ordering = ('-created',)
@@ -388,6 +442,8 @@ class GuestRegistration(models.Model):
     def __unicode__(self):
         return u'Registration for %s ' % (self.guest)
     
+    def name(self):
+        return "%s" % (self.guest)
     
 class AdditionalGuestRegistration(models.Model):
     event = models.ForeignKey(Event, related_name='additional_guest_event')

@@ -2,6 +2,7 @@ from event.models import Event,EventType
 from zinnia.models.entry import Entry
 from photologue.models import Gallery
 from testimonial.models import Testimonial
+from logo.models import LscdsLogo
 
 from django.utils import timezone
 from datetime import datetime,timedelta
@@ -75,7 +76,10 @@ def latest(request):
        testimonial = Testimonial.objects.all()
    except Testimonial.DoesNotExist:
        testimonial = None
-
+   try: 
+      logo = LscdsLogo.objects.first()
+   except  LscdsLogo.DoesNotExist:
+       logo = None   
 
 
 
@@ -84,6 +88,7 @@ def latest(request):
            'context_photos':photos,'context_blog':entry,\
            'jobs':jobs,'context_resource':resources,\
            'context_alumni_tab':alumni_tab,"now":timezone.now()-timedelta(hours=4),
-           'testimonies':testimonial
+           'testimonies':testimonial,
+           'logo': logo
            }
 

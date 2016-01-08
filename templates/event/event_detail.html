@@ -6,6 +6,11 @@
 
 
 <h2 style='margin-top:0px'> {{ object.name }}</h2>
+{% if object.event_type.pk == 4 %}
+{% include "event/include/include_alumni_reception_events.html" %}
+
+{% else %}
+
 
 <div class ='row'>
  <div class = {% if object.event_information %} 'col-md-12' {% else %}'col-md-12' {%endif %}>
@@ -33,7 +38,7 @@
 {% include "event/include/include_other_events.html" %}
 
 {% elif object.event_type.pk == 2 %}
-{% include "event/include/include_career_day.html" %}
+{% include "event/include/include_career_day.html" %} 
 {% else %}
 {% include "event/include/include_network_reception.html" %}
 {% endif %}
@@ -44,6 +49,10 @@
 {% if object.registration_open %}
 <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
 {% endif %}
+
+{% endif %}
+
+
 {% endblock %}
 
 {% block javascript %}

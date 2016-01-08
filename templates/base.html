@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
     <!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
         <!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
@@ -65,7 +64,7 @@
                         <div class="topbar-v1">
                             <div class="container">
                                 <div class="row">
-                                    <div class="pull-right">
+                                    <div class="pull-righ">
                                         <ul class="list-inline top-v1-data">
                                             <li><a href="{% url 'home' %}" ><i class="fa fa-home"></i></a></li>                                        
                                           
@@ -115,7 +114,7 @@
                                     <div class="row">
 
                                         <div class="col-md-12">
-                                            <a href="{% url 'home' %}"><img class="header-banner img-responsive" src="{%static "images/lscds-logo.jpg"%}" alt="Smiley face" height="200" ></a>
+                                            <a href="{% url 'home' %}"><img class="header-banner img-responsive" src=" {% if logo.image %} {{logo.image.url}} {% else %} {%static "images/banner_website-02.png" %} {% endif %}" alt="Smiley face" height="200" ></a>
                                         </div>
                                     </div>    
                                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
@@ -134,16 +133,16 @@
                             <!-- Collect the nav links, forms, and other content for toggling -->
                             <div class="collapse navbar-collapse navbar-responsive-collapse">
                                 <div class="container">
-                                    <ul class="nav navbar-nav">
+                                    <ul class="nav nav-justified">
                                         <!-- Home -->
-                                        <li class="dropdown active">
+                                        <li class="dropdown ">
                                         <a href="{% url 'home' %}">Home</a>                              
                                         </li>
                                         <!-- End Home -->
 
                                         <!-- Pages -->                        
                                         <li class="dropdown">
-                                        <a href="{% url 'about' %}" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" >
+                                        <a href="{% url 'about' %}" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false"class="dropdown-toggle"  >
                                             About Us
                                         </a>
                                         <ul class="dropdown-menu">
@@ -186,7 +185,7 @@
 
                                         <!-- Resources -->
                                         <li class="dropdown">
-                                        <a href="#" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">Resources</a>  
+                                        <a href="#" data-target="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">LSCDS Resources</a>  
                                         <ul class='dropdown-menu'>
                                          <li> <a href="{% url 'resource:job-list' %}">Jobs</a> </li> 
                                          {% if context_resource %}
@@ -246,7 +245,8 @@
                                         </li>                    
                                         <!-- End Contact -->
                                         
-                                         <!-- Contact
+                                         <!-- Contact -->
+
                                         <li>
                                         <a href="{% url 'faq' %}">Faq</a>  
                                         </li>                    

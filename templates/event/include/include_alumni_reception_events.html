@@ -1,0 +1,79 @@
+<div class ='row'>
+ <div class ='col-md-12'>
+ {{ object.event_information|safe }}
+ </div>
+ 
+   {% if messages %}
+        {% for message in messages %}
+         
+            <div class="alert col-md-12 {%if  message.tags == "error" %} alert-danger {% else %}alert-success {% endif %}">  <!-- singular -->
+                <a class="close" data-dismiss="alert">×</a>
+                {{ message|safe }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+ 
+ <legend>Who is coming</legend>
+<legend>Guest and Alumni</legend>
+<table class="table  table-bordered condensed table-striped">
+<thead> <tr><th class="col-sm-3" >Name </th><th class="col-sm-3">Position </th> <th class="col-sm-6">Company </th> </tr> </thead>
+ <tbody>
+{% for obj in object.guest_event.all %}
+
+<tr><td>{{ obj.guest}}</td><td>{{ obj.guest.position}}</td><td>{{ obj.guest.company}}</td></tr>
+
+
+
+{% endfor %} 
+{% for obj in  object.get_alumni %}
+<tr><td>{{ obj.alumni}}</td><td>{{ obj.alumni.current_position}}</td><td>{{ obj.alumni.company}}</td></tr>
+{% endfor %}
+
+{% for obj in object.additional_guest_event.all %}
+
+<tr><td>{{ obj.full_name}}</td><td>{{ obj.position}}</td><td>{{ obj.company}}</td></tr>
+
+
+{% endfor %}
+ 
+</tbody>
+</table>
+ 
+<legend> Lscds Exec </legend>
+<table class="table  table-bordered table-striped">
+<thead> <tr><th class="col-sm-3" >Name </th><th class="col-sm-3">Position </th> <th class="col-sm-6">Company </th> </tr> </thead>
+ <tbody>
+{% for obj in object.get_exec %}
+
+<tr><td>{{ obj.alumni}}</td><td>{{ obj.alumni.position}}</td><td>{{ obj.alumni.company}}</td></tr>
+
+
+{% empty %}
+    <li>No guest yet.</li>
+{% endfor %} 
+</tbody>
+</table>
+
+
+
+    {% if is_paginated %}
+        <ul class="pagination pagination-centered">
+            {% if page_obj.has_previous %}
+                <li><a href="?page=1"></a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}"></a></li>
+            {% endif %}
+
+            {% for i in paginator.page_range %}
+                <li {% if page_obj.number == i %} class="active" {% endif %}><a href="?page={{i}}">{{i}}</a></li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}">></a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">>></a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+  </div>
+ 
+ 

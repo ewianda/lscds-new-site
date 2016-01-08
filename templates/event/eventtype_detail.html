@@ -9,6 +9,17 @@
 
 <P> {{ object.description|safe}} </P>
 
+<legend>Past Events</legend>
+<ul class="list-group">
+{% for event in object.event_type.all %}
+<li><a href="{{event.get_absolute_url}}"> {{event}}</a></li>
+{% endfor %}
+</ul>
+
+
+
+
+
 
 
 

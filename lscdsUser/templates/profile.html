@@ -30,16 +30,15 @@ Your record shows that you are currently a University of Toronto student or at o
 Network hospitals. You are requested to verify your status each academic year starting September. Note that
 event registration is free for  University of Toronto students and  affiliated institutions.</div>
 </div>
-
 {% else %}
 <div class='row margin-bottom-30  '>
 <div class="alert alert-warning alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-Your records show that you are not a trainee at the University of
- Toronto or its affiliated institutions. There is an event registration 
- fee for external trainees.
-
- <a  href="{% url 'uoft-email-verification' %}">Please verify your University of Toronto (or affiliated institutions) status</a>
+ Our records show that you are not a trainee at the University of Toronto or its affiliated institutions.
+ <a href="{% url 'faq' %}"> Event registration fees </a> apply to all external trainees. If you are a University of Toronto affiliated student, 
+  <a  href="{% url 'uoft-email-verification' %}"> please verify your status.</a> 
+  If you are an external trainees, please 1) follow the registration links to purchase admission for individual events, or 
+  2)  <a  href="{% url 'paypal:membership-payment' %}"> purchase an annual membership </a> to attend all LSCDS events in the current academic year 
 </div>
 </div>
 {% endif %}

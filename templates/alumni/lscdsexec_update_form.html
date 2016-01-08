@@ -11,8 +11,8 @@
 {% block main %}
  <div class="col-md-8 col-md-offset-2">
  <legend > Hi {{ object.user }}  </legend >
- Please complete the form below for our next Alumni Reception<br>
- <a href="{% url 'guest-list' %}" target="_blank">Who is coming (open in new page)</a>
+ Please complete the form below for our next  <strong> {{event}} </strong><br>
+ <a href="{{event.get_absolute_url}}" target="_blank">Who is coming (open in new page)</a>
     <br>
    <br>
  {% if form.errors %}
@@ -28,4 +28,34 @@
     {% crispy form  %}
  </div>
 {% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+
+$(document).ready(function() {
+$('body').on('click','#id_plus_one_coming',function(e){ 
+ if($(this).is(":checked")){      
+                 $("div[id^=div_id_guest]").show()
+            }
+            else if($(this).is(":not(:checked)")){
+          $('div[id^=div_id_guest]').hide()    
+                
+            }
+
+})
+
+if($('#id_plus_one_coming').is(":checked")){      
+                $("div[id^=div_id_guest]").show()
+            }
+            else if($('#id_plus_one_coming').is(":not(:checked)")){
+            $('div[id^=div_id_guest]').hide()    
+                
+            }
+            
+            
+}) // end document ready
+  </script>
+{% endblock %}
+
+
 

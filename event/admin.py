@@ -22,8 +22,8 @@ from communication.action import send_EMAIL
 from django.contrib.admin.models import LogEntry, DELETION
 from django.utils.html import escape
 from django.core.urlresolvers import reverse
-
-
+from easy_select2 import select2_modelform
+from actions.actions import mark_attendance
 
 class RequiredInlineFormSet(BaseInlineFormSet):
     """
@@ -133,12 +133,15 @@ class PresenterAdmin(admin.ModelAdmin):
     actions = [send_EMAIL]
 #     search_fields = ['name']
 
+RegistrationForm = select2_modelform(Registration, attrs={'width': '250px'})
+
 class RegistrationAdmin(admin.ModelAdmin):
-    list_display = ('owner','email' ,'event', 'created')
+    form =RegistrationForm
+    list_display = ('owner','email' ,'event','attended', 'created')
     list_filter = ['event']
     search_fields = ['owner__email','owner__last_name','owner__first_name']
     send_EMAIL.short_description = 'Send Reminder email'
-    actions = [send_EMAIL,export_as_csv_action("Export CVS")]
+    actions = [mark_attendance,send_EMAIL,export_as_csv_action("Export CVS")]
     
     
     
@@ -153,19 +156,20 @@ class RoundTableAdmin(admin.ModelAdmin):
     ]
 class CDRegistrationAdmin(admin.ModelAdmin):
      list_display = ('student','cd_pannel', 
-                    'session','department','faculty','event','created')
+                    'session','attended','department','faculty','degree','event','created')
     
      list_filter = ['session','cd_pannel','cd_pannel__event']
      search_fields = ['student__email','student__last_name','student__first_name']
-    
+     send_EMAIL.short_description = 'Send Reminder email'
+     actions = [mark_attendance,send_EMAIL,export_as_csv_action("Export CVS")]
     
 class RoundTableRegistrationAdmin(admin.ModelAdmin):
     list_display = ('student','round_table', 
-                    'session','department','faculty','event','created')
+                    'session','attended','department','faculty','event','created')
     
     list_filter = ['session','round_table','round_table__event']
     search_fields = ['student__email','student__last_name','student__first_name']
-    actions = ['send_EMAIL',export_as_csv_action("Export CVS")]
+    actions = [mark_attendance,'send_EMAIL',export_as_csv_action("Export CVS")]
  
     
     
@@ -301,6 +305,8 @@ class AdditionalGuestAdmin(admin.ModelAdmin):
 class EventRegistrationAdmin(admin.ModelAdmin):   
     send_EMAIL.short_description = 'Send Reminder email'
     actions = [send_EMAIL,export_as_csv_action("Export CVS")]
+    list_display = ('event','name','plus_one',) 
+    list_filter = ['event',]
     
     
     
@@ -320,7 +326,7 @@ admin.site.register(EventCompany)
 admin.site.register(AlumniRegistration,EventRegistrationAdmin)
 admin.site.register(GuestRegistration,EventRegistrationAdmin)
 admin.site.register(CDPanels,CDPanelAdmin)
-
+admin.site.register(MembershipFee)
 
 
 

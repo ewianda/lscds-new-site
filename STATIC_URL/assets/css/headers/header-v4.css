@@ -35,7 +35,7 @@
 
 /*Top Data*/
 .header-v4 .topbar-v1 .top-v1-data {
-	text-align: right;
+	text-align: center;
 }
 
 .header-v4 .topbar-v1 .top-v1-data li {
@@ -350,12 +350,12 @@
 		text-transform: uppercase;
 	}
 }
-
+/*
 @media (min-width: 992px) {
 	.header-v4 {
 		border-bottom: none;
 	}
-
+*/
 	.header-v4 .navbar-collapse {
 		border-top: 1px solid #eee;
 		border-bottom: 1px solid #eee;
@@ -448,9 +448,7 @@
 		display: block;
 	}	
 
-	.header-v4 .open > .dropdown-menu {
-		display: none;
-	}
+
 
 	/*Search*/
 	.header-v4 .navbar .nav > li > .search {
@@ -944,4 +942,11 @@
 		color: #333;
 		text-decoration: none;
 	}
+}
+
+
+@media (min-width: 1200px) {
+  .container {
+    width: 1200px;
+  }
 }

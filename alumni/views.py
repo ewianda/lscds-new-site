@@ -67,28 +67,34 @@ class LscdsExecUdateView(UpdateView):
             messages.add_message(self.request, messages.ERROR, "It seems registration for this event has closed."
                                                              "Please contact <a href='mailto:alumni.lscds@lscds.org'> Alumni Reception team </a> if you are having "
                                                              "difficulties")         
-        return reverse('guest-list')
+        return self.event.get_absolute_url()
     
     def get_initial(self):
         return {'email':self.object.user.email}
     
     def get_context_data(self, **kwargs):
         context = super(LscdsExecUdateView, self).get_context_data(**kwargs)
+        context['event'] = get_object_or_404(Event,pk=self.kwargs['event'])
         context['now'] = timezone.now()
         return context
     
     def form_valid(self, form):        
         attendance = form.cleaned_data['attendance']    
         email = form.cleaned_data['email']
-      
+        plus_one =form.cleaned_data.get('plus_one')  
         if not form.instance.active:
             form.instance.user.email =email
             form.instance.user.save()
         event_id = self.kwargs['event']
         event = get_object_or_404(Event,pk=event_id)
+        self.event = event
         if event.registration_open:     
            if attendance:                         
                 obj,created = AlumniRegistration.objects.get_or_create(event=Event(pk=event_id),alumni=form.instance)
+                if plus_one:                    
+                   obj.plus_one = plus_one
+                   obj.save()
+                   
                 self.registration = obj   
                 form.instance.send_email(event) 
            else:
@@ -104,6 +110,7 @@ class GuestUdateView(UpdateView):
       
     def get_context_data(self, **kwargs):
         context = super(GuestUdateView, self).get_context_data(**kwargs)
+        context['event'] = get_object_or_404(Event,pk=self.kwargs['event'])
         context['now'] = timezone.now()
         return context 
     
@@ -115,18 +122,23 @@ class GuestUdateView(UpdateView):
         last = self.object.last_name
         event_id = self.kwargs['event']
         event = get_object_or_404(Event,pk=event_id)
+        plus_one =form.cleaned_data.get('plus_one')  
+        self.event = event
         if event.registration_open:
             #import logging
             #logging.error(type(attendance))      
             if attendance == "True":    
                obj,created = GuestRegistration.objects.get_or_create(event=Event(pk=event_id),guest=form.instance)
                self.registration = obj # Save the registration object
+               if plus_one:                    
+                   obj.plus_one = plus_one
+                   obj.save()               
                form.instance.send_email(event)
                
             else:
                 self.not_coming = True
         if updates:
-            ml,created=MailingList.objects.get_or_create(email=email,first_name=first,last_name=last)
+            ml,created=MailingList.objects.get_or_create(email=email,first_name=first,last_name=last,newsletter_only=True)
         return super(GuestUdateView, self).form_valid(form)  
     def get_success_url(self):
         if hasattr(self, 'registration'):
@@ -137,7 +149,7 @@ class GuestUdateView(UpdateView):
             messages.add_message(self.request, messages.ERROR, "It seems registration for this event has closed."
                                                              "Please contact <a href='mailto:alumni.lscds@lscds.org'> Alumni Reception team </a> if you are having "
                                                              "difficulties") 
-        return reverse('guest-list')
+        return self.event.get_absolute_url()
     
     
 

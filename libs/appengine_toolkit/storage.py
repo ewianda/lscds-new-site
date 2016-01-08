@@ -79,8 +79,10 @@ class GoogleCloudStorage(Storage):
                     name =self.path(name)
         key = blobstore.create_gs_key('/gs' + name)
         try:
-           return images.get_serving_url(key)
-        except:
+           return images.get_serving_url(key,size=1000)
+        except Exception as e:
+            import logging
+            logging.error(e)
             return  'https://storage.googleapis.com' + name
 
     def created_time(self, name):

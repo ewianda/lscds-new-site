@@ -5,7 +5,7 @@
 {% load form_utils %}
 {% load lscds_tags %}
 {% block profile_block %}
-  <legend> Round table registration for {{form.event.value}}</legend>
+  <legend> Registration  for {{form.event.value}}</legend>
 <div class='col-md-6 col-md-offset-2'>
 {% crispy form %}
 </div>
@@ -51,7 +51,7 @@ $("#submit-id-round_table_delete").hide()
 }// end if
 
 if ($(".select").val()==""){
-$("#submit-id-round_table_delete").hide()
+$("#submit-id-delete").hide()
 }// end if
 
 /*

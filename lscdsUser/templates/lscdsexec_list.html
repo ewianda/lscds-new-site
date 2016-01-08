@@ -16,19 +16,23 @@
 {% for exec in object_list%}      
       
         <div class = "row">
-         <div class = "col-md-4 col-sm-4" >
+         <div class = "col-sm-3" >
          {% if exec.avatar %}
-         <img  class="img-thumbnail" src="{{exec.avatar.url}}" height="100" width="200">
+         <img  class="img-circle img-responsive" src="{{exec.avatar.url}}" height="100"  >
          
           {% else %}
-        <img class="img-thumbnail" src="http://placehold.it/200x100&text=Image"/>  
+        <img class="img-circle img-responsive" src="http://placehold.it/200x100&text=Image" height="100" />  
           {% endif %}
           
        </div>
-           <strong>{{exec.user}}</strong></br>
-           {{exec.position}}        </br> 
+           <strong>{{exec.user}}</strong>
+           </br>
+          <font size='2' color='grey'>  {{exec.position}}</font>       
+            </br> 
               
-         {{exec.bio| safe}} </div>
+         {{exec.bio| safe}}
+          </div>
+          <hr /> 
 {% endfor %}
 
  

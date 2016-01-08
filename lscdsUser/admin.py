@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext, ugettext_lazy as _
 from lscdsUser.models import LscdsUser, UHNEmail, OldlscdsUser, LscdsExec, \
-    MailingList
+    MailingList,Membership
 
 
 class UserCreationForm(forms.ModelForm):
@@ -89,7 +89,7 @@ class LscdsUserAdmin(UserAdmin):
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'gender',)}),
         (_('Academic info'), {'fields': ('university', 'faculty', 'department', 'degree', 'status',)}),
 
-        (_('Permissions'), {'fields': ('verify_key', 'expiry_date', 'is_u_of_t', 'is_active', 'is_staff', 'is_superuser',
+        (_('Permissions'), {'fields': ('mailinglist','verify_key', 'expiry_date', 'is_u_of_t', 'is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
@@ -108,7 +108,12 @@ class OldLscdsUserAdmin(admin.ModelAdmin):
     form = OldForm
     list_display = ('email', 'first_name', 'last_name')
     search_fields = ('email', 'first_name', 'last_name')
-    
+ 
+class MailingListAdmin(admin.ModelAdmin): 
+         list_display = ('get_full_name','newsletter_only','email')   
+         search_fields = ('first_name', 'last_name','email')
+         
+         
 class LscdsExecAdmin(admin.ModelAdmin):
       list_display = ('user', 'active', 'position', 'admin_image')
       list_filter = ('active', 'position', 'end')
@@ -116,7 +121,7 @@ class LscdsExecAdmin(admin.ModelAdmin):
       send_EMAIL.short_description = 'Send RSVP'
       actions = [send_EMAIL]
       fieldsets = (
-        (None, {'fields': ('user', 'position', 'avatar', 'end', 'bio')}),
+        (None, {'fields': ('user', 'position', 'avatar', 'start','bio')}),
         (_('Alumin information'), {'fields': ('active', 'current_position', 'company', 'rsvp_code')}),
       
        )
@@ -197,9 +202,11 @@ admin.site.register(UHNEmail)
 admin.site.register(OldlscdsUser, OldLscdsUserAdmin)
 admin.site.register(LscdsExec, LscdsExecAdmin)
 
-admin.site.register(MailingList)
+admin.site.register(MailingList,MailingListAdmin)
+
 # Now register the new UserAdmin...
 admin.site.register(LscdsUser, LscdsUserAdmin)
+admin.site.register(Membership)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 # admin.site.unregister(Group)

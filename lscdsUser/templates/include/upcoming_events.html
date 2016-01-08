@@ -1,0 +1,53 @@
+{% if object %}
+{% with object|first as e %}
+<h4>{{e.event_type}}</h4>
+{% endwith %}
+
+ {% for event in  object %}
+ <form class="registration" id="EventForm{{event.pk}}" action="{{ event.get_registration_url }}" method="post">{% csrf_token %}
+  <table  class='table table-bordered'>
+     <tbody> 
+          <tr>
+          {% comment %}  
+           {% if request.user.is_staff %}
+          
+                   <td> <strong>{{event.name}} </strong> {% csrf_token %}
+                         <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
+                            <td> <a data-toggle="modal" data-id = "EventForm{{event.pk}}" data-target="#registration" type="submit" class="btn btn-primary pull-right">Register</a></td>
+           {% endif %}  
+                  
+           {% endcomment %} 
+           
+        {% if not user.is_verified and not event.registration_open_non_u_of_t  %}
+            <td>  <strong>{{event.name}} </strong> </td>
+                     <td class="alert alert-danger col-md-6" role="alert"> Registration closed for none University of Toronto students</td>
+                  
+          {% elif event.registration_open %}
+            
+                   <td> <strong>{{event.name}} </strong> {% csrf_token %}
+                         <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
+                            <td> <a data-toggle="modal" data-id = "EventForm{{event.pk}}" data-target="#registration" type="submit" class="btn btn-primary pull-right">Register</a></td>
+
+           {% elif event.registration_start > now %}
+                      <td>  <strong>{{event.name}} </strong> </td>
+                        <td class="alert alert-info col-md-6" role="alert">Registration starts in {{event.registration_start|timeuntil}}</td>
+
+           {% else %}
+                      <td>  <strong>{{event.name}} </strong> </td>
+                     <td class="alert alert-danger col-md-6" role="alert"> Registration closed</td>
+                    {% endif %}                
+                      
+             </tr> 
+                        
+                        
+                                         
+        </tbody>                 
+                    
+    </table> 
+               
+ </form>
+ {% endfor %}
+       
+       
+       
+ {% endif %}

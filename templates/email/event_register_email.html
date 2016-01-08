@@ -7,9 +7,19 @@
     <head>
         <title>{{site.name}} </title>
     </head>
+<style type="text/css">
+.header {
+background:url("http://www.lscds.org/static/images/lscds-logo.jpg");
+ background-size: 400px;
+ background-repeat: no-repeat;
+ padding-top: 60px;
+}
 
+   
+
+ </style>
     <body>
-
+<div class = "header"></div>
         <p>
 
         <h4> Hi {{user}}</h4>
@@ -17,22 +27,44 @@
  {% if action == "register" %}  
 
         {% if event.event_type.pk == 1 %}
-        This is a confirmation that you have registered to attend the {{event}}
-        on  {{event.starts|date:'l, M. dS o'|safe}}
+      This is a confirmation that you have registered to attend the {{event}}
+        ,  {{event.starts|date:'l, M. dS o'|safe}}
         </p>   
 
         <p><strong>*Registration:</strong> 5:45-6:15pm</p>
         <p><strong>Attire:</strong> Business casual</p>
         <p><strong>Location:</strong> Chestnut Conference Centre, 89 Chestnut St. Toronto, ON M5G 1R1 </p>
         <p><strong>Your guests:</strong>
-        <p><strong>Round table session I:</strong> {{rt1.guest}} </p>
-        <p><strong>Round table session II:</strong> {{rt2.guest}}</p>
+        <p><strong>Round table session I:</strong> {{session1}} </p>
+        <p><strong>Round table session II:</strong> {{session2}}</p>
         *Please note that if you do not arrive by 6:15 your spot will be given away to student on the waitlist.
         **On the day of the event please bring a digital or paper copy of this email to confirm your registration.
         For more information about the event please visit our website at
         <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
         LSCDS Networking Reception</a> for the
         evening's agenda and other information.
+        
+        
+        
+        {% elif event.event_type.pk == 2  %}
+          This is a confirmation that you have registered to attend the {{event}}
+        ,{{event.starts|date:'l, M. dS o'|safe}}
+        </p>   
+
+        <p><strong>*Registration:</strong> 9:00-9:30 am (Macleod Auditorium, MSB)</p>
+        <p><strong>Attire:</strong> Business casual</p>
+        <p><strong>Location:</strong> {{event.location}} </p>
+        <p><strong>Your Panels:</strong>
+        <p><strong>Career Panel Discussion Session 1:</strong> {{session1}} </p>
+        <p><strong>Career Panel Discussion Session 2:</strong> {{session2}}</p>
+        On the day of the event, please bring a digital or paper copy of this email to confirm your registration. Please note that the LSCDS is not responsible for changes in guests and companies.
+
+For more information about the event, please visit our
+        <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
+        website</a>.  Please refer to the <a href="http://{{site.domain}}{% url 'faq' %}">
+        FAQ</a> page for information on registration modification refund policy.
+        
+        
         {% else %}
 
         This is a confirmation that you have registered to attend the LSCDS seminar: {{event}}
@@ -44,18 +76,34 @@
        visit   <a href="http://{{site.domain}}{% url 'event:event-detail' slug=event.slug %}">
          LSCDS Seminars</a>
          {% endif %}
+         
+         
+         
+         
+         
 
  {% elif action == "modify" %} 
  
  {% if event.event_type.pk == 1 %}
+ You have made a change to your
+  registration for the  {{event}} . Your new panel selections are:
+ <p><strong>Round table session I:</strong> {{session1}} </p>
  
+  <p><strong>Round table session II:</strong> {{session2}}</p>
+  Thank you, and we look forward to seeing you at the event. 
+  
+{% endif %}
+
+{% if event.event_type.pk == 2 %} 
+
  You have made a change to your
   registration for the  {{event}} . Your new guest selections are:
- <p><strong>Round table session I:</strong> {{rt1.guest}} </p>
- 
-  <p><strong>Round table session II:</strong> {{rt2.guest}}</p>
+  <p><strong>Career Panel Discussion Session 1:</strong> {{session1}} </p>
+   <p><strong>Career Panel Discussion Session 2:</strong> {{session2}}</p>
   Thank you, and we look forward to seeing you at the event.
+  
 {% endif %}
+
 
 
 {% else %}        

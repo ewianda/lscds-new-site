@@ -89,7 +89,7 @@ class MyUserManager(BaseUserManager):
         # SHA1 hash; if it doesn't, no point trying to look it up in
         # the database.
         now = timezone.now()
-        if now.day > 9:  # then we are in the same year as start of academic year
+        if now.month < 9:  # then we are in the same year as start of academic year
              year = now.year 
         else:
              year = now.year + 1  # set expiration for next year
@@ -184,7 +184,10 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         # The user is identified by their email address
-        return u'%s %s ' % (self.first_name, self.last_name)
+        if bool(self.first_name) and bool(self.first_name):
+           return u'%s %s ' % (self.first_name, self.last_name)
+        else:
+            return  self.email
 
     def get_short_name(self):
         # The user is identified by their email address
@@ -202,9 +205,20 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+    
+    @property
     def is_verified(self):
         return self.is_u_of_t and self.expiry_date > timezone.now().date()
     
+    @property
+    def has_membership(self):
+        if self.is_verified:
+            return True
+        try:
+           return self.membership.paid and self.membership.expire>timezone.now().date()
+        except:
+            return False
+            
     
     def send_verify_mail(self, site, uhn_email, request=None):
         
@@ -222,7 +236,7 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         message_html = render_to_string('email/verify_email.html', email_dict)
         email_message.attach_alternative(message_html, 'text/html')
         email_message.send()
-    def send_event_register_mail(self, action, event, site, request=None, round_table=None):        
+    def send_event_register_mail(self, action, event, site, request=None, session=None):        
         email_dict = {}         
         if request is not None:
             email_dict = RequestContext(request, email_dict)
@@ -233,11 +247,11 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
             "site": site,
             "action": action,
         }
-        if round_table is not None:
-            rt1 = round_table[0]
-            rt2 = round_table[1]
-            email_dict['rt1'] = rt1
-            email_dict['rt2'] = rt2
+        if session is not None:
+            session1 = session[0]
+            session2 = session[1]
+            email_dict['session1'] = session1
+            email_dict['session2'] = session2
         email_ctx = Context(email_dict)
         txt = get_template('email/event_register_email.txt')
         html = get_template('email/event_register_email.html')
@@ -268,7 +282,12 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
         email_message.send()  
         
          
-        
+
+
+class Membership(models.Model):
+    user = models.OneToOneField(LscdsUser) 
+    paid = models.BooleanField(default=False)
+    expire = models.DateField(_('Year'), default=timezone.now)        
         
         
         
@@ -310,12 +329,22 @@ class OldlscdsUser(models.Model):
     def set_password(self, raw_password):
         from lscds_site.backend import make_pw_hash
         self.password = make_pw_hash(self.email, raw_password)
+        
+    def get_full_name(self):
+        # The user is identified by their email address
+        return u'%s %s ' % (self.first_name, self.last_name)
+                           
 
+    
+    
+    
+    
+                              
 class LscdsExec(models.Model):
     user = models.OneToOneField(LscdsUser)
     position = models.CharField(_('Postion'), max_length=255)
     avatar = ImageField(_('Image'), blank=True, upload_to=UPLOAD_TO)
-    start = models.DateField(_('From'), default=timezone.now)
+    start = models.DateField(_('Start date'), default=timezone.now)
     end = models.DateField(_('Year'), default=timezone.now)
     bio = RichTextField(blank=True, null=True)
     active = models.BooleanField(default=True)
@@ -335,6 +364,7 @@ class LscdsExec(models.Model):
         return str(self.user)
     class Meta:
         verbose_name_plural = _("Execs and Alumni")
+        ordering = ['start','user__first_name']
     
     def send_email(self,event):
         action="send"
@@ -350,11 +380,14 @@ class MailingList(models.Model):
         )
       first_name = models.CharField(_('first name'), max_length=30)
       last_name = models.CharField(_('last name'), max_length=30)
+      newsletter_only = models.BooleanField(default=False,blank=True)
       def __unicode__(self):
         return u'%s %s ' % (self.first_name, self.last_name)
+      def get_full_name(self):
+        # The user is identified by their email address
+        return u'%s %s ' % (self.first_name, self.last_name)
 
-
-      
+      get_full_name.allow_tags = True
       
       
       

@@ -20,7 +20,7 @@ Your records show that you are not a trainee at the University of
 <table class="table table-bordered">
 <tbody>
 <tr>
-<td>Payment for</td><td>{{event.name}}</td>
+<td>Payment for</td><td>{% firstof event.name  "Anual Membership" %}</td>
 </tr>
 <tr><td>Amount</td><td>{{amount}}</td></tr>
 </tbody>

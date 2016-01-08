@@ -70,8 +70,10 @@ def email_preview(request):
              message = form.cleaned_data['message']
              event = form.cleaned_data['event']
             
-             user_id = data['example'];
-             model =  data['model'];
+             user_id = data.get('example',None);
+             if not user_id:
+                 user_id = request.user.id             
+             model =  data.get('model',None);
              if model == 'LscdsExecAdmin':           
                  execu = LscdsExec.objects.get(pk=user_id)
                  user = execu.user

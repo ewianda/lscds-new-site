@@ -30,7 +30,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import ugettext as _, ugettext, ugettext_lazy as _
-from event.models import Registration, RoundTable, RoundTableRegistration
+from event.models import CDPanels,RoundTable,Registration,Event, RoundTableRegistration,CDRegistration
 from form_utils.forms import BetterModelForm
 from lscdsUser.models import LscdsUser, UHNEmail, OldlscdsUser, MailingList
 
@@ -91,6 +91,7 @@ class MailingListForm(forms.ModelForm):
 
     class Meta:
                model = MailingList
+               exclude=('newsletter_only',)
                
                
     def send_email(self, verify_key):
@@ -241,10 +242,91 @@ RegistrationFormSet = inlineformset_factory(LscdsUser, Registration)
 
 class TableOneChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        return "%s , (spots remaining:%s)" % (obj.guest, obj.session_spot(session=1))
+        return "%s , (spots remaining:%s)" % (obj, obj.session_spot(session=1))
 class TableTwoChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        return "%s , (spots remaining:%s)" % (obj.guest, obj.session_spot(session=2))
+        return "%s , (spots remaining:%s)" % (obj, obj.session_spot(session=2))
+    
+    
+    
+class CDRegistrationForm(forms.Form):
+     session_1 = TableOneChoiceField(CDPanels.objects.all())
+     session_2 = TableTwoChoiceField(CDPanels.objects.all())
+     event = forms.CharField(widget=forms.HiddenInput())
+     event_id = forms.CharField(widget=forms.HiddenInput())  
+     
+     def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event', None)
+        self.action = ''
+        self.request = kwargs.pop('request', None)
+        super(CDRegistrationForm, self).__init__(*args, **kwargs)
+         # Bootstrap stuff for crispy forms
+        self.helper = FormHelper(self)
+        self.helper.form_method = 'post'
+        self.helper.layout.append(FormActions(
+            Div(Hidden('registration', '1'), Submit('panel', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
+            Div(Submit('delete', 'Delete Registration', css_class=' btn-danger pull-left'),
+                                    css_class='row margin-bottom-30 ')
+                               ))
+     
+        # Filter events for a given user
+        if self.event:
+           panels = self.event.get_cd_pannels()
+         # Add round table choices for this particular event
+           self.fields['session_1'].queryset = panels
+           self.fields['session_2'].queryset = panels
+     
+     def clean_session_2(self):
+        # Check that the two password entries match
+        session_1 = self.cleaned_data.get("session_1")
+        session_2 = self.cleaned_data.get("session_2")
+        if session_1 and  session_2  and session_1 == session_2:
+            raise forms.ValidationError("You must select different session") 
+        
+        cd = CDRegistration.objects.filter(student=self.request.user, cd_pannel=session_2, session=2)
+        if not session_2.registration_open(session=2) and cd.count() == 0:
+            raise forms.ValidationError("This table is full")    
+               
+        return session_2
+    
+     def clean_session_1(self):
+        # Check that the two password entries match
+        session_1 = self.cleaned_data.get("session_1")
+        cd = CDRegistration.objects.filter(student=self.request.user, cd_pannel=session_1, session=1)
+        if not session_1.registration_open(session=1) and cd.count() == 0:
+            raise forms.ValidationError("This table is full")        
+        return session_1
+     def save(self):
+          session_1 = self.cleaned_data.get("session_1")
+          session_2 = self.cleaned_data.get("session_2")
+          panel1, panel2 = CDPanels.objects.get_user_panels(self.request.user, self.event)           
+          if panel1 and panel2: 
+              reg1 = panel1[0] 
+              reg2 = panel2[0]               
+              if  reg1 != session_1:          
+                old_reg = CDRegistration.objects.filter(student=self.request.user, cd_pannel=reg1, session=1)
+                old_reg.delete()   
+                self.action = "modify"
+              if reg2 != session_2:         
+                old_reg = CDRegistration.objects.filter(student=self.request.user, cd_pannel=reg2, session=2)
+                old_reg .delete()
+                self.action = "modify"
+          rt_1, cr1 = CDRegistration.objects.get_or_create(student=self.request.user, cd_pannel=session_1, session=1)
+          rt_2, cr2 = CDRegistration.objects.get_or_create(student=self.request.user, cd_pannel=session_2, session=2)       
+          rt_1.save()
+          rt_2.save()   
+     def send_mail(self):
+                # Get the site information for sending emails.
+         from django.contrib.sites.models import Site       
+         if Site._meta.installed:
+                site = Site.objects.get_current()
+         else:
+                site = RequestSite(request)
+         rt1, rt2 = CDPanels.objects.get_user_panels(self.request.user, self.event)
+         if self.action == "modify":         
+            self.request.user.send_event_register_mail("modify", self.event, site, request=self.request, session=[rt1[0], rt2[0]])          
+         else:
+            self.request.user.send_event_register_mail("register", self.event, site, request=self.request, session=[rt1[0], rt2[0]]) 
 
 class NetWorkForm(forms.Form):
      round_table_1 = TableOneChoiceField(RoundTable.objects.all())
@@ -323,9 +405,9 @@ class NetWorkForm(forms.Form):
                 site = RequestSite(request)
          rt1, rt2 = RoundTable.objects.get_user_rountable(self.request.user, self.event)
          if self.action == "modify":         
-            self.request.user.send_event_register_mail("modify", self.event, site, request=self.request, round_table=[rt1[0], rt2[0]])          
+            self.request.user.send_event_register_mail("modify", self.event, site, request=self.request, session=[rt1[0].guest, rt2[0].guest])          
          else:
-            self.request.user.send_event_register_mail("register", self.event, site, request=self.request, round_table=[rt1[0], rt2[0]])          
+            self.request.user.send_event_register_mail("register", self.event, site, request=self.request, session=[rt1[0].guest, rt2[0].guest])          
          
 
 class UHNVerificationForm(forms.Form):
@@ -334,23 +416,27 @@ class UHNVerificationForm(forms.Form):
      email = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', "placeholder":"enter ID", 'autocomplete':'off' }), label='enter ID')
 
      def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")  
         super(UHNVerificationForm, self).__init__(*args, **kwargs)
          # Bootstrap stuff for crispy forms
+        
         self.helper = FormHelper(self)
         self.helper.form_method = 'post'
         self.helper.layout.append(FormActions(
-         Submit('round_table_delete', 'Send verification email'))
+         Submit('session_delete', 'Send verification email'))
                                )
      def clean_email(self):
          email = self.cleaned_data.get('email', '')
          choice = self.cleaned_data.get('choice', '')
-         full_email = str(email) + '@' + str(choice)         
-         uhn_email1 = LscdsUser.objects.filter(uhn_email=full_email, is_u_of_t=True)
+         full_email = str(email) + '@' + str(choice)    
+         if full_email in [self.request.user.email ,self.request.user.uhn_email]:
+            return email    
+         uhn_email1 = LscdsUser.objects.filter(uhn_email=full_email)
          uhn_email2 = LscdsUser.objects.filter(email=full_email)
          if "@" in email:
             raise forms.ValidationError("ID should not contain '@'")
-         if uhn_email1.count() > 0 or uhn_email2.count() > 0:
-             raise forms.ValidationError("This email is verified as active. Contact web site admin for further assistance")
+         if uhn_email1.count() > 0 or uhn_email2.count() > 0:                               
+                raise forms.ValidationError("This email is verified as active. Contact web site admin for further assistance")
          return email
 
 

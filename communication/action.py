@@ -13,7 +13,8 @@ import hashlib
 import random
 import re
 from lscdsUser.models import LscdsExec
-
+from event.models import EventType, Registration, Event, RoundTable, \
+    RoundTableRegistration,CDPanels,CDRegistration
 import logging
 
 def send_EMAIL(modeladmin, request, queryset):
@@ -66,8 +67,11 @@ def send_EMAIL(modeladmin, request, queryset):
                     # Check if this for session registration i.e for NR and CD events
                     if hasattr(q,"student"):
                        user = q.student
-                       rt1,rt2=RoundTable.objects.get_user_rountable(user,event)              
-                       c =Context({'rt1':rt1[0].guest,'rt2':rt2[0].guest,'event':event,'site':site,"user":user})
+                       panel1, panel2 = CDPanels.objects.get_user_panels(user, event)   
+                       if panel1 and panel2: 
+                         session1 = panel1[0] 
+                         session2 = panel2[0]   
+                         c =Context({'session_1':session1,'session_2':session2,'event':event,'site':site,"user":user})
                        
                     # Check if this is for Seminar series events
                     elif hasattr(q,"owner"):
@@ -114,15 +118,18 @@ def send_EMAIL(modeladmin, request, queryset):
                     # Render the fields in the message  
                     render_message= t.render(c)                                      
                     content = {"user":user,"message":render_message,'site':site}   
-                                       
+                    logging.error(type(render_message))                  
                     txt=render_to_string(cont_txt,content)
                     html=render_to_string(cont_html,content)
+                    #logging.error(type(html))
+                    
                     email_message.body=txt
                     email_message.html = html
                     email = user.user.email if hasattr(user,"user") else user.email
+                    params = {'email':email,'from_email':from_email,'subject':subject,'html':html,'txt':txt}
+                    #taskqueue.add(url='/worker2/', params=params)
                     email_message.to = email
                     email_message.send()
-                    #logging.error("Mail sent successfully")            
                 modeladmin.message_user(request, "Email sent successfully sent to %s addresses" % (queryset.count()) )
               
             else:

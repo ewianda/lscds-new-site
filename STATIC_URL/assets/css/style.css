@@ -76,7 +76,7 @@ a:focus {
   text-decoration: none;
 }
 a:hover {
-   color: #72c02c;
+   color:#838C7B
    text-decoration: underline;
 }
 
@@ -2256,4 +2256,10 @@ img.img-mouse {
 /*Team v1*/
 .team-v1 li > h3 {
 	color: #555;
+}
+.headline h2, .headline h3, .headline h4 {
+    margin: 0 0 -2px 0;
+    padding-bottom: 5px;
+    display: inline-block;
+    border-bottom: 2px solid #CACCC8;
 }

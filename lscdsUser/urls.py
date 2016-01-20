@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
-from lscdsUser.forms import PasswordResetForm
+ 
 from lscdsUser.views import *
 
 admin.autodiscover()
@@ -29,11 +29,13 @@ urlpatterns = patterns('',
                            name='uhn_verify'),
      url(r'^profile-event/$', event_view, name='profile-event'),
      url(r'^cd-registration/$', cd_registration, name='cd-registration'),
+     url(r'^seminar-series-registration/$', ss_registration, name='ss-registration'),
+     url(r'^network-reception-registration/$', nr_registration, name='nr-registration'),
      url(r'^profile-event-registration/$', registration_view, name='profile-event-registration'),
      url(r'^profile-notification/$', login_required(TemplateView.as_view(template_name="profile-notification.html")),
                                                     name='profile-notification'),
 
-    url(r'^profile/$', UserUpdateView.as_view(), name='profile-update'),
+    url(r'^profile/$', UserUpdateView.as_view(), name='profile'),
 
 
      url(r'^email/$', require_email, name='require_email'),
@@ -41,12 +43,13 @@ urlpatterns = patterns('',
      url(r'^accounts/password/reset/$',
                            auth_views.password_reset,
                            {'post_reset_redirect': reverse_lazy('auth_password_reset_done'), \
-                           'password_reset_form':PasswordResetForm},
+                           },
                            name='password_reset'),
                        
      url(r'^password/reset/confirm-3/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$',
-                           password_reset_confirm,
-                           {'post_reset_redirect': reverse_lazy('auth_password_reset_complete')},
+                           auth_views.password_reset_confirm,
+                           {'post_reset_redirect': reverse_lazy('auth_password_reset_complete'),\
+                           },
                            name='password_reset_confirm'),
                        
                                                

@@ -246,6 +246,9 @@ class QuerySet(object):
             # Add the known related objects to the model, if there are any
             if self._known_related_objects:
                 for field, rel_objs in self._known_related_objects.items():
+                    # Avoid overwriting objects loaded e.g. by select_related
+                    if hasattr(obj, field.get_cache_name()):
+                        continue
                     pk = getattr(obj, field.get_attname())
                     try:
                         rel_obj = rel_objs[pk]
@@ -342,7 +345,7 @@ class QuerySet(object):
             return objs
         self._for_write = True
         connection = connections[self.db]
-        fields = self.model._meta.local_fields
+        fields = self.model._meta.local_concrete_fields
         with transaction.commit_on_success_unless_managed(using=self.db):
             if (connection.features.can_combine_inserts_with_and_without_auto_increment_pk
                 and self.model._meta.has_auto_field):
@@ -1195,12 +1198,12 @@ def get_klass_info(klass, max_depth=0, cur_depth=0, requested=None,
         init_list = []
         # Build the list of fields that *haven't* been requested
         for field, model in klass._meta.get_concrete_fields_with_model():
-            if field.name not in load_fields:
-                skip.add(field.attname)
-            elif from_parent and issubclass(from_parent, model.__class__):
+            if from_parent and model and issubclass(from_parent, model):
                 # Avoid loading fields already loaded for parent model for
                 # child models.
                 continue
+            elif field.name not in load_fields:
+                skip.add(field.attname)
             else:
                 init_list.append(field.attname)
         # Retrieve all the requested fields

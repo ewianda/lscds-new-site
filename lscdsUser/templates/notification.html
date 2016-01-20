@@ -1,0 +1,31 @@
+ 
+<legend>Mailing List</legend>
+
+<div class='row margin-bottom-30  '>
+	<div style = "display:none"   class="alert alert-success alert-dismissible" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			Your setting was changed
+	</div>
+
+
+	<div class='row margin-bottom-30  '>
+		<div style = "display:none" class="alert alert-danger alert-dismissible" role="alert">
+  			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				There was an error
+		</div>
+	</div>
+
+	<ul class="list-inline col-sm-offset-3">
+		<li>
+  			<div class="btn-group btn-toggle"> 
+				<button class="btn   {% if user.mailinglist == True %}btn-success active {% endif %}">Yes</button>
+				<button class="btn  {% if user.mailinglist == False %}btn-success active {% endif %}">No</button>
+			</div>
+		</li>    
+	</ul>          
+
+ 
+</div> <!-- End of row-->
+
+ 
+ 

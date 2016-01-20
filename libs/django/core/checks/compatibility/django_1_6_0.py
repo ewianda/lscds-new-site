@@ -18,7 +18,7 @@ def check_test_runner():
         message = [
             "Django 1.6 introduced a new default test runner ('%s')" % new_default,
             "You should ensure your tests are all running & behaving as expected. See",
-            "https://docs.djangoproject.com/en/dev/releases/1.6/#discovery-of-tests-in-any-test-module",
+            "https://docs.djangoproject.com/en/dev/releases/1.6/#new-test-runner",
             "for more information.",
         ]
         return ' '.join(message)
@@ -43,8 +43,8 @@ def check_boolean_field_default_value():
             "%s." % fieldnames,
             "In Django 1.6 the default value of BooleanField was changed from",
             "False to Null when Field.default isn't defined. See",
-            "https://docs.djangoproject.com/en/1.6/ref/models/fields/#booleanfield"
-            "for more information."
+            "https://docs.djangoproject.com/en/1.6/ref/models/fields/#booleanfield",
+            "for more information.",
         ]
         return ' '.join(message)
 

@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
+
+{% load form_utils %}
+{% load lscds_tags %}
+
+
+ 
+	<div class='col-md-6'> 
+		<div id="msg" class="alert hide">
+		</div>
+			<table id="user" class="table table-bordered table-striped">
+				<tbody> 
+					 <tr> <td style="width: 100px"> Email:</td>  <td> {{ object.email}}   </td>  <tr> 
+						{% for field in form %}
+							<tr> 
+							{% if field|is_select %}
+								<td style="width: 100px">     {{ field.errors }}
+									{{ field.label_tag }}</td>
+								<td> <a href="#" class="myeditable" data-pk={{user.pk}} data-value={{field.value}}  data-type="select" data-name="{{field.name}}" data-source ='{{field|select_options}}'>{{ field|value_text}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
+
+							{% elif field|is_checkbox %}
+ 								<td style="width: 100px">     {{ field.errors }}
+									{{ field.label_tag }}</td>
+								<td> <a href="#" class="myeditable" data-pk={{user.pk}}  data-type="select" data-value={{field.value}}  data-name="{{field.name}}" data-source ='[{value:"True","text":"Yes"},{value:"False","text":"No"}]'>{{ field}}  </a><i class="icon-pencil pencil-input-change"></i> </td>
+							{% else %}
+							
+							{% endif %}
+							</tr> 
+						{% endfor %}
+
+				</tbody>
+			</table>		 
+	</div><!-- End of col-6  -->  
+
+ 
+

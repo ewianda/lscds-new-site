@@ -6,13 +6,18 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.core.exceptions import ImproperlyConfigured
 #import autocomplete_light
-
-
+from rest_framework import routers
+from api import apiviews
 #autocomplete_light.autodiscover()
 admin.autodiscover()
 
 
+router = routers.DefaultRouter()
+router.register(r'users', apiviews.UserViewSet)
+
 urlpatterns = patterns('',
+    url(r'^api/', include(router.urls)),                  
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),                  
     url(r'', include('communication.urls')),                  
     url(r'', include('alumni.urls')),                   
     url(r'', include('home.urls')),

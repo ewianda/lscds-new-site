@@ -64,11 +64,14 @@ class EventQuerySet(QuerySet):
                          exclude(event_round_table__round_table_registrations__student=user)
 
     def user_events(self,user):
-        return self.filter(event_type_id=3,starts__gte = timezone.now(),status="publish",registrations__owner=user)
+        return self.filter(starts__gte = timezone.now(),status="publish",registrations__owner=user).\
+                     exclude(event_type_id=4)
                            
 
     def user_open_events(self,user):
-        return self.filter(event_type_id=3,starts__gte = timezone.now(),status="publish").exclude(registrations__owner=user)
+        return self.filter(starts__gte = timezone.now(),status="publish").exclude(registrations__owner=user).\
+                    exclude(event_type_id=4)
+    
     def user_event_history(self,user):
         return self.filter(Q(registrations__owner=user)|Q(event_round_table__round_table_registrations__student=user)).\
                           filter(starts__lte = timezone.now(),status="publish").\
@@ -158,10 +161,12 @@ class Event(models.Model):
     def get_absolute_url(self):
         return 'event:event-detail', (), {'slug': self.slug}
     def get_registration_url(self):
-        if self.event_type.pk ==2:            
+        if self.event_type.pk ==1:            
+           return reverse('nr-registration')
+        elif self.event_type.pk ==2:            
            return reverse('cd-registration')
         else:
-           return reverse('profile-event-registration') 
+           return reverse('ss-registration') 
     @property
     def registration_open_non_u_of_t(self): 
            if self.none_u_of_t_limit==0 or self.registrations.filter(owner__is_u_of_t=False).count()<self.none_u_of_t_limit:

@@ -1,20 +1,21 @@
-{% if object %}
-{% with object|first as e %}
-<h4>{{e.event_type}}</h4>
-{% endwith %}
- {% for event in  object %}
- <form class="registration"  action="{{ event.get_registration_url }}" method="post">
-                <table  class='table table-bordered'>
-                    <tbody> 
-                       
-
-                        <tr>  <td>  <strong>{{event.name}} </strong> {% csrf_token %}
+{% if registered_list %}
+  <div class="row"> 
+ {% for event in  registered_list %}
+   <div style='padding:0px;' class="col-xs-12"> <hr style='margin: 0;border-top: 4px solid #eee;'></div>
+ <div class="col-md-8 col-xs-12"> 
+ <P><strong> {{ event.name }}</strong> : {{ event.starts|date }}   </P>
+  <P>{{event.break_location|safe}}</P>
+</div>
+ 
+ 
+ <div class="col-md-4 col-xs-12" > 
+ <form class="registration"  action="{{ event.get_registration_url }}" method="post"> 
+                      {% csrf_token %}
                                 <input type="hidden" name="event_id" value="{{event.pk}}"> </td> 
-                            <td> <button type="submit" class="btn btn-danger pull-right">Modify or Unregister</button></td>
-                        </tr>                       
-                    </tbody>
-                </table> 
+                             <button type="submit" class="btn btn-danger btn-block ">Modify or Unregister</button>        
             </form>
-            
-  {% endfor %}           
+                </div>        
+  {% endfor %} 
+  
+  </div>          
  {% endif %}

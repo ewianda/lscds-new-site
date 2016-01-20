@@ -36,7 +36,7 @@ from event.models import EventType, Registration, Event, RoundTable, \
     RoundTableRegistration,CDPanels,CDRegistration
 from lscdsUser.forms import UserCreationForm, UHNVerificationForm, \
     SocialExtraDataForm, UserProfileForm, RegistrationFormSet, NetWorkForm, CDRegistrationForm,\
-    UploadAvatarForm, SetPasswordForm, MailingListForm, WebUnsubscribeForm
+    UploadAvatarForm,  MailingListForm, WebUnsubscribeForm
 from lscdsUser.models import LscdsUser, LscdsExec, OldlscdsUser, MailingList
 from lscds_site.decorators import render_to
 from registration import signals
@@ -46,7 +46,12 @@ from social.apps.django_app.utils import psa
 from social.backends.google import GooglePlusAuth
 from social.backends.oauth import BaseOAuth1, BaseOAuth2
 from social.backends.utils import load_backends
+from django.contrib.auth.forms import PasswordChangeForm
 
+if Site._meta.installed:
+     site = Site.objects.get_current()
+else:
+     site = RequestSite(request)
 
 # Create your views here.
 # Avoid shadowing the login() and logout() views below.
@@ -109,77 +114,7 @@ def unsubscribe(request, first_name=None, last_name=None, pk=None):
     sub = get_object_or_404(MailingList, pk=pk, first_name=first_name, last_name=last_name)
     sub.delete()
     return render(request, 'mailinglist/unsubscribe.html', {"success":False})
-"""
-This is copied from django 1.6 docs and modified to suit this site
-"""
-# Doesn't need csrf_protect since no-one can guess the URL
-@sensitive_post_parameters()
-@never_cache
-def password_reset_confirm(request, uidb64=None, token=None,
-                           template_name='registration/password_reset_confirm.html',
-                           token_generator=default_token_generator,
-                           set_password_form=SetPasswordForm,
-                           post_reset_redirect=None,
-                           current_app=None, extra_context=None):
-    """
-    View that checks the hash in a password reset link and presents a
-    form for entering a new password.
-    
-    """
-    UserModel = get_user_model()
-    assert uidb64 is not None and token is not None  # checked by URLconf
-    if post_reset_redirect is None:
-        post_reset_redirect = reverse('password_reset_complete')
-    else:
-        post_reset_redirect = resolve_url(post_reset_redirect)
-    try:
-        uid = urlsafe_base64_decode(uidb64)
-        user = UserModel._default_manager.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, UserModel.DoesNotExist):
-        user = None
-    """
-    Modification for old LSCDS users
-    """
-    if not user:    
-        try:
-            uid = urlsafe_base64_decode(uidb64)
-            user = OldlscdsUser.objects.get(pk=uid)
-            if not user.last_login:
-                user.last_login = timezone.now()
-            if not user.password:
-                user.set_password('user.email')
-            user.save()  
-        except (TypeError, ValueError, OverflowError, OldlscdsUser.DoesNotExist):
-            user = None
-
-    if user is not None and token_generator.check_token(user, token):
-        validlink = True
-        title = _('Enter new password')
-        if request.method == 'POST':
-            form = set_password_form(user, request.POST)
-            if form.is_valid():
-                form.save()
-                return HttpResponseRedirect(post_reset_redirect)
-        else:
-            form = set_password_form(user)
-    else:
-        validlink = False
-        form = None
-        title = _('Password reset unsuccessful')
-    context = {
-        'form': form,
-        'title': title,
-        'validlink': validlink,
-    }
-    if extra_context is not None:
-        context.update(extra_context)
-
-    if current_app is not None:
-        request.current_app = current_app
-
-    return TemplateResponse(request, template_name, context)
-
-
+ 
 
 
 @csrf_exempt
@@ -286,7 +221,80 @@ def event_view(request):
                'event_history':event_history, "now": timezone.now()}
     return render(request, 'profile-event.html', context)
 
+class UserUpdateView(UpdateView):
+    """
+    Class that only allows authentic user to update their profile
+    Composed of first_name,last_name,date_of_birth,gender,
+    """
+    model = LscdsUser
+    form_class = UserProfileForm
+    template_name = "profile.html"
+    success_url = "."
+    def get_object(self, queryset=None):
+        return self.request.user
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(UserUpdateView, self).dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(UserUpdateView, self).get_context_data(**kwargs)
+        user = self.object
+        e = Event.objects.all()
+        context['registered_list'] = Event.objects.user_events(user)
+        context['not_registered_list'] = Event.objects.user_open_events(user)
+        context['event_history']= Event.objects.user_event_history(user)
+        context['pwd_change_form']= PasswordChangeForm(user)
+        context['now'] = timezone.now()
+        return context
+    
+    
+def nr_registration(request): # Network reception registration
+    if 'round_table_delete' in request.POST:
+       event_id = request.POST.get('event_id')
+       event = get_object_or_404(Event , pk=event_id)
+       form = NetWorkForm(request.POST, event=event, request=request)
+       if form.is_valid():
+          event_id = form.cleaned_data['event_id']
+          round_table_1 = form.cleaned_data['round_table_1']
+          round_table_2 = form.cleaned_data['round_table_2']
+          rt_1 = get_object_or_404(RoundTableRegistration, student=request.user, round_table=round_table_1)
+          rt_2 = get_object_or_404(RoundTableRegistration, student=request.user, round_table=round_table_2)
+          rt_1.delete()
+          rt_2.delete()
+          request.user.send_event_register_mail("delete", event, site, request)
+          return HttpResponsePermanentRedirect(reverse('profile-event'))
+       else:
+            return render(request, 'profile-event-registration.html', {'form':form})
 
+
+
+
+def ss_registration(request): # Seminar series registration and Mini network regitation   
+    event_id = request.POST.get('event_id',None)
+    event = get_object_or_404(Event , pk=event_id)
+    try:
+          regs = Registration.objects.get(owner=request.user, event=Event(pk=event_id))
+          regs.delete()
+          request.user.send_event_register_mail("delete", event, site, request)
+          return HttpResponsePermanentRedirect(reverse('profile'))
+    except Registration.DoesNotExist:
+            if not request.user.has_membership  and event.has_fee:
+               request.session['event_id'] = event_id  
+               request.session['session_1'] = 'dummy'
+               request.session['session_2'] = 'dummy'             
+               return HttpResponsePermanentRedirect(reverse('paypal:payment'))
+            else:
+               registration, create = Registration.objects.get_or_create(owner=request.user, event=Event(pk=event_id))
+               if create:
+                  registration.save()
+                  request.user.send_event_register_mail("register", event, site, request)
+                  return HttpResponsePermanentRedirect(reverse('profile'))
+
+
+def cd_registration(request): # Carrier day registration
+    
+ pass
 
 @csrf_exempt
 @login_required
@@ -308,13 +316,13 @@ def first_login(request):
                 for name, value in form.cleaned_data.items():                   
                     setattr(new_user, name, value)
                 new_user.save()                               
-           return HttpResponseRedirect(reverse('profile-event')) 
+           return HttpResponseRedirect(reverse('profile')) 
                # LscdsUser.objects.create_user()
         else:
                 form = SocialExtraDataForm()  # An unbound form    
         return render(request, 'old_lscdsusers.html', {'form': form, }) 
     else:
-        return HttpResponsePermanentRedirect(reverse('profile-event')) 
+        return HttpResponsePermanentRedirect(reverse('profile')) 
  
 @login_required
 def cd_registration(request):
@@ -482,20 +490,8 @@ def registration_view(request):
     else:
        return HttpResponsePermanentRedirect(reverse('profile-event'))
 
-class UserUpdateView(UpdateView):
-    """
-    Class that only allows authentic user to update their profile
-    Composed of first_name,last_name,date_of_birth,gender,
-    """
-    model = LscdsUser
-    form_class = UserProfileForm
-    template_name = "profile-settings.html"
-    success_url = "."
-    def get_object(self, queryset=None):
-        return self.request.user
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(UserUpdateView, self).dispatch(*args, **kwargs)
+
+    
 
 
 class LSCDSActivationView(ActivationView):

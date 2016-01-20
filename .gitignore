@@ -11,6 +11,7 @@ lscd_user
 *.swp
 dev
 env
+*.sql
 *.sh
 <<<<<<< HEAD
 

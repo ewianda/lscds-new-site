@@ -12,6 +12,7 @@ from django.http import QueryDict, HttpRequest
 from django.utils.encoding import force_text
 from django.utils.http import int_to_base36, urlsafe_base64_decode, urlquote
 from django.utils.six.moves.urllib.parse import urlparse, ParseResult
+from django.utils.importlib import import_module
 from django.utils._os import upath
 from django.test import TestCase
 from django.test.utils import override_settings, patch_logger
@@ -443,8 +444,10 @@ class LoginTest(AuthViewsTestCase):
 
         # Those URLs should not pass the security check
         for bad_url in ('http://example.com',
+                        'http:///example.com',
                         'https://example.com',
                         'ftp://exampel.com',
+                        '///example.com',
                         '//example.com',
                         'javascript:alert("XSS")'):
 
@@ -466,8 +469,8 @@ class LoginTest(AuthViewsTestCase):
                          '/view/?param=https://example.com',
                          '/view?param=ftp://exampel.com',
                          'view/?param=//example.com',
-                         'https:///',
-                         'HTTPS:///',
+                         'https://testserver/',
+                         'HTTPS://testserver/',
                          '//testserver/',
                          '/url%20with%20spaces/'):  # see ticket #12534
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
@@ -659,8 +662,10 @@ class LogoutTest(AuthViewsTestCase):
 
         # Those URLs should not pass the security check
         for bad_url in ('http://example.com',
+                        'http:///example.com',
                         'https://example.com',
                         'ftp://exampel.com',
+                        '///example.com',
                         '//example.com',
                         'javascript:alert("XSS")'):
             nasty_url = '%(url)s?%(next)s=%(bad_url)s' % {
@@ -680,8 +685,8 @@ class LogoutTest(AuthViewsTestCase):
                          '/view/?param=https://example.com',
                          '/view?param=ftp://exampel.com',
                          'view/?param=//example.com',
-                         'https:///',
-                         'HTTPS:///',
+                         'https://testserver/',
+                         'HTTPS://testserver/',
                          '//testserver/',
                          '/url%20with%20spaces/'):  # see ticket #12534
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
@@ -695,6 +700,19 @@ class LogoutTest(AuthViewsTestCase):
             self.assertTrue(good_url in response.url,
                             "%s should be allowed" % good_url)
             self.confirm_logged_out()
+
+    def test_logout_preserve_language(self):
+        """Check that language stored in session is preserved after logout"""
+        # Create a new session with language
+        engine = import_module(settings.SESSION_ENGINE)
+        session = engine.SessionStore()
+        session['django_language'] = 'pl'
+        session.save()
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
+
+        self.client.get('/logout/')
+        self.assertEqual(self.client.session['django_language'], 'pl')
+
 
 @skipIfCustomUser
 @override_settings(
@@ -764,3 +782,15 @@ class ChangelistTests(AuthViewsTestCase):
         self.assertEqual(row.change_message, 'Changed password.')
         self.logout()
         self.login(password='password1')
+
+    def test_user_change_different_user_password(self):
+        u = User.objects.get(email='staffmember@example.com')
+        response = self.client.post('/admin/auth/user/%s/password/' % u.pk, {
+            'password1': 'password1',
+            'password2': 'password1',
+        })
+        self.assertRedirects(response, '/admin/auth/user/%s/' % u.pk)
+        row = LogEntry.objects.latest('id')
+        self.assertEqual(row.user_id, self.admin.pk)
+        self.assertEqual(row.object_id, str(u.pk))
+        self.assertEqual(row.change_message, 'Changed password.')

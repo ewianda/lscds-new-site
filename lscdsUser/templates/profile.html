@@ -1,19 +1,51 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags %} 
+{% load future %}
+{% load staticfiles %}
+{% load static %}
+{% load url from future %}
 
 {% load form_utils %}
 {% load lscds_tags %}
+ 
+
 
 {% block title %} Account Profile{% endblock %}
 
 
 {% block main %}
-
-
-<h3>Hi {{user.get_full_name}} {% if request.user.is_staff %}<br>    <a href="{% url  'admin:index'  %}" > Go to admin page </a> {% endif %}  </h3>
-
-    {% if messages %}
+<div class='row'> 
+<div class="col-md-12" style="padding-bottom: 30px;">
+ <ins class="adsbygoogle"
+        style="display:block;width:100%"
+        data-ad-client="ca-pub-7042664722043634"
+        data-ad-slot="2027567907"
+        data-ad-format="auto">
+    </ins>    
+    </div>  
+    
+    
+ 
+<div class="col-md-3">
+<div class="sidebar-nav">
+    <div class="well" style="width:300px; padding: 8px 0;">
+		<ul class="nav nav-list"> 
+		   <li class=" nav-header"><data-toggle="tab" href="#user"><i class="icon-user"></i> {{user.get_full_name}}</a></li>       
+		  {% if request.user.is_staff %} <li class="active"> <a href="{% url  'admin:index'  %}" > Go to admin page </a></li> {% endif %} 
+		
+		  <li><a data-toggle="tab" href="#event"><i class="icon-home"></i> Events</a></li>	
+          <li class="divider"></li>
+          	  <li><a data-toggle="tab" href="#profile"><i class="icon-home"></i> Update profile</a></li>	
+		  <li><a data-toggle="tab" href="#notification"><i class="icon-comment"></i> Notification Settings</a></li>
+		  <li><a data-toggle="tab" href="#password"><i class="icon-share"></i> Change Password</a></li>
+		</ul>
+	</div>
+</div>
+</div>
+<div  class="col-md-9 ">
+<div style='padding:0 0 0 50px' class="tab-content" >
+ {% if messages %}
         {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">  <!-- singular -->
                 <a class="close" data-dismiss="alert">×</a>
@@ -21,17 +53,19 @@
             </div>
         {% endfor %}
     {% endif %}
-
+    
+    
 {% if user.is_verified %}
-<div class='row margin-bottom-30  '>
+<div class='row'>
 <div class="alert alert-info alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 Your record shows that you are currently a University of Toronto student or at one of the University Health
 Network hospitals. You are requested to verify your status each academic year starting September. Note that
-event registration is free for  University of Toronto students and  affiliated institutions.</div>
+event registration is free for  University of Toronto students and  affiliated institutions.
+</div>
 </div>
 {% else %}
-<div class='row margin-bottom-30  '>
+<div class='row '>
 <div class="alert alert-warning alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
  Our records show that you are not a trainee at the University of Toronto or its affiliated institutions.
@@ -41,30 +75,223 @@ event registration is free for  University of Toronto students and  affiliated i
   2)  <a  href="{% url 'paypal:membership-payment' %}"> purchase an annual membership </a> to attend all LSCDS events in the current academic year 
 </div>
 </div>
-{% endif %}
+{% endif %} 
 
-<div class="tab-v1">
-
- <ul class="nav nav-justified nav-tabs">
-     <li><a href="{% url 'profile-event' %}">Event Registration</a></li>
-     <li><a  href="{% url 'profile-update' %}">Update Profile</a></li>
-    <li><a  href="{% url 'profile-notification' %}">Notification Settings</a></li>
-    <li><a href="{% url 'auth_password_change' %}">Change Password</a></li>
-        </ul>  
-        <div class='container' style='padding-top:50px;'>
-{% block profile_block %}
+<div id='event'  class="profile-edit tab-pane fade in active">
+ 
+{% include "event.html" %}
+</div>
 
 
+<div id='profile'  class="profile-edit tab-pane fade">
+{% include "profile-details.html" %}
+</div>
 
-{% endblock %}
+<div id='notification'  class="profile-edit tab-pane fade">
+{% include "notification.html" %}
+</div>
+
+
+<div id='password' class="profile-edit tab-pane fade">
+
+    <form method="post" action="">
+        {% csrf_token %} {% crispy pwd_change_form %}
+
+    </form>
 </div>
 
 </div>
+</div>
+</div>
 
+
+
+  
+ <div id="registration" class="modal">
+	<div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <a href="#" data-dismiss="modal" aria-hidden="true" class="close">×</a>
+             <h3>Registration policy</h3>
+        </div>
+        <div class="modal-body">
+             <p>By clicking this box, I understand that in order to confirm 
+             that I have registered successfully, I must receive a confirmation 
+             email and provide proof if necessary at the time of event attendance.
+             </p>
+             <p>If you do not receive
+              confirmation email, please contact: lscds.uoft[at]gmail.com</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" id="btnYes" class="btn confirm">I Understand</a>
+          <a href="#" data-dismiss="modal" aria-hidden="true" class="btn secondary">No</a>
+        </div>
+      </div>
+    </div>
+</div>
+ 
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
 
 {% block javascript %}
+<script type="text/javascript">
+jQuery(document).ready(function() {
 
+$('.btn').click(function() {
+    //$(this).find('.btn').toggleClass('active');    
+    //if ($(this).find('.btn-success').size()>0) {
+    //	$(this).find('.btn').toggleClass('btn-success');
+    //}  
+    
+    //$(this).find('.btn').toggleClass('btn-default');
+
+    
+    $.ajax({
+    url: '/ajax_mailing_list/',
+    data:{"data":$(this).text()},
+    type: 'post', //this is the default though, you don't actually need to always mention it
+    success: function(data) {
+      if (data == "success"){ 
+        $(".alert.alert-success").show()
+        $('.btn').toggleClass('btn-success');
+        }
+      else { $(".alert.alert-danger").show()
+      }
+      
+       
+    },
+    error: function(data) { 
+       $(".alert.alert-danger").show()
+    }
+      }); 
+       
+});
+
+$('.registr').on('submit',function(e){
+e.preventDefault()
+var url = $(this).attr('action')
+$.ajax({
+type: "POST",
+url: url,
+data: $(this).serialize(), // serializes the form's elements.
+success: function(data)
+{
+//alert(data); // show response from the php script.
+
+}
+}); /// end ajax call
+}); // end form submission
+
+// In line editting
+$.fn.editable.defaults.mode = 'inline';
+$('.myeditable').editable({
+placement: 'right',
+url:'/profile/', 
+validate: function(v) {
+   if(!v) return 'Required field!';
+   },
+params: function(params) {
+//originally params contain pk, name and value
+newParams = {}
+$('a.myeditable').each(function(){
+  newParams[$(this).attr('data-name')]=$(this).attr('data-value')                     
+  })
+newParams[params.name]=params.value
+newParams.pk = params.pk;
+    return newParams;
+}   
+   
+});// End editable
+
+$('.icon-pencil').click(function(e){    
+       e.stopPropagation();
+      //$(this).closest($('.myeditable').editable('toggle'));
+    $var = $(this).closest('td').find('.editable')
+    $var.editable('toggle')
+    console.log($var)
+    $('.icon-pencil').hide();
+});
+// Show the pencil on click
+  $(document).on('click', '.editable-cancel, .editable-submit', 'body', function(){
+        $('.icon-pencil').show();
+        }) 
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (settings.type == 'POST' || settings.type == 'PUT' || settings.type == 'DELETE') {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    }
+});
+
+ }); // End of doccument ready
+ 
+ </script>
+ <script type="text/javascript">
+
+$(document).ready(function() {
+$('#registration').on('show', function(e) {
+  //  var link = $(this).data('link'),
+   //     confirmBtn = $(this).find('.confirm');
+ 
+          $('#registration').focus()
+        
+})
+
+//We need to capture the right form to submit by using its ID
+$('#registration').on('show.bs.modal', function(e) {
+  var formId = $(e.relatedTarget).data('id');
+  $("#btnYes").attr('data-id',formId)
+ 
+
+})
+
+$('#btnYes').click(function() {
+  
+    // handle form processing here
+  	   $('#registration').modal('toggle')
+     var formID = $(this).data('id')
+   // $("#EventForm").submit();
+     $('#'+formID).submit()
+     console.log($('#'+formID).length)
+
+  
+});
+
+}) // end document ready
+  </script>
+ 
+ 
 
 {% endblock %}
 

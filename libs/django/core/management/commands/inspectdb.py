@@ -42,7 +42,7 @@ class Command(NoArgsCommand):
         yield "# You'll have to do the following manually to clean this up:"
         yield "#   * Rearrange models' order"
         yield "#   * Make sure each model has one field with primary_key=True"
-        yield "#   * Remove `managed = False` lines for those models you wish to give write DB access"
+        yield "#   * Remove `managed = False` lines if you wish to allow Django to create and delete the table"
         yield "# Feel free to rename the models, but don't rename db_table values or field names."
         yield "#"
         yield "# Also note: You'll have to insert the output of 'django-admin.py sqlcustom [appname]'"
@@ -202,7 +202,7 @@ class Command(NoArgsCommand):
             field_type = 'TextField'
             field_notes.append('This field type is a guess.')
 
-        # This is a hook for DATA_TYPES_REVERSE to return a tuple of
+        # This is a hook for data_types_reverse to return a tuple of
         # (field_type, field_params_dict).
         if type(field_type) is tuple:
             field_type, new_params = field_type

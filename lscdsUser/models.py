@@ -390,12 +390,18 @@ class MailingList(models.Model):
       get_full_name.allow_tags = True
       
       
-      
-      
-      
-      
-      
-      
+'''    
+for ou in  OldlscdsUser.objects.iterator():    
+    nu,created =   LscdsUser.objects.get_or_create(email =ou.email )
+    print created
+    if created:
+        
+        nu.last_name = ou.last_name
+        nu.first_name = ou.first_name
+        nu.data_joined = ou.date_joined
+        nu.set_password(unidecode(ou.first_name)+unidecode(ou.last_name)+str(ou.date_joined))
+        nu.save()
+'''      
     
     
     

@@ -82,7 +82,12 @@ def save_instance(form, instance, fields=None, fail_message='saved',
     # Wrap up the saving of m2m data as a function.
     def save_m2m():
         cleaned_data = form.cleaned_data
-        for f in opts.many_to_many:
+        # Note that for historical reasons we want to include also
+        # virtual_fields here. (GenericRelation was previously a fake
+        # m2m field).
+        for f in opts.many_to_many + opts.virtual_fields:
+            if not hasattr(f, 'save_form_data'):
+                continue
             if fields and f.name not in fields:
                 continue
             if exclude and f.name in exclude:
@@ -118,8 +123,8 @@ def model_to_dict(instance, fields=None, exclude=None):
     from django.db.models.fields.related import ManyToManyField
     opts = instance._meta
     data = {}
-    for f in opts.concrete_fields + opts.many_to_many:
-        if not f.editable:
+    for f in opts.concrete_fields + opts.virtual_fields + opts.many_to_many:
+        if not getattr(f, 'editable', False):
             continue
         if fields and not f.name in fields:
             continue
@@ -168,8 +173,12 @@ def fields_for_model(model, fields=None, exclude=None, widgets=None,
     field_list = []
     ignored = []
     opts = model._meta
-    for f in sorted(opts.concrete_fields + opts.many_to_many):
-        if not f.editable:
+    # Avoid circular import
+    from django.db.models.fields import Field as ModelField
+    sortable_virtual_fields = [f for f in opts.virtual_fields
+                               if isinstance(f, ModelField)]
+    for f in sorted(opts.concrete_fields + sortable_virtual_fields + opts.many_to_many):
+        if not getattr(f, 'editable', False):
             continue
         if fields is not None and not f.name in fields:
             continue
@@ -822,7 +831,7 @@ class BaseInlineFormSet(BaseModelFormSet):
         self.save_as_new = save_as_new
         if queryset is None:
             queryset = self.model._default_manager
-        if self.instance.pk:
+        if self.instance.pk is not None:
             qs = queryset.filter(**{self.fk.name: self.instance})
         else:
             qs = queryset.none()
@@ -846,7 +855,11 @@ class BaseInlineFormSet(BaseModelFormSet):
             form.data[form.add_prefix(self.fk.name)] = None
 
         # Set the fk value here so that the form can do its validation.
-        setattr(form.instance, self.fk.get_attname(), self.instance.pk)
+        fk_value = self.instance.pk
+        if self.fk.rel.field_name != self.fk.rel.to._meta.pk.name:
+            fk_value = getattr(self.instance, self.fk.rel.field_name)
+            fk_value = getattr(fk_value, 'pk', fk_value)
+        setattr(form.instance, self.fk.get_attname(), fk_value)
         return form
 
     @classmethod
@@ -900,7 +913,7 @@ def _get_foreign_key(parent_model, model, fk_name=None, can_fail=False):
     """
     Finds and returns the ForeignKey from model to parent if there is one
     (returns None if can_fail is True and no such field exists). If fk_name is
-    provided, assume it is the name of the ForeignKey field. Unles can_fail is
+    provided, assume it is the name of the ForeignKey field. Unless can_fail is
     True, an exception is raised if there is no ForeignKey from model to
     parent_model.
     """
@@ -1158,6 +1171,11 @@ class ModelMultipleChoiceField(ModelChoiceField):
             msg = _('Hold down "Control", or "Command" on a Mac, to select more than one.')
             self.help_text = string_concat(self.help_text, ' ', msg)
 
+    def to_python(self, value):
+        if not value:
+            return []
+        return list(self._check_values(value))
+
     def clean(self, value):
         if self.required and not value:
             raise ValidationError(self.error_messages['required'], code='required')
@@ -1165,7 +1183,29 @@ class ModelMultipleChoiceField(ModelChoiceField):
             return self.queryset.none()
         if not isinstance(value, (list, tuple)):
             raise ValidationError(self.error_messages['list'], code='list')
+        qs = self._check_values(value)
+        # Since this overrides the inherited ModelChoiceField.clean
+        # we run custom validators here
+        self.run_validators(value)
+        return qs
+
+    def _check_values(self, value):
+        """
+        Given a list of possible PK values, returns a QuerySet of the
+        corresponding objects. Raises a ValidationError if a given value is
+        invalid (not a valid PK, not in the queryset, etc.)
+        """
         key = self.to_field_name or 'pk'
+        # deduplicate given values to avoid creating many querysets or
+        # requiring the database backend deduplicate efficiently.
+        try:
+            value = frozenset(value)
+        except TypeError:
+            # list of lists isn't hashable, for example
+            raise ValidationError(
+                self.error_messages['list'],
+                code='list',
+            )
         for pk in value:
             try:
                 self.queryset.filter(**{key: pk})
@@ -1184,9 +1224,6 @@ class ModelMultipleChoiceField(ModelChoiceField):
                     code='invalid_choice',
                     params={'value': val},
                 )
-        # Since this overrides the inherited ModelChoiceField.clean
-        # we run custom validators here
-        self.run_validators(value)
         return qs
 
     def prepare_value(self, value):

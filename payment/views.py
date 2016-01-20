@@ -16,9 +16,10 @@ from django.contrib.sites.models import Site
 from event.models import MembershipFee,EventType,Registration,Event,RoundTable,RoundTableRegistration,CDPanels,CDRegistration
 
 
-
-base_url = Site.objects.get_current().domain
-#base_url='f8de5afa.ngrok.io'
+if not settings.DEBUG:
+   base_url = Site.objects.get_current().domain
+else:
+     base_url='lscdsite.ngrok.io'
 notify_url = getattr(settings, ' PAYPAL_NOTIFY_URL', "http://" + base_url )
 
 @login_required 
@@ -46,7 +47,7 @@ def membership_payment(request):
         context = {"form": form,'amount':amount.amount,}
         return render(request,"payment/paypal.html", context)
     else:
-         return HttpResponsePermanentRedirect(reverse('profile-event'))
+         return HttpResponsePermanentRedirect(reverse('profile'))
 
 @login_required 
 def event_payment(request):           
@@ -71,8 +72,8 @@ def event_payment(request):
         "custom":custom,
         "invoice": invoice,
         "notify_url": notify_url + reverse('paypal:paypal-ipn'),
-        "return_url": "http://" + base_url + reverse('profile-event'),
-        "cancel_return":"http://" + base_url +reverse('profile-event'),
+        "return_url": "http://" + base_url + reverse('profile'),
+        "cancel_return":"http://" + base_url +reverse('profile'),
             }
 
          # Create the instance.
@@ -80,16 +81,17 @@ def event_payment(request):
         context = {"form": form,'amount':amount,'event':event}
         return render(request,"payment/paypal.html", context)
     else:
-         return HttpResponsePermanentRedirect(reverse('profile-event'))
+         return HttpResponsePermanentRedirect(reverse('profile'))
 
 from paypal.standard.models import ST_PP_COMPLETED
-from paypal.standard.ipn.signals import valid_ipn_received
+from paypal.standard.ipn.signals import valid_ipn_received,payment_was_flagged
 from django.contrib.sites.models import Site
 
 def show_me_the_money(sender, **kwargs):
   site = Site.objects.get_current()           
   ipn_obj = sender
-  
+  print   ipn_obj 
+  print kwargs
   if ipn_obj.payment_status == ST_PP_COMPLETED:    
         custom = ipn_obj.custom
         user_id,event_id,session1_id,session2_id = custom.split('-')
@@ -104,7 +106,7 @@ def show_me_the_money(sender, **kwargs):
            rt_1.save()
            rt_2.save()
            student.send_event_register_mail("register",event,site,request=None,session=[session1,session2])    
-        if event.event_type.pk==2:
+        elif event.event_type.pk==2:
            session1 = CDPanels.objects.get(event=event,pk = session1_id)
            session2 = CDPanels.objects.get(event=event,pk = session2_id)
            rt_1, cr1 = CDRegistration.objects.get_or_create(student=student, cd_pannel=session1, session=1,paid=True)
@@ -113,11 +115,9 @@ def show_me_the_money(sender, **kwargs):
            rt_1.save()
            rt_2.save() 
            student.send_event_register_mail("register",event,site,request=None,session=[session1,session2])    
-        if event.event_type.pk == 3:            
-            registration, create = Registration.objects.get_or_create(owner=student, event=event)                  
-            request.user.send_event_register_mail("register", event, site, request=None)
+       
             
-        if  event_id=='membership':
+        elif  event_id=='membership':
              now = timezone.now()
              User=UserModel()        
              student = User.objects.get(pk=user_id)
@@ -126,9 +126,15 @@ def show_me_the_money(sender, **kwargs):
              membership.expire=expire
              membership.paid=True
              membership.save()
+        else:                    
+            registration, create = Registration.objects.get_or_create(owner=student, event=event)                  
+            student.send_event_register_mail("register", event, site, request=None)
                     
 
    # else:
         #...
 
 valid_ipn_received.connect(show_me_the_money)
+#payment_was_flagged.connect(show_me_the_money)
+
+

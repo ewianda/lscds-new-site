@@ -121,7 +121,8 @@ class Event(models.Model):
             blank=True, default=0)
     none_u_of_t_limit =  models.PositiveSmallIntegerField(null=True,
             blank=True, default=0)
-    
+    nr_session_number =  models.PositiveSmallIntegerField(_('Number of NR sessions'),null=True,
+            blank=True, default=2)
     slug = models.SlugField(max_length=100,unique=True)
     status = models.CharField(max_length=40, choices=STATUS)
     objects = EventManager()

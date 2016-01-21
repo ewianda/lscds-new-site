@@ -328,7 +328,42 @@ class CDRegistrationForm(forms.Form):
          else:
             self.request.user.send_event_register_mail("register", self.event, site, request=self.request, session=[rt1[0], rt2[0]]) 
 
+
+
+
+
+class TableChoiceField(ModelChoiceField):
+    def __init__(self, queryset,session, *args, **kwargs):
+        self.session = session
+        super(TableChoiceField,self).__init__(queryset, *args, **kwargs)
+        
+    def label_from_instance(self, obj):
+        return "%s , (spots remaining:%s)" % (obj, obj.session_spot(session=self.session))
+    
 class NetWorkForm(forms.Form):
+     event = forms.CharField(widget=forms.HiddenInput())
+     event_id = forms.CharField(widget=forms.HiddenInput())
+     def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event', None)
+        self.request = kwargs.pop('request', None)
+        super(NetWorkForm, self).__init__(*args, **kwargs)
+        if self.event:
+           round_table = self.event.get_round_table()
+           for i in range(0,self.event.nr_session_number):
+               table = "round_table_%s" % (i)              
+               self.fields[table] =   TableChoiceField(round_table,i)
+               
+        self.helper = FormHelper(self)
+        self.helper.form_method = 'post'      
+        self.helper.layout.append(FormActions(
+            Div(Hidden('round_table_registration', '1'), Submit('round_table', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
+            Div(Submit('round_table_delete', 'Delete Registration', css_class=' btn-danger pull-left'),
+                                    css_class='row margin-bottom-30 ')
+                               ))      
+                
+            
+
+class NetWorkForm2(forms.Form):
      round_table_1 = TableOneChoiceField(RoundTable.objects.all())
      round_table_2 = TableTwoChoiceField(RoundTable.objects.all())
      event = forms.CharField(widget=forms.HiddenInput())
@@ -338,7 +373,7 @@ class NetWorkForm(forms.Form):
         self.event = kwargs.pop('event', None)
         self.action = ''
         self.request = kwargs.pop('request', None)
-        super(NetWorkForm, self).__init__(*args, **kwargs)
+        super(NetWorkForm2, self).__init__(*args, **kwargs)
          # Bootstrap stuff for crispy forms
         self.helper = FormHelper(self)
         self.helper.form_method = 'post'

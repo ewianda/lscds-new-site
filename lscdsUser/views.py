@@ -250,7 +250,7 @@ class UserUpdateView(UpdateView):
     
     
 def nr_registration(request): # Network reception registration
-    if 'round_table_delete' in request.POST:
+    #if 'round_table_delete' in request.POST:
        event_id = request.POST.get('event_id')
        event = get_object_or_404(Event , pk=event_id)
        form = NetWorkForm(request.POST, event=event, request=request)
@@ -263,9 +263,9 @@ def nr_registration(request): # Network reception registration
           rt_1.delete()
           rt_2.delete()
           request.user.send_event_register_mail("delete", event, site, request)
-          return HttpResponsePermanentRedirect(reverse('profile-event'))
+          return HttpResponsePermanentRedirect(reverse('profile'))
        else:
-            return render(request, 'profile-event-registration.html', {'form':form})
+            return render(request, 'profile-event-registration.html', {'form':form,'event':event})
 
 
 

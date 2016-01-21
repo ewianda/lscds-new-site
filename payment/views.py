@@ -115,7 +115,7 @@ def show_me_the_money(sender, **kwargs):
            student.send_event_register_mail("register",event,site,request=None,session=[session1,session2])    
         if event.event_type.pk == 3:            
             registration, create = Registration.objects.get_or_create(owner=student, event=event)                  
-            request.user.send_event_register_mail("register", event, site, request=None)
+            student.send_event_register_mail("register", event, site, request=None)
             
         if  event_id=='membership':
              now = timezone.now()

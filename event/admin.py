@@ -92,11 +92,28 @@ class CDPanelistlineAdmin(admin.TabularInline):
     model = CDPanelist
     extra = 6   
     
-class EventFeelineAdmin(admin.TabularInline):
-    model =EventFee
+    
+class BaseRequiredInline(admin.TabularInline):
     extra = 1
     max_num = 1
     formset = RequiredInlineFormSet
+    
+class EventFeelineAdmin(BaseRequiredInline):
+    model =EventFee
+    
+
+
+class RegTemplineAdmin(BaseRequiredInline):
+    model =EventRegistrationTemplate
+ 
+    
+class ModTemplateAdmin(BaseRequiredInline):   
+    model =EventModifyTemplate
+ 
+    
+class DeleteTemplate(BaseRequiredInline):
+    model =EventDeleteTemplate
+ 
     
 class EventTypeAdmin(admin.ModelAdmin):    
     
@@ -116,10 +133,14 @@ class EventTypeAdmin(admin.ModelAdmin):
        EventlineAdmin
     ]
 
+
+
+
+
 class EventAdmin(admin.ModelAdmin):
     form = EventCreationForm
     inlines = [
-     RoundTablelineAdmin,TalklineAdmin,CompanylineAdmin,EventSponsorlineAdmin,EventFeelineAdmin
+     RoundTablelineAdmin,TalklineAdmin,CompanylineAdmin,EventSponsorlineAdmin,RegTemplineAdmin,ModTemplateAdmin,DeleteTemplate
     ]
     prepopulated_fields = {"slug": ("name","location")}
     list_display = ('name',)

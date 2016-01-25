@@ -1,5 +1,6 @@
 application: lscdsv4
-version: django-site
+#version: django-site
+version: new-registration
 runtime: python27
 api_version: 1
 threadsafe: false 

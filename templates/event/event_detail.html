@@ -16,7 +16,7 @@
  <div class = {% if object.event_information %} 'col-md-12' {% else %}'col-md-12' {%endif %}>
 
         {% if object.registration_open %}
-        <a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-left"> Register</a>
+        <a href="{% url 'profile' %}" class="btn btn-lg  btn-success pull-left"> Register</a>
         {% elif object.registration_start > now %}
         <div class="col-md-4 alert alert-info" role="alert">Registration starts in {{object.registration_start|timeuntil}}</div>
 
@@ -47,7 +47,7 @@
 
 
 {% if object.registration_open %}
-<a href="{% url 'profile-event' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
+<a href="{% url 'profile' %}" class="btn btn-lg  btn-success pull-righ"> Register</a>
 {% endif %}
 
 {% endif %}

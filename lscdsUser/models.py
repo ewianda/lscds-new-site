@@ -21,8 +21,10 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, \
     PermissionsMixin
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
-from django.template import Context, RequestContext, TemplateDoesNotExist
+from django.template import Context, RequestContext, TemplateDoesNotExist,Template
 from django.template.loader import get_template, render_to_string
+ 
+
 from django.utils import six, timezone
 from django.utils.translation import ugettext_lazy as _
 from institute.models import University, Faculty, Department, Degree
@@ -247,14 +249,20 @@ class LscdsUser(AbstractBaseUser, PermissionsMixin):
             "site": site,
             "action": action,
         }
-        if session is not None:
-            session1 = session[0]
-            session2 = session[1]
-            email_dict['session1'] = session1
-            email_dict['session2'] = session2
+        if session is not None:          
+            email_dict['sessions'] = session
+   
         email_ctx = Context(email_dict)
-        txt = get_template('email/event_register_email.txt')
-        html = get_template('email/event_register_email.html')
+        if action == 'delete':
+            txt =  Template(event.eventdeletetemplate.template.content)
+            html =Template(event.eventdeletetemplate.template.content)
+        elif action == 'modify':
+            txt = Template(event.eventmodifytemplate.template.content)
+            html = Template(event.eventmodifytemplate.template.content)
+        else:
+          txt = Template(event.eventregistrationtemplate.template.content)
+          html = Template(event.eventregistrationtemplate.template.content)
+        
         message_txt = txt.render(email_ctx)
         message_html = html.render(email_ctx)       
         email_message = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [self.email])

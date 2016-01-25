@@ -1,0 +1,15 @@
+{% if event_history %}
+
+   <div class='row'> <!-- End of row  -->
+  <ul class="fa-ul">
+  {% for event in  event_history %}
+  <li><i class="fa-li fa fa-check-square"></i><strong><a href={% url 'event:event-detail' slug=event.slug %} class="color-blue">{{event.name}}</a> </strong></li>
+   {% empty %}
+  <li><i class="fa-li fa fa-check-square"></i>No events at this time</li>  
+     {% endfor %}
+</ul> 
+   
+   </div> <!-- End of row  -->  
+       
+       
+ {% endif %}

@@ -113,6 +113,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+              
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,7 +123,7 @@ MIDDLEWARE_CLASSES = (
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
-
+CORS_ORIGIN_ALLOW_ALL = True
 
 IMAGESTORE_UPLOAD_TO = 'imagestore'
 CKEDITOR_UPLOAD_PATH = "ckeditor/uploads/"
@@ -172,7 +173,8 @@ INSTALLED_APPS = ('adminactions',
      'photologue', 
      'imagekit','communication',
      'logo',
-        'rest_framework',
+        'rest_framework', 
+          'rest_framework.authtoken',
      #'sortedm2m',
    #  'south',
     'captcha',
@@ -252,7 +254,7 @@ REGISTRATION_EMAIL_SUBJECT_PREFIX = 'Your Registration With LSCDS'
 SEND_ACTIVATION_EMAIL = True
 
 
-LOGIN_URL = '/login/'
+LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/first-login'
 SOCIAL_AUTH_LOGIN_URL = '/first-login'
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'

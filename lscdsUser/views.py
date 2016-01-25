@@ -35,7 +35,7 @@ from django.views.generic.list import ListView
 from event.models import EventType, Registration, Event, RoundTable, \
     RoundTableRegistration,CDPanels,CDRegistration
 from lscdsUser.forms import UserCreationForm, UHNVerificationForm, \
-    SocialExtraDataForm, UserProfileForm, RegistrationFormSet, NetWorkForm, CDRegistrationForm,\
+    SocialExtraDataForm, UserProfileForm,  NetWorkForm, CDRegistrationForm,\
     UploadAvatarForm,  MailingListForm, WebUnsubscribeForm
 from lscdsUser.models import LscdsUser, LscdsExec, OldlscdsUser, MailingList
 from lscds_site.decorators import render_to
@@ -53,6 +53,11 @@ if Site._meta.installed:
 else:
      site = RequestSite(request)
 
+
+@csrf_exempt
+def api_test(request):
+    print request.POST
+    return HttpResponse('lets see')
 # Create your views here.
 # Avoid shadowing the login() and logout() views below.
 class MailingListView(FormView):
@@ -247,29 +252,47 @@ class UserUpdateView(UpdateView):
         context['pwd_change_form']= PasswordChangeForm(user)
         context['now'] = timezone.now()
         return context
+   
+   
     
-    
+@csrf_exempt
+@login_required    
 def nr_registration(request): # Network reception registration
     #if 'round_table_delete' in request.POST:
-       event_id = request.POST.get('event_id')
-       event = get_object_or_404(Event , pk=event_id)
-       form = NetWorkForm(request.POST, event=event, request=request)
-       if form.is_valid():
-          event_id = form.cleaned_data['event_id']
-          round_table_1 = form.cleaned_data['round_table_1']
-          round_table_2 = form.cleaned_data['round_table_2']
-          rt_1 = get_object_or_404(RoundTableRegistration, student=request.user, round_table=round_table_1)
-          rt_2 = get_object_or_404(RoundTableRegistration, student=request.user, round_table=round_table_2)
-          rt_1.delete()
-          rt_2.delete()
-          request.user.send_event_register_mail("delete", event, site, request)
-          return HttpResponsePermanentRedirect(reverse('profile'))
-       else:
-            return render(request, 'profile-event-registration.html', {'form':form,'event':event})
-
-
-
-
+       if request.method == 'POST':           
+           event_id = request.POST.get('event_id') 
+           event = get_object_or_404(Event , pk=event_id)   
+           round_tables = request.user.my_round_table.filter(round_table__event_id=event_id)
+           if 'round_table_registration' in request.POST:        
+               form = NetWorkForm(request.POST, event=event, request=request)     
+               if form.is_valid():                   
+                   if not round_tables.exists() and event.amount>0 and not request.user.has_membership:
+                            request.session['event_id'] = event_id  
+                            return HttpResponsePermanentRedirect(reverse('paypal:payment'))                     
+                   else:
+                          form.save()   
+                          return HttpResponsePermanentRedirect(reverse('profile'))                          
+               else:             
+                        return render(request, 'profile-event-registration.html', {'form':form,'event':event})                  
+           
+           elif 'round_table_delete' in request.POST: 
+                sessions = round_tables.values().items()
+                round_tables.delete()
+                 
+                request.user.send_event_register_mail("delete", event, site, request,session=sessions)
+                return HttpResponsePermanentRedirect(reverse('profile'))                               
+           else:
+                initial = {}
+                for i,rt in enumerate(round_tables):
+                   print rt
+                   initial["round_table_%s" % rt.session] = rt.round_table                                      
+                form = NetWorkForm(event=event, request=request,initial=initial) 
+                print initial      
+                return render(request, 'profile-event-registration.html', {'form':form,'event':event,})
+          
+  
+@csrf_exempt
+@login_required
 def ss_registration(request): # Seminar series registration and Mini network regitation   
     event_id = request.POST.get('event_id',None)
     event = get_object_or_404(Event , pk=event_id)
@@ -279,7 +302,7 @@ def ss_registration(request): # Seminar series registration and Mini network reg
           request.user.send_event_register_mail("delete", event, site, request)
           return HttpResponsePermanentRedirect(reverse('profile'))
     except Registration.DoesNotExist:
-            if not request.user.has_membership  and event.has_fee:
+            if not request.user.has_membership  and event.amount>0:
                request.session['event_id'] = event_id  
                request.session['session_1'] = 'dummy'
                request.session['session_2'] = 'dummy'             
@@ -291,7 +314,8 @@ def ss_registration(request): # Seminar series registration and Mini network reg
                   request.user.send_event_register_mail("register", event, site, request)
                   return HttpResponsePermanentRedirect(reverse('profile'))
 
-
+@csrf_exempt
+@login_required
 def cd_registration(request): # Carrier day registration
     
  pass
@@ -365,8 +389,7 @@ def cd_registration(request):
           event_id = form.cleaned_data['event_id']
           cd_pannel1 = form.cleaned_data['session_1']
           cd_pannel2 = form.cleaned_data['session_2']
-          if not request.user.has_membership and not paid and event.has_fee:
-               logging.error(cd_pannel1.pk)
+          if not request.user.has_membership and not paid and event.has_fee:          
                request.session['event_id'] = event_id
                request.session['session_1'] = cd_pannel1.pk
                request.session['session_2'] = cd_pannel2.pk

@@ -4,8 +4,9 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
- 
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from lscdsUser.views import *
+import django 
 
 admin.autodiscover()
 urlpatterns = patterns('',
@@ -37,7 +38,7 @@ urlpatterns = patterns('',
 
     url(r'^profile/$', UserUpdateView.as_view(), name='profile'),
 
-
+    # url(r'^accounts/login/',api_test),
      url(r'^email/$', require_email, name='require_email'),
      url(r'^complete_information/$', social_extra_data, name='social_extra_data'),
      url(r'^accounts/password/reset/$',
@@ -56,8 +57,8 @@ urlpatterns = patterns('',
     url(r'^accounts/register/$',
                           LSCDSRegistrationView.as_view(),
                            name='registration_register'),
-    url(r'^login/',
-        'django.contrib.auth.views.login',
+    url(r'^accounts/login/',
+        csrf_exempt(django.contrib.auth.views.login),
         name='login'),
                  
                        

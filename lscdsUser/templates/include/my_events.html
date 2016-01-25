@@ -1,4 +1,4 @@
-{% if registered_list %}
+ 
   <div class="row"> 
  {% for event in  registered_list %}
    <div style='padding:0px;' class="col-xs-12"> <hr style='margin: 0;border-top: 4px solid #eee;'></div>
@@ -15,7 +15,12 @@
                              <button type="submit" class="btn btn-danger btn-block ">Modify or Unregister</button>        
             </form>
                 </div>        
-  {% endfor %} 
+  {% empty %}
+    <div class="col-md-4 col-xs-12"> 
+  No registered events
+   </div>    
+ {% endfor %}
   
   </div>          
- {% endif %}
+ 
+ 

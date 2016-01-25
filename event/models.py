@@ -10,12 +10,12 @@ from registration.users import UserModel, UserModelString
 from ckeditor.fields import RichTextField
 from django.db.models.query import QuerySet
 from django.db.models import Q,Count
-User=UserModel()
+
 from lscdsUser.models import LscdsExec
 from lscds_site.utils import send_event_register_mail
-        
+from communication.models import EmailTemplate        
 
-
+User=UserModel()
 
 
 
@@ -41,39 +41,28 @@ class EventType(models.Model):
 
 # First, define the Manager subclass.
 
-class EventQuerySet(QuerySet):
-    # Get career day event registration for a particular user
-    def user_cd(self,user):
-        return self.filter(event_type_id=2,starts__gte = timezone.now(),status="publish"). \
-                         filter(event_pannels__cd_registration__student=user).\
-                         annotate(dcount=Count('event_type'))
-
-    def user_open_cd(self,user):
-        return self.filter(event_type_id=2,starts__gte = timezone.now(),status="publish"). \
-                         exclude(event_pannels__cd_registration__student=user)
-    
-    
-    
-    def user_nr(self,user):
-        return self.filter(event_type_id=1,starts__gte = timezone.now(),status="publish"). \
-                         filter(event_round_table__round_table_registrations__student=user).\
-                         annotate(dcount=Count('event_type'))
-
-    def user_open_nr(self,user):
-        return self.filter(event_type_id=1,starts__gte = timezone.now(),status="publish"). \
-                         exclude(event_round_table__round_table_registrations__student=user)
-
+class EventQuerySet(QuerySet): 
     def user_events(self,user):
-        return self.filter(starts__gte = timezone.now(),status="publish",registrations__owner=user).\
-                     exclude(event_type_id=4)
-                           
+        return self.filter(starts__gte = timezone.now(),status="publish").\
+                    filter(Q(registrations__owner=user)|\
+                      Q(event_round_table__round_table_registrations__student=user)|
+                           Q(event_pannels__cd_registration__student=user)).\
+                     exclude(event_type_id=4).\
+                     annotate(dcount=Count('event_type'))     
 
     def user_open_events(self,user):
-        return self.filter(starts__gte = timezone.now(),status="publish").exclude(registrations__owner=user).\
-                    exclude(event_type_id=4)
-    
+        return self.filter(starts__gte = timezone.now(),status="publish").\
+                  exclude(Q(registrations__owner=user)|
+                          Q(event_round_table__round_table_registrations__student=user)|
+                           Q(event_pannels__cd_registration__student=user)
+                          ).\
+                    exclude(event_type_id=4).\
+                    annotate(dcount=Count('event_type'))
+                    
+                    
     def user_event_history(self,user):
-        return self.filter(Q(registrations__owner=user)|Q(event_round_table__round_table_registrations__student=user)).\
+        return self.filter(Q(registrations__owner=user)|Q(event_round_table__round_table_registrations__student=user)\
+                           |Q(event_pannels__cd_registration__student=user)).\
                           filter(starts__lte = timezone.now(),status="publish").\
                                 annotate(dcount=Count('event_type'))
 
@@ -82,18 +71,6 @@ class EventQuerySet(QuerySet):
 class EventManager(models.Manager):
        def get_query_set(self):
            return EventQuerySet(self.model, using=self._db)
-       def user_cd(self,user):
-           return self.get_query_set().user_cd(user)
-       def user_open_cd(self,user):
-           return self.get_query_set().user_open_cd(user)
-       
-       def user_nr(self,user):
-           return self.get_query_set().user_nr(user)
-       def user_open_nr(self,user):
-           return self.get_query_set().user_open_nr(user)
-       
-       
-
        def user_events(self,user):
            return self.get_query_set().user_events(user)
 
@@ -117,6 +94,7 @@ class Event(models.Model):
     registration_end = models.DateTimeField()
     starts = models.DateTimeField()
     ends = models.TimeField()
+    amount = models.DecimalField(_('Fees'),max_digits=65,decimal_places=2,default=0)
     registration_limit = models.PositiveSmallIntegerField(null=True,
             blank=True, default=0)
     none_u_of_t_limit =  models.PositiveSmallIntegerField(null=True,
@@ -184,6 +162,23 @@ class Event(models.Model):
                 return False
         else:
           return False
+
+class EventRegistrationTemplate(models.Model):
+      event =   models.OneToOneField(Event)
+      template = models.ForeignKey(EmailTemplate)
+
+class EventDeleteTemplate(models.Model):
+      event =   models.OneToOneField(Event)
+      template = models.ForeignKey(EmailTemplate)
+      
+      
+class EventModifyTemplate(models.Model):
+      event =   models.OneToOneField(Event)
+      template = models.ForeignKey(EmailTemplate)
+      
+      
+
+
 
 class Presenter(models.Model):
     name = models.CharField(_('First name'),max_length=255)

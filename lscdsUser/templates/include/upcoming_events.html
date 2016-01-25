@@ -1,4 +1,4 @@
-{% if not_registered_list %}
+ 
    <div class="row"> 
 
  {% for event in  not_registered_list %}
@@ -38,8 +38,12 @@
  </form>
   </div>
   <hr>
+  {% empty %}
+    <div class="col-md-4 col-xs-12"> 
+  No upcoming events
+   </div>    
  {% endfor %}
     </div>    
        
        
- {% endif %}
+ 

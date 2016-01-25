@@ -58,10 +58,9 @@ def event_payment(request):
     user_id=request.user.pk 
     # Send user, event and table information to paypal  
     custom = "%s-%s-%s-%s" % (user_id,event_id,session1_id,session2_id)
-    if event_id and session1_id and session2_id:
-        event=Event.objects.get(pk=event_id)
-        fee=event.fee_options.all()[0]
-        amount = fee.amount                     
+    if event_id:
+        event=Event.objects.get(pk=event_id)        
+        amount = event.amount                  
         now = timezone.now()   
         invoice = "".join(str(now).split())
         paypal_dict = {

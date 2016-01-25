@@ -30,15 +30,15 @@
 <div class="col-md-3">
 <div class="sidebar-nav">
     <div class="well" style="width:300px; padding: 8px 0;">
-		<ul class="nav nav-list"> 
-		   <li class=" nav-header"><data-toggle="tab" href="#user"><i class="icon-user"></i> {{user.get_full_name}}</a></li>       
-		  {% if request.user.is_staff %} <li class="active"> <a href="{% url  'admin:index'  %}" > Go to admin page </a></li> {% endif %} 
+		<ul class="list-group"> 
+		   <li class=" list-group-item nav-header"><data-toggle="tab" href="#user"><i class="icon-user"></i> <strong> Hi{{user.get_full_name}}  
+		  </strong> <br>{% if request.user.is_staff %}   <a href="{% url  'admin:index'  %}" >  Go to admin page </a> {% endif %} </li> 
 		
-		  <li><a data-toggle="tab" href="#event"><i class="icon-home"></i> Events</a></li>	
+		  <li class="list-group-item"><a data-toggle="tab" href="#event"><i class="icon-home"></i> Events</a></li>	
           <li class="divider"></li>
-          	  <li><a data-toggle="tab" href="#profile"><i class="icon-home"></i> Update profile</a></li>	
-		  <li><a data-toggle="tab" href="#notification"><i class="icon-comment"></i> Notification Settings</a></li>
-		  <li><a data-toggle="tab" href="#password"><i class="icon-share"></i> Change Password</a></li>
+          	  <li class="list-group-item"><a data-toggle="tab" href="#profile"><i class="icon-home"></i> Update profile</a></li>	
+		  <li class="list-group-item"><a data-toggle="tab" href="#notification"><i class="icon-comment"></i> Notification Settings</a></li>
+		  <li class="list-group-item"><a data-toggle="tab" href="#password"><i class="icon-share"></i> Change Password</a></li>
 		</ul>
 	</div>
 </div>

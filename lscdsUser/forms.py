@@ -340,28 +340,55 @@ class TableChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         return "%s , (spots remaining:%s)" % (obj, obj.session_spot(session=self.session))
     
-class NetWorkForm(forms.Form):
-     event = forms.CharField(widget=forms.HiddenInput())
+class NetWorkForm(forms.Form): 
      event_id = forms.CharField(widget=forms.HiddenInput())
      def __init__(self, *args, **kwargs):
         self.event = kwargs.pop('event', None)
         self.request = kwargs.pop('request', None)
         super(NetWorkForm, self).__init__(*args, **kwargs)
+        self.fields['event_id'].initial =self.event.id
         if self.event:
            round_table = self.event.get_round_table()
-           for i in range(0,self.event.nr_session_number):
+           for i in range(1,self.event.nr_session_number+1):
                table = "round_table_%s" % (i)              
-               self.fields[table] =   TableChoiceField(round_table,i)
-               
+               self.fields[table] =   TableChoiceField(round_table,i)               
         self.helper = FormHelper(self)
         self.helper.form_method = 'post'      
         self.helper.layout.append(FormActions(
-            Div(Hidden('round_table_registration', '1'), Submit('round_table', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
+            Div(Submit('round_table_registration', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
             Div(Submit('round_table_delete', 'Delete Registration', css_class=' btn-danger pull-left'),
                                     css_class='row margin-bottom-30 ')
-                               ))      
-                
-            
+                               ))  
+     def save(self):
+         from django.contrib.sites.models import Site       
+         if Site._meta.installed:
+                site = Site.objects.get_current()
+         else:
+                site = RequestSite(self.request)
+         round_tables = self.request.user.my_round_table.filter(round_table__event_id=self.event.id)
+         action = 'register'
+         sessions = []
+         if round_tables.exists(): #Delete and create new ones
+             round_tables.delete()
+             action = 'modify'
+             
+         for key,val in   self.cleaned_data.iteritems():
+             if key.startswith('round_table'):
+                  vl = key.split('-')
+                  session = int(key.split('_')[-1])
+                  rt, cr = RoundTableRegistration.objects.get_or_create(student=self.request.user, round_table=val, session=session)
+                  rt.save()
+                  sessions.append(rt.round_table)
+         self.request.user.send_event_register_mail(action, self.event, site, request=self.request, session=sessions)           
+     def clean(self):    
+              cleaned_data = super(NetWorkForm, self).clean()            
+              msg = "You cannot register for the same round table more than once." 
+              values = cleaned_data.values()              
+              for key,val in cleaned_data.copy().iteritems():                
+                  if values.count(val)>1:
+                      self._errors[key]=self.error_class([msg])  
+                      del cleaned_data[key]         
+              return cleaned_data
 
 class NetWorkForm2(forms.Form):
      round_table_1 = TableOneChoiceField(RoundTable.objects.all())
@@ -378,7 +405,7 @@ class NetWorkForm2(forms.Form):
         self.helper = FormHelper(self)
         self.helper.form_method = 'post'
         self.helper.layout.append(FormActions(
-            Div(Hidden('round_table_registration', '1'), Submit('round_table', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
+            Div(Submit('round_table_registration', 'Register' , css_class='pull-right'), css_class='row margin-bottom-30'),
             Div(Submit('round_table_delete', 'Delete Registration', css_class=' btn-danger pull-left'),
                                     css_class='row margin-bottom-30 ')
                                ))
@@ -431,6 +458,8 @@ class NetWorkForm2(forms.Form):
           rt_2, cr2 = RoundTableRegistration.objects.get_or_create(student=self.request.user, round_table=round_table_2, session=2)       
           rt_1.save()
           rt_2.save() 
+          
+          
      def send_mail(self):
                 # Get the site information for sending emails.
          from django.contrib.sites.models import Site       
